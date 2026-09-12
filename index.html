@@ -426,7 +426,7 @@
       document.getElementById('input-total-bill').value = '$' + total;
     }
 
-    // Direct Fast2SMS dispatch
+    // Fast2SMS dispatch via CORS Proxy
     const form = document.getElementById('waterForm');
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -449,8 +449,12 @@
 
       const messageText = `NEW WATER ORDER:\nName: ${name}\nPhone: ${phone}\nItem: ${qty}x ${waterType}\nTotal: ${bill}\nTime: ${time}\nAddr: ${address}`;
 
+      // Wrap target Fast2SMS endpoint with corsproxy.io
+      const targetApiUrl = "https://www.fast2sms.com/dev/bulkV2";
+      const proxiedUrl = "https://corsproxy.io/?" + encodeURIComponent(targetApiUrl);
+
       try {
-        const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+        const response = await fetch(proxiedUrl, {
           method: "POST",
           headers: {
             "authorization": FAST2SMS_API_KEY,
@@ -475,6 +479,7 @@
           submitBtn.disabled = false;
         }
       } catch (error) {
+        console.error("Submission error:", error);
         alert("Network error. Please check internet connection.");
         submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
         submitBtn.disabled = false;
