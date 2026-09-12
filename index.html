@@ -410,49 +410,54 @@
     }
 
     // Submit order via Cloudflare Worker -> Fast2SMS
-    const form = document.getElementById('waterForm');
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const submitBtn = form.querySelector('.submit-btn');
-      submitBtn.innerText = 'DISPATCHING SMS...';
-      submitBtn.disabled = true;
+const form = document.getElementById('waterForm');
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const submitBtn = form.querySelector('.submit-btn');
+  submitBtn.innerText = 'DISPATCHING SMS...';
+  submitBtn.disabled = true;
 
-      const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
+  const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
 
-      const payload = {
-        name: document.getElementById('customer-name').value,
-        phone: document.getElementById('customer-phone').value,
-        address: document.getElementById('customer-address').value,
-        notes: document.getElementById('landmark-notes').value || 'None',
-        waterType: document.getElementById('input-water-type').value,
-        qty: document.getElementById('qty-input').value,
-        bill: document.getElementById('input-total-bill').value,
-        time: document.getElementById('preferred-time').value
-      };
+  const payload = {
+    name: document.getElementById('customer-name').value,
+    phone: document.getElementById('customer-phone').value,
+    address: document.getElementById('customer-address').value,
+    notes: document.getElementById('landmark-notes').value || 'None',
+    waterType: document.getElementById('input-water-type').value,
+    qty: document.getElementById('qty-input').value,
+    bill: document.getElementById('input-total-bill').value,
+    time: document.getElementById('preferred-time').value
+  };
 
-      try {
-        const response = await fetch(CLOUDFLARE_WORKER_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-          document.getElementById('order-screen').classList.add('hidden');
-          document.getElementById('thankyou-screen').classList.remove('hidden');
-          window.scrollTo(0, 0);
-        } else {
-          alert("SMS Dispatch failed. Please call the store directly.");
-          submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
-          submitBtn.disabled = false;
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Network error. Please try again or call directly.");
-        submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
-        submitBtn.disabled = false;
-      }
+  try {
+    const response = await fetch(CLOUDFLARE_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
     });
+
+    const result = await response.json();
+    
+    // THIS LINE PRINTS THE EXACT FAST2SMS REASON IN YOUR CONSOLE:
+    console.log("Fast2SMS API Response:", result);
+
+    if (response.ok && result.success) {
+      document.getElementById('order-screen').classList.add('hidden');
+      document.getElementById('thankyou-screen').classList.remove('hidden');
+      window.scrollTo(0, 0);
+    } else {
+      alert("SMS Dispatch failed: " + JSON.stringify(result.details || result));
+      submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
+      submitBtn.disabled = false;
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Network error. Please try again or call directly.");
+    submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
+    submitBtn.disabled = false;
+  }
+});
   </script>
 </body>
 </html>
