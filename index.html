@@ -272,10 +272,7 @@
 
       <div class="section-label">01 / Choose Water Type</div>
       <div class="water-grid">
-        <div class="water-card selected" 
-             role="button" tabindex="0" aria-selected="true"
-             onclick="selectWater('Standard Mineral (20L)', 3.50, this)"
-             onkeydown="if(event.key === 'Enter' || event.key === ' ') selectWater('Standard Mineral (20L)', 3.50, this)">
+        <div class="water-card selected" onclick="selectWater('Standard Mineral (20L)', 3.50, this)">
           <div>
             <span class="badge-type">RO Filtered</span>
             <div class="water-title">Standard 20L</div>
@@ -284,10 +281,7 @@
           <div class="water-price">$3.50</div>
         </div>
 
-        <div class="water-card" 
-             role="button" tabindex="0" aria-selected="false"
-             onclick="selectWater('Copper Charged (20L)', 4.50, this)"
-             onkeydown="if(event.key === 'Enter' || event.key === ' ') selectWater('Copper Charged (20L)', 4.50, this)">
+        <div class="water-card" onclick="selectWater('Copper Charged (20L)', 4.50, this)">
           <div>
             <span class="badge-type">Infused</span>
             <div class="water-title">Copper 20L</div>
@@ -296,10 +290,7 @@
           <div class="water-price">$4.50</div>
         </div>
 
-        <div class="water-card" 
-             role="button" tabindex="0" aria-selected="false"
-             onclick="selectWater('Alkaline pH 8+ (20L)', 5.50, this)"
-             onkeydown="if(event.key === 'Enter' || event.key === ' ') selectWater('Alkaline pH 8+ (20L)', 5.50, this)">
+        <div class="water-card" onclick="selectWater('Alkaline pH 8+ (20L)', 5.50, this)">
           <div>
             <span class="badge-type">High pH</span>
             <div class="water-title">Alkaline 20L</div>
@@ -308,10 +299,7 @@
           <div class="water-price">$5.50</div>
         </div>
 
-        <div class="water-card" 
-             role="button" tabindex="0" aria-selected="false"
-             onclick="selectWater('Dispensable 10L Bottle', 2.50, this)"
-             onkeydown="if(event.key === 'Enter' || event.key === ' ') selectWater('Dispensable 10L Bottle', 2.50, this)">
+        <div class="water-card" onclick="selectWater('Dispensable 10L Bottle', 2.50, this)">
           <div>
             <span class="badge-type">Built-in Tap</span>
             <div class="water-title">Easy-Tap 10L</div>
@@ -328,9 +316,9 @@
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;" id="selected-type-display">Standard Mineral (20L)</p>
           </div>
           <div class="qty-controls">
-            <button type="button" class="qty-btn" onclick="updateQty(-1)" aria-label="Decrease quantity">-</button>
+            <button type="button" class="qty-btn" onclick="updateQty(-1)">-</button>
             <span class="qty-val" id="qty-display">1</span>
-            <button type="button" class="qty-btn" onclick="updateQty(1)" aria-label="Increase quantity">+</button>
+            <button type="button" class="qty-btn" onclick="updateQty(1)">+</button>
           </div>
         </div>
         <input type="hidden" name="Quantity" id="qty-input" value="1">
@@ -396,13 +384,8 @@
     let currentQuantity = 1;
 
     function selectWater(name, price, element) {
-      document.querySelectorAll('.water-card').forEach(card => {
-        card.classList.remove('selected');
-        card.setAttribute('aria-selected', 'false');
-      });
-
+      document.querySelectorAll('.water-card').forEach(card => card.classList.remove('selected'));
       element.classList.add('selected');
-      element.setAttribute('aria-selected', 'true');
 
       currentPrice = price;
       document.getElementById('input-water-type').value = name;
@@ -426,7 +409,7 @@
       document.getElementById('input-total-bill').value = '$' + total;
     }
 
-    // Fast2SMS dispatch via CORS Proxy
+    // Submit order via Cloudflare Worker -> Fast2SMS
     const form = document.getElementById('waterForm');
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -434,39 +417,24 @@
       submitBtn.innerText = 'DISPATCHING SMS...';
       submitBtn.disabled = true;
 
-      const formData = new FormData(form);
+      const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
 
-      const name = formData.get('Customer_Name');
-      const phone = formData.get('Customer_Phone');
-      const address = formData.get('Customer_Address');
-      const waterType = formData.get('Selected_Water_Type');
-      const qty = formData.get('Quantity');
-      const bill = formData.get('Total_Estimated_Bill');
-      const time = formData.get('Preferred_Time');
-
-      const FAST2SMS_API_KEY = "5u6tGvO8RMVJSni2IAxB3KDfrysoW1wXTUdFH0ENgkCjaZpb7ctISbuZeFxwN3UBVAplrTmvH5d9EJWz";
-      const STORE_MOBILE_NUMBER = "9946011357";
-
-      const messageText = `NEW WATER ORDER:\nName: ${name}\nPhone: ${phone}\nItem: ${qty}x ${waterType}\nTotal: ${bill}\nTime: ${time}\nAddr: ${address}`;
-
-      // Wrap target Fast2SMS endpoint with corsproxy.io
-      const targetApiUrl = "https://www.fast2sms.com/dev/bulkV2";
-      const proxiedUrl = "https://corsproxy.io/?" + encodeURIComponent(targetApiUrl);
+      const payload = {
+        name: document.getElementById('customer-name').value,
+        phone: document.getElementById('customer-phone').value,
+        address: document.getElementById('customer-address').value,
+        notes: document.getElementById('landmark-notes').value || 'None',
+        waterType: document.getElementById('input-water-type').value,
+        qty: document.getElementById('qty-input').value,
+        bill: document.getElementById('input-total-bill').value,
+        time: document.getElementById('preferred-time').value
+      };
 
       try {
-        const response = await fetch(proxiedUrl, {
+        const response = await fetch(CLOUDFLARE_WORKER_URL, {
           method: "POST",
-          headers: {
-            "authorization": FAST2SMS_API_KEY,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            "route": "q",
-            "message": messageText,
-            "language": "english",
-            "flash": 0,
-            "numbers": STORE_MOBILE_NUMBER
-          })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
         });
 
         if (response.ok) {
@@ -474,13 +442,13 @@
           document.getElementById('thankyou-screen').classList.remove('hidden');
           window.scrollTo(0, 0);
         } else {
-          alert("SMS Dispatch failed. Please contact counter directly.");
+          alert("SMS Dispatch failed. Please call the store directly.");
           submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
           submitBtn.disabled = false;
         }
       } catch (error) {
-        console.error("Submission error:", error);
-        alert("Network error. Please check internet connection.");
+        console.error("Error:", error);
+        alert("Network error. Please try again or call directly.");
         submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
         submitBtn.disabled = false;
       }
