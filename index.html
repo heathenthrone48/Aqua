@@ -114,32 +114,148 @@
     }
     .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
+
+    .product-image-carousel {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      margin-bottom: 18px;
+      border-radius: 14px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at center, rgba(0, 242, 254, 0.06), transparent 60%),
+        var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    .product-image-track {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      transition: transform 0.3s ease;
+    }
+
+    .product-image-slide {
+      min-width: 100%;
+      width: 100%;
+      height: 100%;
+      flex: 0 0 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .product-image-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product-carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(7, 9, 14, 0.72);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 3;
+      transition: all 0.2s ease;
+      opacity: 0.92;
+    }
+
+    .product-carousel-arrow:hover {
+      background: rgba(0, 242, 254, 0.16);
+      border-color: rgba(0, 242, 254, 0.5);
+    }
+
+    .product-carousel-arrow.prev { left: 10px; }
+    .product-carousel-arrow.next { right: 10px; }
+
+    .product-carousel-arrow.is-hidden {
+      display: none;
+    }
+
+    .product-carousel-dots {
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 5px;
+      padding: 5px 7px;
+      background: rgba(7, 9, 14, 0.65);
+      backdrop-filter: blur(8px);
+      border-radius: 999px;
+      z-index: 3;
+    }
+
+    .product-carousel-dot {
+      width: 6px;
+      height: 6px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      cursor: pointer;
+    }
+
+    .product-carousel-dot.active {
+      background: var(--accent-cyan);
+      transform: scale(1.2);
+    }
+
+    .product-image-count {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 3;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: rgba(7, 9, 14, 0.68);
+      color: var(--text-dim);
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
     .water-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
     }
 
     .water-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px 20px;
+      border-radius: 18px;
+      padding: 22px;
       text-align: left;
-      cursor: pointer;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      min-height: 290px;
     }
-    .water-card:hover { 
-      background: var(--surface-hover); 
-      border-color: var(--text-muted);
-      transform: translateY(-2px); 
+
+    .water-card:hover {
+      background: var(--surface-hover);
+      border-color: rgba(0, 242, 254, 0.35);
+      transform: translateY(-2px);
     }
-    .water-card.selected { 
-      background: var(--surface-card); 
+
+    .water-card.in-cart {
       border-color: var(--accent-cyan);
       box-shadow: 0 0 25px var(--accent-glow);
     }
@@ -153,10 +269,201 @@
       margin-bottom: 12px;
       display: block;
     }
-    
-    .water-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .water-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px; }
+
+    .water-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+    .water-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5; }
     .water-price { font-size: 1.35rem; font-weight: 800; color: var(--text); }
+
+    .card-bottom {
+      margin-top: auto;
+      padding-top: 18px;
+    }
+
+    .card-qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card-qty-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 700;
+    }
+
+    .card-qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 5px 8px;
+      border-radius: 999px;
+    }
+
+    .card-qty-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .card-qty-btn:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .card-qty-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .add-cart-btn {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 14px;
+      background: var(--accent-gradient);
+      color: #000;
+      font-size: 0.86rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      letter-spacing: 0.2px;
+    }
+
+    .add-cart-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .add-cart-btn.added {
+      background: rgba(16, 185, 129, 0.16);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .cart-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-top: 22px;
+    }
+
+    .cart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .cart-header h3 {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .cart-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.18);
+      color: var(--accent-cyan);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .cart-empty {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      padding: 8px 0;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cart-item:last-child { border-bottom: 0; }
+
+    .cart-item-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .cart-item-meta {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 3px;
+    }
+
+    .cart-item-total {
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .remove-cart-btn {
+      border: 0;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.78rem;
+    }
+
+    .remove-cart-btn:hover { color: #fff; }
+
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      margin-top: 4px;
+      border-top: 1px solid var(--border);
+    }
+
+    .cart-total-row span:first-child {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .cart-total-row span:last-child {
+      color: var(--accent-cyan);
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    @media (max-width: 620px) {
+      .water-grid { grid-template-columns: 1fr; }
+      .water-card { min-height: 0; }
+      .cart-item { grid-template-columns: 1fr auto; }
+      .cart-item .remove-cart-btn { grid-column: 2; grid-row: 1; }
+      .cart-item-total { grid-column: 2; grid-row: 2; }
+    }
 
     .panel {
       background: var(--surface);
@@ -266,64 +573,146 @@
     </div>
 
     <form id="waterForm">
-      <input type="hidden" name="Selected_Water_Type" id="input-water-type" value="Standard Mineral (20L)">
-      <input type="hidden" name="Unit_Price" id="input-unit-price" value="3.50">
-      <input type="hidden" name="Total_Estimated_Bill" id="input-total-bill" value="$3.50">
 
-      <div class="section-label">01 / Choose Water Type</div>
+      <div class="section-label">01 / Choose Your Water</div>
+
+      <!--
+        Product images:
+        Edit the data-images array on each .product-image-carousel.
+        You can use ANY number of images, for example:
+        data-images='["images/product-1.jpg","images/product-2.jpg","images/product-3.jpg","images/product-4.jpg"]'
+        or full URLs such as:
+        data-images='["https://example.com/a.jpg","https://example.com/b.jpg"]'
+      -->
       <div class="water-grid">
-        <div class="water-card selected" onclick="selectWater('Standard Mineral (20L)', 3.50, this)">
-          <div>
-            <span class="badge-type">RO Filtered</span>
-            <div class="water-title">Standard 20L</div>
-            <div class="water-desc">Ultra-pure multi-stage refill</div>
+        <div class="water-card" data-name="Standard Mineral (20L)" data-price="3.50">
+          <div class="product-image-carousel" data-images='["images/standard-20l-1.jpg","images/standard-20l-2.jpg","images/standard-20l-3.jpg"]'>
+            <div class="product-image-track"></div>
+            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
+            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
+            <div class="product-carousel-dots"></div>
+            <div class="product-image-count"></div>
           </div>
-          <div class="water-price">$3.50</div>
+
+          <span class="badge-type">RO Filtered</span>
+          <div class="water-title">Standard 20L</div>
+          <div class="water-desc">Ultra-pure multi-stage refill for everyday hydration.</div>
+          <div class="water-price">$3.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ can</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
         </div>
 
-        <div class="water-card" onclick="selectWater('Copper Charged (20L)', 4.50, this)">
-          <div>
-            <span class="badge-type">Infused</span>
-            <div class="water-title">Copper 20L</div>
-            <div class="water-desc">Active copper ion boost</div>
+        <div class="water-card" data-name="Copper Charged (20L)" data-price="4.50">
+          <div class="product-image-carousel" data-images='["images/copper-20l-1.jpg","images/copper-20l-2.jpg","images/copper-20l-3.jpg","images/copper-20l-4.jpg"]'>
+            <div class="product-image-track"></div>
+            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
+            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
+            <div class="product-carousel-dots"></div>
+            <div class="product-image-count"></div>
           </div>
-          <div class="water-price">$4.50</div>
+
+          <span class="badge-type">Infused</span>
+          <div class="water-title">Copper 20L</div>
+          <div class="water-desc">Active copper ion boost with a premium mineral profile.</div>
+          <div class="water-price">$4.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ can</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
         </div>
 
-        <div class="water-card" onclick="selectWater('Alkaline pH 8+ (20L)', 5.50, this)">
-          <div>
-            <span class="badge-type">High pH</span>
-            <div class="water-title">Alkaline 20L</div>
-            <div class="water-desc">Electrolyte enhanced pH 8+</div>
+        <div class="water-card" data-name="Alkaline pH 8+ (20L)" data-price="5.50">
+          <div class="product-image-carousel" data-images='["images/alkaline-20l-1.jpg","images/alkaline-20l-2.jpg"]'>
+            <div class="product-image-track"></div>
+            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
+            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
+            <div class="product-carousel-dots"></div>
+            <div class="product-image-count"></div>
           </div>
-          <div class="water-price">$5.50</div>
+
+          <span class="badge-type">High pH</span>
+          <div class="water-title">Alkaline 20L</div>
+          <div class="water-desc">Electrolyte-enhanced water with pH 8+.</div>
+          <div class="water-price">$5.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ can</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
         </div>
 
-        <div class="water-card" onclick="selectWater('Dispensable 10L Bottle', 2.50, this)">
-          <div>
-            <span class="badge-type">Built-in Tap</span>
-            <div class="water-title">Easy-Tap 10L</div>
-            <div class="water-desc">Dispensable compact jar</div>
+        <div class="water-card" data-name="Dispensable 10L Bottle" data-price="2.50">
+          <div class="product-image-carousel" data-images='["images/easy-tap-10l-1.jpg","images/easy-tap-10l-2.jpg","images/easy-tap-10l-3.jpg"]'>
+            <div class="product-image-track"></div>
+            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
+            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
+            <div class="product-carousel-dots"></div>
+            <div class="product-image-count"></div>
           </div>
-          <div class="water-price">$2.50</div>
+
+          <span class="badge-type">Built-in Tap</span>
+          <div class="water-title">Easy-Tap 10L</div>
+          <div class="water-desc">Compact dispensable bottle with a convenient built-in tap.</div>
+          <div class="water-price">$2.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
         </div>
       </div>
 
-      <div class="panel">
-        <div class="qty-row">
-          <div>
-            <strong style="font-size: 1rem; font-weight: 700;">Quantity</strong>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;" id="selected-type-display">Standard Mineral (20L)</p>
-          </div>
-          <div class="qty-controls">
-            <button type="button" class="qty-btn" onclick="updateQty(-1)">-</button>
-            <span class="qty-val" id="qty-display">1</span>
-            <button type="button" class="qty-btn" onclick="updateQty(1)">+</button>
-          </div>
+      <div class="cart-panel">
+        <div class="cart-header">
+          <h3>🛒 Your Cart</h3>
+          <span class="cart-count" id="cart-count">0</span>
         </div>
-        <input type="hidden" name="Quantity" id="qty-input" value="1">
+        <div id="cart-items">
+          <div class="cart-empty">Your cart is empty. Choose a quantity and add products above.</div>
+        </div>
+        <div class="cart-total-row">
+          <span>Cart Total</span>
+          <span id="cart-total">$0.00</span>
+        </div>
+      </div>
 
-        <div class="checkbox-group">
+      <input type="hidden" name="Cart_Items" id="cart-items-input" value="">
+      <input type="hidden" name="Total_Estimated_Bill" id="input-total-bill" value="$0.00">
+
+      <div class="panel" style="margin-top: 24px;">
+        <div class="checkbox-group" style="margin-top:0;padding-top:0;border-top:0;">
           <input type="checkbox" id="emptyReturn" name="Empty_Jars_To_Return" value="Yes" checked>
           <label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
         </div>
@@ -363,7 +752,7 @@
 
         <div class="total-banner">
           <span class="total-label">Total Due on Delivery</span>
-          <span class="total-price" id="total-display">$3.50</span>
+          <span class="total-price" id="total-display">$0.00</span>
         </div>
 
         <button type="submit" class="submit-btn">PLACE ORDER (PAY ON DELIVERY)</button>
@@ -380,39 +769,204 @@
   </div>
 
   <script>
-    let currentPrice = 3.50;
-    let currentQuantity = 1;
 
-    function selectWater(name, price, element) {
-      document.querySelectorAll('.water-card').forEach(card => card.classList.remove('selected'));
-      element.classList.add('selected');
+    function initProductCarousels() {
+      document.querySelectorAll('.product-image-carousel').forEach(carousel => {
+        const images = JSON.parse(carousel.dataset.images || '[]');
+        const track = carousel.querySelector('.product-image-track');
+        const dots = carousel.querySelector('.product-carousel-dots');
+        const count = carousel.querySelector('.product-image-count');
+        const prev = carousel.querySelector('.product-carousel-arrow.prev');
+        const next = carousel.querySelector('.product-carousel-arrow.next');
 
-      currentPrice = price;
-      document.getElementById('input-water-type').value = name;
-      document.getElementById('input-unit-price').value = price.toFixed(2);
-      document.getElementById('selected-type-display').innerText = name;
-      
-      recalculateTotal();
+        if (!images.length) {
+          track.innerHTML = `
+            <div class="product-image-slide">
+              <div style="color:var(--text-muted);font-size:.8rem;">Add product images</div>
+            </div>`;
+          prev.classList.add('is-hidden');
+          next.classList.add('is-hidden');
+          count.textContent = '0 photos';
+          return;
+        }
+
+        track.innerHTML = images.map((src, index) => `
+          <div class="product-image-slide">
+            <img src="${escapeHtml(src)}"
+                 alt="Product image ${index + 1}"
+                 loading="${index === 0 ? 'eager' : 'lazy'}"
+                 onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;color:var(--text-muted);font-size:.78rem;padding:20px;text-align:center;&quot;>Image unavailable</div>';">
+          </div>
+        `).join('');
+
+        dots.innerHTML = images.map((_, index) => `
+          <button type="button"
+                  class="product-carousel-dot${index === 0 ? ' active' : ''}"
+                  aria-label="Go to image ${index + 1}"
+                  onclick="goToProductImage(this, ${index})"></button>
+        `).join('');
+
+        count.textContent = `${images.length} ${images.length === 1 ? 'photo' : 'photos'}`;
+        carousel.dataset.index = '0';
+
+        // One-image carousels don't need arrows/dots.
+        if (images.length <= 1) {
+          prev.classList.add('is-hidden');
+          next.classList.add('is-hidden');
+          dots.style.display = 'none';
+        }
+      });
     }
 
-    function updateQty(change) {
-      currentQuantity = Math.max(1, currentQuantity + change);
-      document.getElementById('qty-display').innerText = currentQuantity;
-      document.getElementById('qty-input').value = currentQuantity;
-      
-      recalculateTotal();
+    function getCarouselData(carousel) {
+      const images = JSON.parse(carousel.dataset.images || '[]');
+      const index = parseInt(carousel.dataset.index || '0', 10) || 0;
+      return { images, index };
     }
 
-    function recalculateTotal() {
-      const total = (currentPrice * currentQuantity).toFixed(2);
-      document.getElementById('total-display').innerText = '$' + total;
-      document.getElementById('input-total-bill').value = '$' + total;
+    function renderCarousel(carousel, newIndex) {
+      const { images } = getCarouselData(carousel);
+      if (!images.length) return;
+
+      const index = (newIndex + images.length) % images.length;
+      carousel.dataset.index = String(index);
+
+      const track = carousel.querySelector('.product-image-track');
+      track.style.transform = `translateX(-${index * 100}%)`;
+
+      carousel.querySelectorAll('.product-carousel-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
+
+    function changeProductImage(button, direction) {
+      const carousel = button.closest('.product-image-carousel');
+      const { images, index } = getCarouselData(carousel);
+      if (images.length <= 1) return;
+      renderCarousel(carousel, index + direction);
+    }
+
+    function goToProductImage(button, index) {
+      const carousel = button.closest('.product-image-carousel');
+      renderCarousel(carousel, index);
+    }
+
+
+    const cart = {};
+
+    function changeCardQty(button, change) {
+      const controls = button.closest('.card-qty-controls');
+      const valueEl = controls.querySelector('.card-qty-value');
+      const current = parseInt(valueEl.textContent, 10) || 1;
+      valueEl.textContent = Math.max(1, current + change);
+    }
+
+    function addToCart(button) {
+      const card = button.closest('.water-card');
+      const name = card.dataset.name;
+      const price = parseFloat(card.dataset.price);
+      const qty = parseInt(card.querySelector('.card-qty-value').textContent, 10) || 1;
+
+      if (cart[name]) {
+        cart[name].qty += qty;
+      } else {
+        cart[name] = { name, price, qty };
+      }
+
+      button.classList.add('added');
+      button.innerText = '✓ ADDED TO CART';
+      card.classList.add('in-cart');
+
+      setTimeout(() => {
+        button.classList.remove('added');
+        button.innerText = 'ADD TO CART';
+      }, 900);
+
+      renderCart();
+    }
+
+    function removeFromCart(name) {
+      delete cart[name];
+      const card = [...document.querySelectorAll('.water-card')]
+        .find(el => el.dataset.name === name);
+
+      if (card) {
+        card.classList.remove('in-cart');
+      }
+
+      renderCart();
+    }
+
+    function renderCart() {
+      const items = Object.values(cart);
+      const cartItemsEl = document.getElementById('cart-items');
+      const cartCountEl = document.getElementById('cart-count');
+      const cartTotalEl = document.getElementById('cart-total');
+      const totalDisplayEl = document.getElementById('total-display');
+      const totalInputEl = document.getElementById('input-total-bill');
+      const cartItemsInputEl = document.getElementById('cart-items-input');
+
+      if (!items.length) {
+        cartItemsEl.innerHTML = '<div class="cart-empty">Your cart is empty. Choose a quantity and add products above.</div>';
+        cartCountEl.textContent = '0';
+        cartTotalEl.textContent = '$0.00';
+        totalDisplayEl.textContent = '$0.00';
+        totalInputEl.value = '$0.00';
+        cartItemsInputEl.value = '';
+        return;
+      }
+
+      let total = 0;
+      let count = 0;
+
+      cartItemsEl.innerHTML = items.map(item => {
+        const lineTotal = item.price * item.qty;
+        total += lineTotal;
+        count += item.qty;
+
+        return `
+          <div class="cart-item">
+            <div>
+              <div class="cart-item-name">${escapeHtml(item.name)}</div>
+              <div class="cart-item-meta">${item.qty} × $${item.price.toFixed(2)}</div>
+            </div>
+            <div class="cart-item-total">$${lineTotal.toFixed(2)}</div>
+            <button type="button" class="remove-cart-btn" onclick="removeFromCart(${JSON.stringify(item.name)})">Remove</button>
+          </div>
+        `;
+      }).join('');
+
+      cartCountEl.textContent = count;
+      cartTotalEl.textContent = '$' + total.toFixed(2);
+      totalDisplayEl.textContent = '$' + total.toFixed(2);
+      totalInputEl.value = '$' + total.toFixed(2);
+      cartItemsInputEl.value = items
+        .map(item => `${item.name} x ${item.qty} ($${(item.price * item.qty).toFixed(2)})`)
+        .join(' | ');
+    }
+
+    initProductCarousels();
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char]));
     }
 
     // Submit order via Cloudflare Worker -> Fast2SMS
 const form = document.getElementById('waterForm');
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
+
+  if (Object.keys(cart).length === 0) {
+    alert('Please add at least one product to your cart.');
+    return;
+  }
+
   const submitBtn = form.querySelector('.submit-btn');
   submitBtn.innerText = 'DISPATCHING SMS...';
   submitBtn.disabled = true;
@@ -424,8 +978,8 @@ form.addEventListener('submit', async function(e) {
     phone: document.getElementById('customer-phone').value,
     address: document.getElementById('customer-address').value,
     notes: document.getElementById('landmark-notes').value || 'None',
-    waterType: document.getElementById('input-water-type').value,
-    qty: document.getElementById('qty-input').value,
+    cart: document.getElementById('cart-items-input').value,
+    qty: document.getElementById('cart-count').textContent,
     bill: document.getElementById('input-total-bill').value,
     time: document.getElementById('preferred-time').value
   };
