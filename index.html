@@ -3,136 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AQUA / EXPRESS — Ultra-Pure Water Delivery</title>
+  <title>NEER BEKUUU — Express Water Delivery</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #07090e;
-      --surface: #0f141f;
-      --surface-card: #161c2a;
-      --surface-hover: #1e2638;
-      --border: rgba(255, 255, 255, 0.08);
+      /* Frosted Glass Base Palette */
+      --glass-bg: rgba(255, 255, 255, 0.45);
+      --glass-bg-hover: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
       
-      --text: #f8fafc;
-      --text-muted: #64748b;
-      --text-dim: #94a3b8;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #334155;
       
-      --accent-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-      --accent-glow: rgba(0, 242, 254, 0.15);
-      --accent-cyan: #00f2fe;
+      --accent-gradient: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+      --accent-cyan: #0284c7;
       --success: #10b981;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
+    
+    body { 
+      /* Ambient glowing background for glass effect */
+      background: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.25) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.2) 0%, transparent 40%),
+                  linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #e0f2fe 100%);
+      background-attachment: fixed;
+      color: var(--text); 
+      padding-bottom: 80px; 
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased; 
+    }
 
     header {
-      background: rgba(7, 9, 14, 0.75);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(224, 242, 254, 0.1) 100%);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      padding: 18px 32px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 14px 32px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 4px 30px rgba(2, 132, 199, 0.06);
     }
 
     .brand { 
-      font-size: 1.1rem; 
+      font-size: 1.25rem; 
       font-weight: 800; 
-      letter-spacing: 2px; 
+      letter-spacing: 0.5px; 
       text-transform: uppercase; 
       background: var(--accent-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-    }
-
-    .call-btn {
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      border: 1px solid var(--border);
-      text-decoration: none;
-      padding: 10px 20px;
-      border-radius: 100px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .call-btn:hover { 
-      border-color: var(--accent-cyan);
-      box-shadow: 0 0 20px var(--accent-glow);
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .container { max-width: 820px; margin: 0 auto; padding: 0 20px; }
+    .contact-help-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-    .hero { text-align: center; padding: 50px 0 30px; }
+    .contact-sub-link {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .contact-sub-link:hover {
+      background: rgba(255, 255, 255, 0.5);
+      color: #0f172a;
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+    .hero { text-align: center; padding: 40px 0 20px; }
     .hero-tag {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(0, 242, 254, 0.06);
-      border: 1px solid rgba(0, 242, 254, 0.2);
-      color: var(--accent-cyan);
-      padding: 6px 16px;
+      background: rgba(224, 242, 254, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(186, 230, 253, 0.8);
+      color: #0369a1;
+      padding: 8px 18px;
       border-radius: 100px;
       font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 1px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.05);
     }
     .hero h1 { 
-      font-size: 2.75rem; 
+      font-size: 2.8rem; 
       font-weight: 800; 
-      line-height: 1.15; 
-      letter-spacing: -1px;
-      margin-bottom: 14px; 
-      background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      line-height: 1.2; 
+      letter-spacing: -0.5px;
+      margin-bottom: 12px; 
+      color: #0f172a;
     }
-    .hero p { color: var(--text-dim); font-size: 1.05rem; font-weight: 400; max-width: 480px; margin: 0 auto; }
+    .hero p { color: var(--text-muted); font-size: 1.05rem; font-weight: 500; max-width: 540px; margin: 0 auto; line-height: 1.5; }
 
     .section-label { 
       font-size: 0.8rem; 
       text-transform: uppercase; 
       letter-spacing: 1.5px; 
-      color: var(--text-muted); 
-      font-weight: 700; 
-      margin: 40px 0 16px; 
+      color: #0369a1; 
+      font-weight: 800; 
+      margin: 36px 0 18px; 
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
+    .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(148, 163, 184, 0.4); }
 
     .product-image-carousel {
       position: relative;
       width: 100%;
       aspect-ratio: 1 / 1;
-      margin-bottom: 18px;
-      border-radius: 14px;
+      margin-bottom: 16px;
+      border-radius: 16px;
       overflow: hidden;
-      background:
-        radial-gradient(circle at center, rgba(0, 242, 254, 0.06), transparent 60%),
-        var(--bg);
-      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.4);
+      border: 1px solid var(--glass-border);
     }
 
     .product-image-track {
       width: 100%;
       height: 100%;
       display: flex;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .product-image-slide {
@@ -144,12 +173,14 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      background: rgba(255, 255, 255, 0.3);
     }
 
     .product-image-slide img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      padding: 12px;
       display: block;
     }
 
@@ -157,35 +188,32 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(7, 9, 14, 0.72);
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(8px);
-      color: #fff;
+      color: #0f172a;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.35rem;
+      font-size: 1.2rem;
       line-height: 1;
       cursor: pointer;
       z-index: 3;
       transition: all 0.2s ease;
-      opacity: 0.92;
     }
 
     .product-carousel-arrow:hover {
-      background: rgba(0, 242, 254, 0.16);
-      border-color: rgba(0, 242, 254, 0.5);
+      background: #0284c7;
+      color: #fff;
+      border-color: #0284c7;
     }
 
-    .product-carousel-arrow.prev { left: 10px; }
-    .product-carousel-arrow.next { right: 10px; }
-
-    .product-carousel-arrow.is-hidden {
-      display: none;
-    }
+    .product-carousel-arrow.prev { left: 8px; }
+    .product-carousel-arrow.next { right: 8px; }
+    .product-carousel-arrow.is-hidden { display: none; }
 
     .product-carousel-dots {
       position: absolute;
@@ -193,11 +221,12 @@
       bottom: 10px;
       transform: translateX(-50%);
       display: flex;
-      gap: 5px;
-      padding: 5px 7px;
-      background: rgba(7, 9, 14, 0.65);
+      gap: 6px;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(8px);
       border-radius: 999px;
+      border: 1px solid var(--glass-border);
       z-index: 3;
     }
 
@@ -207,13 +236,14 @@
       padding: 0;
       border: 0;
       border-radius: 50%;
-      background: rgba(255,255,255,0.35);
+      background: #94a3b8;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     .product-carousel-dot.active {
       background: var(--accent-cyan);
-      transform: scale(1.2);
+      transform: scale(1.3);
     }
 
     .product-image-count {
@@ -221,62 +251,66 @@
       top: 10px;
       right: 10px;
       z-index: 3;
-      padding: 5px 8px;
+      padding: 4px 10px;
       border-radius: 999px;
-      background: rgba(7, 9, 14, 0.68);
-      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
       font-size: 0.65rem;
       font-weight: 700;
-      letter-spacing: 0.3px;
     }
 
     .water-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      gap: 20px;
     }
 
     .water-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 22px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 20px;
       text-align: left;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       display: flex;
       flex-direction: column;
-      min-height: 290px;
+      box-shadow: var(--glass-shadow);
     }
 
     .water-card:hover {
-      background: var(--surface-hover);
-      border-color: rgba(0, 242, 254, 0.35);
-      transform: translateY(-2px);
+      background: var(--glass-bg-hover);
+      border-color: rgba(56, 189, 248, 0.8);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px 0 rgba(2, 132, 199, 0.15);
     }
 
     .water-card.in-cart {
       border-color: var(--accent-cyan);
-      box-shadow: 0 0 25px var(--accent-glow);
+      background: rgba(224, 242, 254, 0.6);
     }
 
     .water-card .badge-type {
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
       letter-spacing: 1px;
-      font-weight: 700;
-      color: var(--accent-cyan);
-      margin-bottom: 12px;
+      font-weight: 800;
+      color: #0284c7;
+      margin-bottom: 10px;
       display: block;
     }
 
-    .water-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 5px; }
-    .water-desc { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.5; }
-    .water-price { font-size: 1.35rem; font-weight: 800; color: var(--text); }
+    .water-title { font-size: 1.15rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .water-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; font-weight: 500; }
+    .water-price { font-size: 1.4rem; font-weight: 800; color: #0369a1; }
 
     .card-bottom {
       margin-top: auto;
-      padding-top: 18px;
+      padding-top: 16px;
     }
 
     .card-qty-row {
@@ -284,85 +318,90 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
     .card-qty-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
     .card-qty-controls {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 5px 8px;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--glass-border);
+      padding: 4px 8px;
       border-radius: 999px;
     }
 
     .card-qty-btn {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       border: none;
-      background: rgba(255, 255, 255, 0.05);
+      background: #ffffff;
       color: var(--text);
       font-size: 1.1rem;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
-    .card-qty-btn:hover {
-      background: var(--text);
-      color: var(--bg);
-    }
+    .card-qty-btn:hover { background: var(--accent-cyan); color: #ffffff; }
 
     .card-qty-value {
       font-size: 0.95rem;
-      font-weight: 700;
-      min-width: 22px;
+      font-weight: 800;
+      min-width: 20px;
       text-align: center;
+      color: #0f172a;
     }
 
     .add-cart-btn {
       width: 100%;
       border: none;
-      border-radius: 12px;
-      padding: 13px 14px;
+      border-radius: 14px;
+      padding: 14px;
       background: var(--accent-gradient);
-      color: #000;
-      font-size: 0.86rem;
+      color: #ffffff;
+      font-size: 0.88rem;
       font-weight: 800;
       cursor: pointer;
       transition: all 0.25s ease;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
     }
 
     .add-cart-btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 0 20px var(--accent-glow);
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
     }
 
     .add-cart-btn.added {
-      background: rgba(16, 185, 129, 0.16);
-      color: #6ee7b7;
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
-    .cart-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
+    .cart-panel, .panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
       padding: 24px;
-      margin-top: 22px;
+      margin-top: 24px;
+      box-shadow: var(--glass-shadow);
     }
 
     .cart-header {
@@ -370,13 +409,10 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 16px;
     }
 
-    .cart-header h3 {
-      font-size: 1rem;
-      font-weight: 800;
-    }
+    .cart-header h3 { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
 
     .cart-count {
       display: inline-flex;
@@ -386,207 +422,162 @@
       height: 28px;
       padding: 0 8px;
       border-radius: 999px;
-      background: rgba(0, 242, 254, 0.1);
-      border: 1px solid rgba(0, 242, 254, 0.18);
-      color: var(--accent-cyan);
-      font-size: 0.75rem;
+      background: rgba(224, 242, 254, 0.8);
+      border: 1px solid rgba(186, 230, 253, 0.8);
+      color: #0369a1;
+      font-size: 0.78rem;
       font-weight: 800;
     }
 
-    .cart-empty {
-      color: var(--text-muted);
-      font-size: 0.86rem;
-      padding: 8px 0;
-    }
+    .cart-empty { color: var(--text-muted); font-size: 0.9rem; padding: 12px 0; font-weight: 500; }
 
     .cart-item {
       display: grid;
       grid-template-columns: 1fr auto auto;
       align-items: center;
       gap: 12px;
-      padding: 13px 0;
-      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.5);
     }
 
     .cart-item:last-child { border-bottom: 0; }
-
-    .cart-item-name {
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    .cart-item-meta {
-      color: var(--text-muted);
-      font-size: 0.75rem;
-      margin-top: 3px;
-    }
-
-    .cart-item-total {
-      font-size: 0.9rem;
-      font-weight: 800;
-    }
+    .cart-item-name { font-size: 0.92rem; font-weight: 700; color: #0f172a; }
+    .cart-item-meta { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; font-weight: 500; }
+    .cart-item-total { font-size: 0.95rem; font-weight: 800; color: #0369a1; }
 
     .remove-cart-btn {
       border: 0;
       background: transparent;
-      color: var(--text-muted);
+      color: #ef4444;
       cursor: pointer;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
     }
-
-    .remove-cart-btn:hover { color: #fff; }
+    .remove-cart-btn:hover { background: rgba(254, 226, 226, 0.6); }
 
     .cart-total-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 16px;
-      margin-top: 4px;
-      border-top: 1px solid var(--border);
+      padding-top: 18px;
+      margin-top: 6px;
+      border-top: 2px dashed rgba(203, 213, 225, 0.6);
     }
 
-    .cart-total-row span:first-child {
-      color: var(--text-dim);
-      font-size: 0.88rem;
-      font-weight: 700;
-    }
+    .cart-total-row span:first-child { color: var(--text-dim); font-size: 0.95rem; font-weight: 700; }
+    .cart-total-row span:last-child { color: #0284c7; font-size: 1.3rem; font-weight: 800; }
 
-    .cart-total-row span:last-child {
-      color: var(--accent-cyan);
-      font-size: 1.2rem;
-      font-weight: 800;
-    }
-
-    @media (max-width: 620px) {
-      .water-grid { grid-template-columns: 1fr; }
-      .water-card { min-height: 0; }
-      .cart-item { grid-template-columns: 1fr auto; }
-      .cart-item .remove-cart-btn { grid-column: 2; grid-row: 1; }
-      .cart-item-total { grid-column: 2; grid-row: 2; }
-    }
-
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px;
-      margin-top: 24px;
-    }
-
-    .qty-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .qty-controls { 
-      display: flex; 
-      align-items: center; 
-      gap: 14px; 
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 100px;
-    }
-    .qty-btn {
-      width: 32px; height: 32px; border-radius: 50%; border: none;
-      background: rgba(255, 255, 255, 0.05); color: var(--text); font-size: 1.2rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s ease;
-    }
-    .qty-btn:hover { background: var(--text); color: var(--bg); }
-    .qty-val { font-size: 1.1rem; font-weight: 700; min-width: 24px; text-align: center; }
-
-    .checkbox-group { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
-    .checkbox-group input { 
-      width: 18px; height: 18px; 
-      accent-color: var(--accent-cyan);
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .checkbox-group label { font-size: 0.88rem; color: var(--text-dim); cursor: pointer; }
+    .checkbox-group { display: flex; align-items: center; gap: 12px; }
+    .checkbox-group input { width: 20px; height: 20px; accent-color: var(--accent-cyan); border-radius: 6px; cursor: pointer; }
+    .checkbox-group label { font-size: 0.9rem; color: var(--text-dim); cursor: pointer; font-weight: 600; }
 
     .form-group { margin-bottom: 20px; }
-    label { display: block; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; color: var(--text-dim); }
+    label { display: block; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; color: var(--text-dim); }
+    
     input, select, textarea {
-      width: 100%; padding: 16px; border: 1px solid var(--border);
-      border-radius: 12px; font-size: 0.95rem; background: var(--bg); color: var(--text);
+      width: 100%; 
+      padding: 14px 16px; 
+      border: 1.5px solid var(--glass-border);
+      border-radius: 14px; 
+      font-size: 0.95rem; 
+      background: rgba(255, 255, 255, 0.5); 
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      font-weight: 500;
       transition: all 0.2s ease;
     }
-    input::placeholder, textarea::placeholder { color: var(--text-muted); }
+    input::placeholder, textarea::placeholder { color: #94a3b8; }
     input:focus, select:focus, textarea:focus { 
       outline: none; 
+      background: rgba(255, 255, 255, 0.85);
       border-color: var(--accent-cyan); 
-      box-shadow: 0 0 15px var(--accent-glow);
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
     }
 
     .total-banner {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: var(--surface-card);
-      border: 1px solid var(--border);
+      background: rgba(224, 242, 254, 0.5);
+      border: 1px solid rgba(186, 230, 253, 0.8);
       padding: 20px 24px;
-      border-radius: 14px;
+      border-radius: 16px;
       margin: 28px 0 20px;
     }
-    .total-label { font-size: 0.9rem; font-weight: 600; color: var(--text-dim); }
-    .total-price { font-size: 1.6rem; font-weight: 800; color: var(--accent-cyan); }
+    .total-label { font-size: 0.95rem; font-weight: 700; color: #0369a1; }
+    .total-price { font-size: 1.65rem; font-weight: 800; color: #0284c7; }
 
     .submit-btn {
       width: 100%; 
       background: var(--accent-gradient); 
-      color: #000;
+      color: #ffffff;
       border: none; 
-      padding: 20px; 
-      border-radius: 14px; 
-      font-size: 1rem;
+      padding: 18px; 
+      border-radius: 16px; 
+      font-size: 1.05rem;
       font-weight: 800; 
       letter-spacing: 0.5px;
       cursor: pointer; 
       transition: all 0.3s ease;
-      box-shadow: 0 0 30px var(--accent-glow);
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.35);
     }
     .submit-btn:hover { 
       opacity: 0.95;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(2, 132, 199, 0.45);
     }
 
     .hidden { display: none; }
     .confirmation { text-align: center; padding: 60px 20px; }
-    .confirmation h2 { color: var(--success); font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; }
+    .confirmation h2 { color: var(--success); font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
+
+    @media (max-width: 620px) {
+      header { padding: 12px 16px; }
+      .contact-help-label { display: none; }
+      .water-grid { grid-template-columns: 1fr; }
+      .water-card { padding: 18px; }
+      .cart-item { grid-template-columns: 1fr auto; }
+      .cart-item .remove-cart-btn { grid-column: 2; grid-row: 1; justify-self: end; }
+      .cart-item-total { grid-column: 2; grid-row: 2; }
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="brand">AQUA / EXPRESS</div>
-    <a href="tel:+919946011357" class="call-btn">
-      <span>📞</span> Express Counter
-    </a>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#0284c7;"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+      NEER BEKUUU
+    </div>
+    <div class="header-actions">
+      <span class="contact-help-label">Need Help?</span>
+      <a href="tel:+918884749700" class="contact-sub-link">
+        <span>📞</span> Call
+      </a>
+      <a href="https://wa.me/918884749700" target="_blank" rel="noopener noreferrer" class="contact-sub-link">
+        <span>💬</span> WhatsApp
+      </a>
+    </div>
   </header>
 
   <div class="container" id="order-screen">
     <div class="hero">
-      <div class="hero-tag">⚡ Instant Doorstep Delivery</div>
-      <h1>Hydration, Delivered Better.</h1>
-      <p>Select your premium water jar. Zero accounts, effortless payment on delivery.</p>
+      <div class="hero-tag">💧 Pure & Hydrating • Direct Home Delivery</div>
+      <h1>NEER BEKUUU</h1>
+      <p>Select your water cans below, add them to your cart, and place your order online for fast doorstep delivery.</p>
     </div>
 
     <form id="waterForm">
 
-      <div class="section-label">01 / Choose Your Water</div>
+      <div class="section-label">01 / Choose Water & Accessories</div>
 
-      <!--
-        Product images:
-        Edit the data-images array on each .product-image-carousel.
-        You can use ANY number of images, for example:
-        data-images='["images/product-1.jpg","images/product-2.jpg","images/product-3.jpg","images/product-4.jpg"]'
-        or full URLs such as:
-        data-images='["https://example.com/a.jpg","https://example.com/b.jpg"]'
-      -->
       <div class="water-grid">
-        <div class="water-card" data-name="Standard Mineral (20L)" data-price="3.50">
-          <div class="product-image-carousel" data-images='["images/standard-20l-1.jpg","images/standard-20l-2.jpg","images/standard-20l-3.jpg"]'>
+        <!-- Product 1: 20L Standard Bubble Top Jar -->
+        <div class="water-card" data-name="20L Standard Bubble Top Jar" data-price="70">
+          <div class="product-image-carousel" data-images='["images/jar-20l-1.png","images/jar-20l-2.png"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
             <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
@@ -595,9 +586,9 @@
           </div>
 
           <span class="badge-type">RO Filtered</span>
-          <div class="water-title">Standard 20L</div>
-          <div class="water-desc">Ultra-pure multi-stage refill for everyday hydration.</div>
-          <div class="water-price">$3.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ can</span></div>
+          <div class="water-title">20L Standard Jar</div>
+          <div class="water-desc">Purified multi-stage RO water jar for daily home and office consumption.</div>
+          <div class="water-price">₹70 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ jar</span></div>
 
           <div class="card-bottom">
             <div class="card-qty-row">
@@ -612,8 +603,9 @@
           </div>
         </div>
 
-        <div class="water-card" data-name="Copper Charged (20L)" data-price="4.50">
-          <div class="product-image-carousel" data-images='["images/copper-20l-1.jpg","images/copper-20l-2.jpg","images/copper-20l-3.jpg","images/copper-20l-4.jpg"]'>
+        <!-- Product 2: Bailley 5L Packaged Jar -->
+        <div class="water-card" data-name="Bailley 5L Packaged Jar" data-price="65">
+          <div class="product-image-carousel" data-images='["images/bailley-5l-1.jpg","images/bailley-5l-2.jpg"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
             <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
@@ -621,10 +613,10 @@
             <div class="product-image-count"></div>
           </div>
 
-          <span class="badge-type">Infused</span>
-          <div class="water-title">Copper 20L</div>
-          <div class="water-desc">Active copper ion boost with a premium mineral profile.</div>
-          <div class="water-price">$4.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ can</span></div>
+          <span class="badge-type">Packaged Water</span>
+          <div class="water-title">Bailley 5L Bottle</div>
+          <div class="water-desc">Sealed 5L packaged drinking water bottle from Parle Agro Bailley.</div>
+          <div class="water-price">₹65 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
 
           <div class="card-bottom">
             <div class="card-qty-row">
@@ -639,8 +631,9 @@
           </div>
         </div>
 
-        <div class="water-card" data-name="Alkaline pH 8+ (20L)" data-price="5.50">
-          <div class="product-image-carousel" data-images='["images/alkaline-20l-1.jpg","images/alkaline-20l-2.jpg"]'>
+        <!-- Product 3: Manual Water Dispenser Hand Pump -->
+        <div class="water-card" data-name="Manual Water Dispenser Hand Pump" data-price="250">
+          <div class="product-image-carousel" data-images='["images/hand-pump-1.jpg","images/hand-pump-2.jpg"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
             <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
@@ -648,10 +641,10 @@
             <div class="product-image-count"></div>
           </div>
 
-          <span class="badge-type">High pH</span>
-          <div class="water-title">Alkaline 20L</div>
-          <div class="water-desc">Electrolyte-enhanced water with pH 8+.</div>
-          <div class="water-price">$5.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ can</span></div>
+          <span class="badge-type">Accessory</span>
+          <div class="water-title">Hand Pump Dispenser</div>
+          <div class="water-desc">Manual press pump machine compatible with 20L bubble top jars.</div>
+          <div class="water-price">₹250 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ piece</span></div>
 
           <div class="card-bottom">
             <div class="card-qty-row">
@@ -666,8 +659,9 @@
           </div>
         </div>
 
-        <div class="water-card" data-name="Dispensable 10L Bottle" data-price="2.50">
-          <div class="product-image-carousel" data-images='["images/easy-tap-10l-1.jpg","images/easy-tap-10l-2.jpg","images/easy-tap-10l-3.jpg"]'>
+        <!-- Product 4: Automatic Electric Water Pump -->
+        <div class="water-card" data-name="Automatic Electric Water Dispenser Pump" data-price="450">
+          <div class="product-image-carousel" data-images='["images/electric-pump-1.jpg","images/electric-pump-2.jpg"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
             <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
@@ -675,10 +669,10 @@
             <div class="product-image-count"></div>
           </div>
 
-          <span class="badge-type">Built-in Tap</span>
-          <div class="water-title">Easy-Tap 10L</div>
-          <div class="water-desc">Compact dispensable bottle with a convenient built-in tap.</div>
-          <div class="water-price">$2.50 <span style="font-size:.72rem;color:var(--text-muted);font-weight:500;">/ bottle</span></div>
+          <span class="badge-type">Rechargeable</span>
+          <div class="water-title">Electric Water Pump</div>
+          <div class="water-desc">USB rechargeable automatic water dispenser pump for 20L cans.</div>
+          <div class="water-price">₹450 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ piece</span></div>
 
           <div class="card-bottom">
             <div class="card-qty-row">
@@ -696,23 +690,23 @@
 
       <div class="cart-panel">
         <div class="cart-header">
-          <h3>🛒 Your Cart</h3>
+          <h3>🛒 Selected Items</h3>
           <span class="cart-count" id="cart-count">0</span>
         </div>
         <div id="cart-items">
-          <div class="cart-empty">Your cart is empty. Choose a quantity and add products above.</div>
+          <div class="cart-empty">Your cart is empty. Select items and quantities above to build your order.</div>
         </div>
         <div class="cart-total-row">
           <span>Cart Total</span>
-          <span id="cart-total">$0.00</span>
+          <span id="cart-total">₹0.00</span>
         </div>
       </div>
 
       <input type="hidden" name="Cart_Items" id="cart-items-input" value="">
-      <input type="hidden" name="Total_Estimated_Bill" id="input-total-bill" value="$0.00">
+      <input type="hidden" name="Total_Estimated_Bill" id="input-total-bill" value="₹0.00">
 
-      <div class="panel" style="margin-top: 24px;">
-        <div class="checkbox-group" style="margin-top:0;padding-top:0;border-top:0;">
+      <div class="panel">
+        <div class="checkbox-group">
           <input type="checkbox" id="emptyReturn" name="Empty_Jars_To_Return" value="Yes" checked>
           <label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
         </div>
@@ -727,7 +721,7 @@
 
         <div class="form-group">
           <label for="customer-phone">Mobile Phone *</label>
-          <input type="tel" id="customer-phone" name="Customer_Phone" required autocomplete="tel" placeholder="e.g. 9876543210">
+          <input type="tel" id="customer-phone" name="Customer_Phone" required autocomplete="tel" placeholder="e.g. 8884749700">
         </div>
 
         <div class="form-group">
@@ -751,8 +745,8 @@
         </div>
 
         <div class="total-banner">
-          <span class="total-label">Total Due on Delivery</span>
-          <span class="total-price" id="total-display">$0.00</span>
+          <span class="total-label">Total Amount Due</span>
+          <span class="total-price" id="total-display">₹0.00</span>
         </div>
 
         <button type="submit" class="submit-btn">PLACE ORDER (PAY ON DELIVERY)</button>
@@ -762,14 +756,21 @@
 
   <div class="container hidden" id="thankyou-screen">
     <div class="panel confirmation">
-      <h2>✓ Order Dispatched!</h2>
-      <p style="color: var(--text-dim); margin-bottom: 24px;">Your request was received by our dispatch team. Expect your order shortly.</p>
+      <div style="font-size: 2.5rem; margin-bottom: 8px;">🎉</div>
+      <h2>Order Placed Successfully!</h2>
+      
+      <div style="background: rgba(224, 242, 254, 0.5); backdrop-filter: blur(12px); border: 1.5px dashed #0284c7; border-radius: 16px; padding: 20px; margin: 20px 0 24px; display: inline-block; width: 100%; max-width: 420px;">
+        <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; color: #0369a1; text-transform: uppercase; display: block; margin-bottom: 4px;">Your Order Reference ID</span>
+        <strong id="order-ref-code" style="font-size: 1.5rem; font-weight: 800; color: #0284c7; letter-spacing: 0.5px;">NEER-AQUA-0000</strong>
+        <p style="font-size: 0.8rem; color: #475569; margin-top: 6px; font-weight: 500;">Please mention this simple code if you call or contact us regarding your order.</p>
+      </div>
+
+      <p style="color: var(--text-muted); margin-bottom: 24px; font-weight: 500;">Your request has been dispatched. If needed, our team will reach out to you on <strong>+91 8884749700</strong>.</p>
       <button onclick="window.location.reload()" class="submit-btn" style="width: auto; padding: 14px 28px;">Place Another Order</button>
     </div>
   </div>
 
   <script>
-
     function initProductCarousels() {
       document.querySelectorAll('.product-image-carousel').forEach(carousel => {
         const images = JSON.parse(carousel.dataset.images || '[]');
@@ -809,7 +810,6 @@
         count.textContent = `${images.length} ${images.length === 1 ? 'photo' : 'photos'}`;
         carousel.dataset.index = '0';
 
-        // One-image carousels don't need arrows/dots.
         if (images.length <= 1) {
           prev.classList.add('is-hidden');
           next.classList.add('is-hidden');
@@ -850,7 +850,6 @@
       const carousel = button.closest('.product-image-carousel');
       renderCarousel(carousel, index);
     }
-
 
     const cart = {};
 
@@ -907,11 +906,11 @@
       const cartItemsInputEl = document.getElementById('cart-items-input');
 
       if (!items.length) {
-        cartItemsEl.innerHTML = '<div class="cart-empty">Your cart is empty. Choose a quantity and add products above.</div>';
+        cartItemsEl.innerHTML = '<div class="cart-empty">Your cart is empty. Select items and quantities above to build your order.</div>';
         cartCountEl.textContent = '0';
-        cartTotalEl.textContent = '$0.00';
-        totalDisplayEl.textContent = '$0.00';
-        totalInputEl.value = '$0.00';
+        cartTotalEl.textContent = '₹0.00';
+        totalDisplayEl.textContent = '₹0.00';
+        totalInputEl.value = '₹0.00';
         cartItemsInputEl.value = '';
         return;
       }
@@ -928,20 +927,20 @@
           <div class="cart-item">
             <div>
               <div class="cart-item-name">${escapeHtml(item.name)}</div>
-              <div class="cart-item-meta">${item.qty} × $${item.price.toFixed(2)}</div>
+              <div class="cart-item-meta">${item.qty} × ₹${item.price.toFixed(2)}</div>
             </div>
-            <div class="cart-item-total">$${lineTotal.toFixed(2)}</div>
+            <div class="cart-item-total">₹${lineTotal.toFixed(2)}</div>
             <button type="button" class="remove-cart-btn" onclick="removeFromCart(${JSON.stringify(item.name)})">Remove</button>
           </div>
         `;
       }).join('');
 
       cartCountEl.textContent = count;
-      cartTotalEl.textContent = '$' + total.toFixed(2);
-      totalDisplayEl.textContent = '$' + total.toFixed(2);
-      totalInputEl.value = '$' + total.toFixed(2);
+      cartTotalEl.textContent = '₹' + total.toFixed(2);
+      totalDisplayEl.textContent = '₹' + total.toFixed(2);
+      totalInputEl.value = '₹' + total.toFixed(2);
       cartItemsInputEl.value = items
-        .map(item => `${item.name} x ${item.qty} ($${(item.price * item.qty).toFixed(2)})`)
+        .map(item => `${item.name} x ${item.qty} (₹${(item.price * item.qty).toFixed(2)})`)
         .join(' | ');
     }
 
@@ -957,61 +956,68 @@
       }[char]));
     }
 
-    // Submit order via Cloudflare Worker -> Fast2SMS
-const form = document.getElementById('waterForm');
-form.addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  if (Object.keys(cart).length === 0) {
-    alert('Please add at least one product to your cart.');
-    return;
-  }
-
-  const submitBtn = form.querySelector('.submit-btn');
-  submitBtn.innerText = 'DISPATCHING SMS...';
-  submitBtn.disabled = true;
-
-  const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
-
-  const payload = {
-    name: document.getElementById('customer-name').value,
-    phone: document.getElementById('customer-phone').value,
-    address: document.getElementById('customer-address').value,
-    notes: document.getElementById('landmark-notes').value || 'None',
-    cart: document.getElementById('cart-items-input').value,
-    qty: document.getElementById('cart-count').textContent,
-    bill: document.getElementById('input-total-bill').value,
-    time: document.getElementById('preferred-time').value
-  };
-
-  try {
-    const response = await fetch(CLOUDFLARE_WORKER_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-    
-    // THIS LINE PRINTS THE EXACT FAST2SMS REASON IN YOUR CONSOLE:
-    console.log("Fast2SMS API Response:", result);
-
-    if (response.ok && result.success) {
-      document.getElementById('order-screen').classList.add('hidden');
-      document.getElementById('thankyou-screen').classList.remove('hidden');
-      window.scrollTo(0, 0);
-    } else {
-      alert("SMS Dispatch failed: " + JSON.stringify(result.details || result));
-      submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
-      submitBtn.disabled = false;
+    function generateMemorableOrderId() {
+      const words = ['AQUA', 'BLUE', 'PURE', 'FLOW', 'DROP', 'SPLASH', 'WAVE', 'RIVER', 'CLEAR'];
+      const randomWord = words[Math.floor(Math.random() * words.length)];
+      const randomNumber = Math.floor(1000 + Math.random() * 9000);
+      return `NEER-${randomWord}-${randomNumber}`;
     }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Network error. Please try again or call directly.");
-    submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
-    submitBtn.disabled = false;
-  }
-});
+
+    const form = document.getElementById('waterForm');
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (Object.keys(cart).length === 0) {
+        alert('Please add at least one product to your cart.');
+        return;
+      }
+
+      const submitBtn = form.querySelector('.submit-btn');
+      submitBtn.innerText = 'SENDING ORDER...';
+      submitBtn.disabled = true;
+
+      const orderRef = generateMemorableOrderId();
+      const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
+
+      const payload = {
+        orderId: orderRef,
+        name: document.getElementById('customer-name').value,
+        phone: document.getElementById('customer-phone').value,
+        address: document.getElementById('customer-address').value,
+        notes: document.getElementById('landmark-notes').value || 'None',
+        cart: document.getElementById('cart-items-input').value,
+        qty: document.getElementById('cart-count').textContent,
+        bill: document.getElementById('input-total-bill').value,
+        time: document.getElementById('preferred-time').value
+      };
+
+      try {
+        const response = await fetch(CLOUDFLARE_WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.log("Worker API Response:", result);
+
+        if (response.ok && result.success) {
+          document.getElementById('order-ref-code').innerText = orderRef;
+          document.getElementById('order-screen').classList.add('hidden');
+          document.getElementById('thankyou-screen').classList.remove('hidden');
+          window.scrollTo(0, 0);
+        } else {
+          alert("Order dispatch failed: " + JSON.stringify(result.details || result));
+          submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
+          submitBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Network error. Please try again or call directly.");
+        submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
+        submitBtn.disabled = false;
+      }
+    });
   </script>
 </body>
 </html>
