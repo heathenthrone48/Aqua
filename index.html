@@ -27,7 +27,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
     
     body { 
-      /* Ambient glowing background for glass effect */
       background: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.25) 0%, transparent 40%),
                   radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.2) 0%, transparent 40%),
                   linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #e0f2fe 100%);
@@ -38,8 +37,9 @@
       -webkit-font-smoothing: antialiased; 
     }
 
+    /* Fixed Sticky Top Header - Layered Above Floating Categories */
     header {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(224, 242, 254, 0.1) 100%);
+      background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid rgba(255, 255, 255, 0.25);
@@ -49,7 +49,7 @@
       align-items: center;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 200;
       box-shadow: 0 4px 30px rgba(2, 132, 199, 0.06);
     }
 
@@ -105,33 +105,105 @@
 
     .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
 
-    .hero { text-align: center; padding: 40px 0 20px; }
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(224, 242, 254, 0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(186, 230, 253, 0.8);
-      color: #0369a1;
-      padding: 8px 18px;
-      border-radius: 100px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.05);
+    /* Hero Banner Carousel */
+    .hero-carousel-wrapper {
+      position: relative;
+      width: 100%;
+      margin: 28px 0 10px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      aspect-ratio: 16 / 7;
     }
-    .hero h1 { 
-      font-size: 2.8rem; 
-      font-weight: 800; 
-      line-height: 1.2; 
-      letter-spacing: -0.5px;
-      margin-bottom: 12px; 
+
+    .hero-carousel-track {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .hero-carousel-slide {
+      min-width: 100%;
+      width: 100%;
+      height: 100%;
+      flex: 0 0 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(8px);
       color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 5;
+      transition: all 0.2s ease;
     }
-    .hero p { color: var(--text-muted); font-size: 1.05rem; font-weight: 500; max-width: 540px; margin: 0 auto; line-height: 1.5; }
+
+    .hero-carousel-arrow:hover {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+
+    .hero-carousel-arrow.prev { left: 14px; }
+    .hero-carousel-arrow.next { right: 14px; }
+
+    .hero-carousel-dots {
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      border: 1px solid var(--glass-border);
+      z-index: 5;
+    }
+
+    .hero-carousel-dot {
+      width: 8px;
+      height: 8px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #94a3b8;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .hero-carousel-dot.active {
+      background: var(--accent-cyan);
+      width: 20px;
+      border-radius: 999px;
+    }
 
     .section-label { 
       font-size: 0.8rem; 
@@ -146,6 +218,69 @@
     }
     .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(148, 163, 184, 0.4); }
 
+    /* Sticky Floating Category Filter Bar - Adjusted Top Clearance */
+    .category-filter-wrapper {
+      position: sticky;
+      top: 85px;
+      z-index: 90;
+      margin: 16px 0 24px;
+      padding: 6px 0;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .category-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 999px;
+      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.15);
+      max-width: 100%;
+      width: 100%;
+      justify-content: space-between;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .category-tabs::-webkit-scrollbar { display: none; }
+
+    .category-tab {
+      flex: 1;
+      text-align: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .category-tab:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .category-tab.active {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    /* Product Cards & Grid */
     .product-image-carousel {
       position: relative;
       width: 100%;
@@ -282,6 +417,10 @@
       box-shadow: var(--glass-shadow);
     }
 
+    .water-card.is-hidden {
+      display: none !important;
+    }
+
     .water-card:hover {
       background: var(--glass-bg-hover);
       border-color: rgba(56, 189, 248, 0.8);
@@ -393,6 +532,7 @@
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
+    /* Cart & Panels */
     .cart-panel, .panel {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
@@ -537,6 +677,8 @@
     @media (max-width: 620px) {
       header { padding: 12px 16px; }
       .contact-help-label { display: none; }
+      .category-filter-wrapper { top: 78px; }
+      .hero-carousel-wrapper { aspect-ratio: 16 / 9; margin: 16px 0 10px; }
       .water-grid { grid-template-columns: 1fr; }
       .water-card { padding: 18px; }
       .cart-item { grid-template-columns: 1fr auto; }
@@ -564,19 +706,37 @@
   </header>
 
   <div class="container" id="order-screen">
-    <div class="hero">
-      <div class="hero-tag">💧 Pure & Hydrating • Direct Home Delivery</div>
-      <h1>NEER BEKUUU</h1>
-      <p>Select your water cans below, add them to your cart, and place your order online for fast doorstep delivery.</p>
+    
+    <!-- Top revolving banner carousel -->
+    <div class="hero-carousel-wrapper" id="heroCarousel" data-images='["images/banner-1.jpg","images/banner-2.jpg","images/banner-3.jpg","images/banner-4.jpg"]'>
+      <div class="hero-carousel-track"></div>
+      <button type="button" class="hero-carousel-arrow prev" aria-label="Previous banner slide" onclick="changeHeroSlide(-1)">‹</button>
+      <button type="button" class="hero-carousel-arrow next" aria-label="Next banner slide" onclick="changeHeroSlide(1)">›</button>
+      <div class="hero-carousel-dots"></div>
     </div>
 
     <form id="waterForm">
 
-      <div class="section-label">01 / Choose Water & Accessories</div>
+      <div class="section-label">01 / Choose Products</div>
+
+      <!-- Sticky Floating Category Filter Bar -->
+      <div class="category-filter-wrapper">
+        <div class="category-tabs">
+          <button type="button" class="category-tab active" onclick="filterCategory('all', this)">
+            ✨ All Items
+          </button>
+          <button type="button" class="category-tab" onclick="filterCategory('water', this)">
+            💧 Water Cans
+          </button>
+          <button type="button" class="category-tab" onclick="filterCategory('accessories', this)">
+            🔌 Accessories
+          </button>
+        </div>
+      </div>
 
       <div class="water-grid">
-        <!-- Product 1: 20L Standard Bubble Top Jar -->
-        <div class="water-card" data-name="20L Standard Bubble Top Jar" data-price="70">
+        <!-- Water Can 1 -->
+        <div class="water-card" data-category="water" data-name="20L Standard Bubble Top Jar" data-price="70">
           <div class="product-image-carousel" data-images='["images/jar-20l-1.png","images/jar-20l-2.png"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
@@ -603,8 +763,8 @@
           </div>
         </div>
 
-        <!-- Product 2: Bailley 5L Packaged Jar -->
-        <div class="water-card" data-name="Bailley 5L Packaged Jar" data-price="65">
+        <!-- Water Can 2 -->
+        <div class="water-card" data-category="water" data-name="Bailley 5L Packaged Jar" data-price="65">
           <div class="product-image-carousel" data-images='["images/bailley-5l-1.jpg","images/bailley-5l-2.jpg"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
@@ -631,8 +791,8 @@
           </div>
         </div>
 
-        <!-- Product 3: Manual Water Dispenser Hand Pump -->
-        <div class="water-card" data-name="Manual Water Dispenser Hand Pump" data-price="250">
+        <!-- Accessory 1 -->
+        <div class="water-card" data-category="accessories" data-name="Manual Water Dispenser Hand Pump" data-price="250">
           <div class="product-image-carousel" data-images='["images/hand-pump-1.jpg","images/hand-pump-2.jpg"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
@@ -659,8 +819,8 @@
           </div>
         </div>
 
-        <!-- Product 4: Automatic Electric Water Pump -->
-        <div class="water-card" data-name="Automatic Electric Water Dispenser Pump" data-price="450">
+        <!-- Accessory 2 -->
+        <div class="water-card" data-category="accessories" data-name="Automatic Electric Water Dispenser Pump" data-price="450">
           <div class="product-image-carousel" data-images='["images/electric-pump-1.jpg","images/electric-pump-2.jpg"]'>
             <div class="product-image-track"></div>
             <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
@@ -771,6 +931,97 @@
   </div>
 
   <script>
+    /* Category Filter Functionality */
+    function filterCategory(category, buttonEl) {
+      document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
+      buttonEl.classList.add('active');
+
+      document.querySelectorAll('.water-card').forEach(card => {
+        if (category === 'all' || card.dataset.category === category) {
+          card.classList.remove('is-hidden');
+        } else {
+          card.classList.add('is-hidden');
+        }
+      });
+    }
+
+    /* Top Hero Banner Carousel */
+    let heroTimer = null;
+
+    function initHeroCarousel() {
+      const carousel = document.getElementById('heroCarousel');
+      const images = JSON.parse(carousel.dataset.images || '[]');
+      const track = carousel.querySelector('.hero-carousel-track');
+      const dots = carousel.querySelector('.hero-carousel-dots');
+
+      if (!images.length) return;
+
+      track.innerHTML = images.map((src, index) => `
+        <div class="hero-carousel-slide">
+          <img src="${escapeHtml(src)}"
+               alt="NEER BEKUUU Banner ${index + 1}"
+               loading="${index === 0 ? 'eager' : 'lazy'}"
+               onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-weight:700;&quot;>Banner image ${index + 1}</div>';">
+        </div>
+      `).join('');
+
+      dots.innerHTML = images.map((_, index) => `
+        <button type="button"
+                class="hero-carousel-dot${index === 0 ? ' active' : ''}"
+                aria-label="Go to banner ${index + 1}"
+                onclick="goToHeroSlide(${index})"></button>
+      `).join('');
+
+      carousel.dataset.index = '0';
+      startHeroAutoPlay();
+    }
+
+    function renderHeroSlide(newIndex) {
+      const carousel = document.getElementById('heroCarousel');
+      const images = JSON.parse(carousel.dataset.images || '[]');
+      if (!images.length) return;
+
+      const index = (newIndex + images.length) % images.length;
+      carousel.dataset.index = String(index);
+
+      const track = carousel.querySelector('.hero-carousel-track');
+      track.style.transform = `translateX(-${index * 100}%)`;
+
+      carousel.querySelectorAll('.hero-carousel-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
+
+    function changeHeroSlide(direction) {
+      const carousel = document.getElementById('heroCarousel');
+      const index = parseInt(carousel.dataset.index || '0', 10);
+      renderHeroSlide(index + direction);
+      resetHeroAutoPlay();
+    }
+
+    function goToHeroSlide(index) {
+      renderHeroSlide(index);
+      resetHeroAutoPlay();
+    }
+
+    function startHeroAutoPlay() {
+      stopHeroAutoPlay();
+      heroTimer = setInterval(() => {
+        const carousel = document.getElementById('heroCarousel');
+        const index = parseInt(carousel.dataset.index || '0', 10);
+        renderHeroSlide(index + 1);
+      }, 4000);
+    }
+
+    function stopHeroAutoPlay() {
+      if (heroTimer) clearInterval(heroTimer);
+    }
+
+    function resetHeroAutoPlay() {
+      startHeroAutoPlay();
+    }
+
+    /* Product Image Carousels */
     function initProductCarousels() {
       document.querySelectorAll('.product-image-carousel').forEach(carousel => {
         const images = JSON.parse(carousel.dataset.images || '[]');
@@ -851,6 +1102,7 @@
       renderCarousel(carousel, index);
     }
 
+    /* Cart Management */
     const cart = {};
 
     function changeCardQty(button, change) {
@@ -944,6 +1196,7 @@
         .join(' | ');
     }
 
+    initHeroCarousel();
     initProductCarousels();
 
     function escapeHtml(value) {
@@ -999,7 +1252,6 @@
         });
 
         const result = await response.json();
-        console.log("Worker API Response:", result);
 
         if (response.ok && result.success) {
           document.getElementById('order-ref-code').innerText = orderRef;
