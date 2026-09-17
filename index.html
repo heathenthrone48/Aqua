@@ -105,6 +105,68 @@
 
     .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
 
+    /* Quick Reorder Banner */
+    .reorder-banner {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(6, 182, 212, 0.15) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(2, 132, 199, 0.3);
+      border-radius: 20px;
+      padding: 16px 20px;
+      margin: 20px 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.08);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reorder-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .reorder-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #0369a1;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .reorder-details {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .reorder-btn {
+      background: var(--accent-gradient);
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    .reorder-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(2, 132, 199, 0.4);
+    }
+
     /* Hero Banner Carousel */
     .hero-carousel-wrapper {
       position: relative;
@@ -218,7 +280,7 @@
     }
     .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(148, 163, 184, 0.4); }
 
-    /* Sticky Floating Category Filter Bar - Adjusted Top Clearance */
+    /* Sticky Floating Category Filter Bar */
     .category-filter-wrapper {
       position: sticky;
       top: 85px;
@@ -670,7 +732,7 @@
       box-shadow: 0 12px 30px rgba(2, 132, 199, 0.45);
     }
 
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .confirmation { text-align: center; padding: 60px 20px; }
     .confirmation h2 { color: var(--success); font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
 
@@ -684,6 +746,8 @@
       .cart-item { grid-template-columns: 1fr auto; }
       .cart-item .remove-cart-btn { grid-column: 2; grid-row: 1; justify-self: end; }
       .cart-item-total { grid-column: 2; grid-row: 2; }
+      .reorder-banner { flex-direction: column; align-items: flex-start; }
+      .reorder-btn { width: 100%; }
     }
   </style>
 </head>
@@ -707,6 +771,19 @@
 
   <div class="container" id="order-screen">
     
+    <!-- Quick Reorder Banner (Hidden by default, shown if previous order exists) -->
+    <div id="reorder-banner" class="reorder-banner hidden">
+      <div class="reorder-info">
+        <div class="reorder-title">
+          <span>🔄</span> Welcome back, <span id="reorder-user-name">Customer</span>!
+        </div>
+        <div class="reorder-details" id="reorder-summary">
+          Repeat your previous order with one click.
+        </div>
+      </div>
+      <button type="button" class="reorder-btn" onclick="executeQuickReorder()">⚡ One-Click Reorder</button>
+    </div>
+
     <!-- Top revolving banner carousel -->
     <div class="hero-carousel-wrapper" id="heroCarousel" data-images='["images/banner-1.jpg","images/banner-2.jpg","images/banner-3.jpg","images/banner-4.jpg"]'>
       <div class="hero-carousel-track"></div>
@@ -872,7 +949,7 @@
         </div>
       </div>
 
-      <div class="section-label">02 / Delivery Details</div>
+      <div class="section-label" id="delivery-details-section">02 / Delivery Details</div>
       <div class="panel">
         <div class="form-group">
           <label for="customer-name">Full Name *</label>
@@ -909,7 +986,7 @@
           <span class="total-price" id="total-display">₹0.00</span>
         </div>
 
-        <button type="submit" class="submit-btn">PLACE ORDER (PAY ON DELIVERY)</button>
+        <button type="submit" class="submit-btn" id="submit-order-btn">PLACE ORDER (PAY ON DELIVERY)</button>
       </div>
     </form>
   </div>
@@ -931,6 +1008,10 @@
   </div>
 
   <script>
+    /* LOCAL STORAGE KEYS */
+    const STORAGE_KEY_USER = 'neer_bekuuu_user_info';
+    const STORAGE_KEY_LAST_ORDER = 'neer_bekuuu_last_order';
+
     /* Category Filter Functionality */
     function filterCategory(category, buttonEl) {
       document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
@@ -974,6 +1055,11 @@
 
       carousel.dataset.index = '0';
       startHeroAutoPlay();
+
+      carousel.addEventListener('mouseenter', stopHeroAutoPlay);
+      carousel.addEventListener('mouseleave', startHeroAutoPlay);
+      carousel.addEventListener('touchstart', stopHeroAutoPlay, { passive: true });
+      carousel.addEventListener('touchend', startHeroAutoPlay, { passive: true });
     }
 
     function renderHeroSlide(newIndex) {
@@ -1022,6 +1108,8 @@
     }
 
     /* Product Image Carousels */
+    const productTimers = new Map();
+
     function initProductCarousels() {
       document.querySelectorAll('.product-image-carousel').forEach(carousel => {
         const images = JSON.parse(carousel.dataset.images || '[]');
@@ -1065,6 +1153,13 @@
           prev.classList.add('is-hidden');
           next.classList.add('is-hidden');
           dots.style.display = 'none';
+        } else {
+          startProductAutoPlay(carousel);
+
+          carousel.addEventListener('mouseenter', () => stopProductAutoPlay(carousel));
+          carousel.addEventListener('mouseleave', () => startProductAutoPlay(carousel));
+          carousel.addEventListener('touchstart', () => stopProductAutoPlay(carousel), { passive: true });
+          carousel.addEventListener('touchend', () => startProductAutoPlay(carousel), { passive: true });
         }
       });
     }
@@ -1095,15 +1190,39 @@
       const { images, index } = getCarouselData(carousel);
       if (images.length <= 1) return;
       renderCarousel(carousel, index + direction);
+      resetProductAutoPlay(carousel);
     }
 
     function goToProductImage(button, index) {
       const carousel = button.closest('.product-image-carousel');
       renderCarousel(carousel, index);
+      resetProductAutoPlay(carousel);
+    }
+
+    function startProductAutoPlay(carousel) {
+      stopProductAutoPlay(carousel);
+      const timer = setInterval(() => {
+        const { images, index } = getCarouselData(carousel);
+        if (images.length > 1) {
+          renderCarousel(carousel, index + 1);
+        }
+      }, 3500);
+      productTimers.set(carousel, timer);
+    }
+
+    function stopProductAutoPlay(carousel) {
+      if (productTimers.has(carousel)) {
+        clearInterval(productTimers.get(carousel));
+        productTimers.delete(carousel);
+      }
+    }
+
+    function resetProductAutoPlay(carousel) {
+      startProductAutoPlay(carousel);
     }
 
     /* Cart Management */
-    const cart = {};
+    let cart = {};
 
     function changeCardQty(button, change) {
       const controls = button.closest('.card-qty-controls');
@@ -1196,8 +1315,84 @@
         .join(' | ');
     }
 
+    /* AUTO-FILL & REORDER LOCALSTORAGE FUNCTIONS */
+    function loadSavedCustomerData() {
+      try {
+        const savedUser = localStorage.getItem(STORAGE_KEY_USER);
+        if (savedUser) {
+          const user = JSON.parse(savedUser);
+          if (user.name) document.getElementById('customer-name').value = user.name;
+          if (user.phone) document.getElementById('customer-phone').value = user.phone;
+          if (user.address) document.getElementById('customer-address').value = user.address;
+          if (user.notes) document.getElementById('landmark-notes').value = user.notes;
+        }
+
+        const savedOrder = localStorage.getItem(STORAGE_KEY_LAST_ORDER);
+        if (savedOrder && savedUser) {
+          const user = JSON.parse(savedUser);
+          const lastOrder = JSON.parse(savedOrder);
+          
+          if (lastOrder.cart && Object.keys(lastOrder.cart).length > 0) {
+            document.getElementById('reorder-user-name').innerText = user.name || 'Customer';
+            
+            const itemListStr = Object.values(lastOrder.cart)
+              .map(i => `${i.qty}× ${i.name}`)
+              .join(', ');
+
+            document.getElementById('reorder-summary').innerText = `Last Order: ${itemListStr} (${lastOrder.bill || '₹0.00'})`;
+            document.getElementById('reorder-banner').classList.remove('hidden');
+          }
+        }
+      } catch (e) {
+        console.warn('LocalStorage error:', e);
+      }
+    }
+
+    function saveCustomerData(userInfo, lastCart, billStr) {
+      try {
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userInfo));
+        localStorage.setItem(STORAGE_KEY_LAST_ORDER, JSON.stringify({
+          cart: lastCart,
+          bill: billStr,
+          timestamp: new Date().toISOString()
+        }));
+      } catch (e) {
+        console.warn('Failed to save to localStorage:', e);
+      }
+    }
+
+    function executeQuickReorder() {
+      try {
+        const savedOrder = localStorage.getItem(STORAGE_KEY_LAST_ORDER);
+        if (!savedOrder) return;
+        
+        const lastOrder = JSON.parse(savedOrder);
+        if (lastOrder.cart) {
+          cart = JSON.parse(JSON.stringify(lastOrder.cart));
+          
+          // Highlight active product cards in the UI
+          document.querySelectorAll('.water-card').forEach(card => {
+            const name = card.dataset.name;
+            if (cart[name]) {
+              card.classList.add('in-cart');
+            } else {
+              card.classList.remove('in-cart');
+            }
+          });
+
+          renderCart();
+
+          // Scroll straight to the bottom "Place Order" button and total calculation
+          document.getElementById('submit-order-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } catch (e) {
+        console.error('Quick reorder failed:', e);
+      }
+    }
+
     initHeroCarousel();
     initProductCarousels();
+    loadSavedCustomerData();
 
     function escapeHtml(value) {
       return value.replace(/[&<>"']/g, char => ({
@@ -1232,15 +1427,21 @@
       const orderRef = generateMemorableOrderId();
       const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
 
+      const customerName = document.getElementById('customer-name').value;
+      const customerPhone = document.getElementById('customer-phone').value;
+      const customerAddress = document.getElementById('customer-address').value;
+      const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
+      const totalBill = document.getElementById('input-total-bill').value;
+
       const payload = {
         orderId: orderRef,
-        name: document.getElementById('customer-name').value,
-        phone: document.getElementById('customer-phone').value,
-        address: document.getElementById('customer-address').value,
-        notes: document.getElementById('landmark-notes').value || 'None',
+        name: customerName,
+        phone: customerPhone,
+        address: customerAddress,
+        notes: landmarkNotes,
         cart: document.getElementById('cart-items-input').value,
         qty: document.getElementById('cart-count').textContent,
-        bill: document.getElementById('input-total-bill').value,
+        bill: totalBill,
         time: document.getElementById('preferred-time').value
       };
 
@@ -1254,6 +1455,14 @@
         const result = await response.json();
 
         if (response.ok && result.success) {
+          // Save customer data and last cart order to localStorage for fast future orders
+          saveCustomerData({
+            name: customerName,
+            phone: customerPhone,
+            address: customerAddress,
+            notes: landmarkNotes
+          }, cart, totalBill);
+
           document.getElementById('order-ref-code').innerText = orderRef;
           document.getElementById('order-screen').classList.add('hidden');
           document.getElementById('thankyou-screen').classList.remove('hidden');
