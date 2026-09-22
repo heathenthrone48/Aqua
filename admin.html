@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEER BEKUUU — Admin Inventory Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.7);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+      --text: #0f172a;
+      --text-muted: #475569;
+      --accent: #0284c7;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.25) 0%, transparent 40%),
+                  linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #e0f2fe 100%);
+      background-attachment: fixed;
+      color: var(--text);
+      padding: 30px 20px;
+      min-height: 100vh;
+    }
+
+    .container { max-width: 680px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .brand { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+    .badge { background: #0f172a; color: #fff; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; }
+
+    .panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 20px;
+    }
+
+    .product-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      gap: 16px;
+    }
+
+    .product-row:last-child { border-bottom: none; }
+
+    .product-info { display: flex; flex-direction: column; gap: 4px; }
+    .product-title { font-weight: 800; font-size: 0.95rem; color: var(--text); }
+    .product-category { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+
+    .stock-status {
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-in-stock { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .status-out-of-stock { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    /* Switch Toggle */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: var(--danger);
+      transition: .3s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider { background-color: var(--success); }
+    input:checked + .slider:before { transform: translateX(24px); }
+
+    .save-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .save-btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="brand">💧 NEER BEKUUU</div>
+      <div class="badge">ADMIN PANEL</div>
+    </header>
+
+    <div class="panel">
+      <h3 style="margin-bottom: 16px; font-size: 1rem; color: #0369a1;">Inventory Stock Management</h3>
+
+      <!-- Item 1 -->
+      <div class="product-row">
+        <div class="product-info">
+          <span class="product-category">Water Can</span>
+          <span class="product-title">20L Standard Bubble Top Jar</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="stock-status status-in-stock" id="badge-20l">In Stock</span>
+          <label class="switch">
+            <input type="checkbox" checked onchange="toggleStock('20l', this)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="product-row">
+        <div class="product-info">
+          <span class="product-category">Packaged Water</span>
+          <span class="product-title">Bailley 5L Packaged Jar</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="stock-status status-in-stock" id="badge-5l">In Stock</span>
+          <label class="switch">
+            <input type="checkbox" checked onchange="toggleStock('5l', this)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="product-row">
+        <div class="product-info">
+          <span class="product-category">Accessory</span>
+          <span class="product-title">Manual Hand Pump Dispenser</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="stock-status status-in-stock" id="badge-handpump">In Stock</span>
+          <label class="switch">
+            <input type="checkbox" checked onchange="toggleStock('handpump', this)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="product-row">
+        <div class="product-info">
+          <span class="product-category">Accessory</span>
+          <span class="product-title">Automatic Electric Water Dispenser Pump</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="stock-status status-in-stock" id="badge-electricpump">In Stock</span>
+          <label class="switch">
+            <input type="checkbox" checked onchange="toggleStock('electricpump', this)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="save-btn" onclick="saveInventory()">SAVE & APPLY CHANGES</button>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'neer_inventory_stock';
+
+    function loadInventory() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+
+      const stock = JSON.parse(saved);
+      Object.keys(stock).forEach(id => {
+        const badge = document.getElementById(`badge-${id}`);
+        const checkbox = badge?.parentElement.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+          checkbox.checked = stock[id];
+          updateBadge(id, stock[id]);
+        }
+      });
+    }
+
+    function toggleStock(id, checkbox) {
+      updateBadge(id, checkbox.checked);
+    }
+
+    function updateBadge(id, inStock) {
+      const badge = document.getElementById(`badge-${id}`);
+      if (!badge) return;
+
+      if (inStock) {
+        badge.textContent = 'In Stock';
+        badge.className = 'stock-status status-in-stock';
+      } else {
+        badge.textContent = 'Out of Stock';
+        badge.className = 'stock-status status-out-of-stock';
+      }
+    }
+
+    function saveInventory() {
+      const stockState = {
+        '20l': document.getElementById('badge-20l').textContent === 'In Stock',
+        '5l': document.getElementById('badge-5l').textContent === 'In Stock',
+        'handpump': document.getElementById('badge-handpump').textContent === 'In Stock',
+        'electricpump': document.getElementById('badge-electricpump').textContent === 'In Stock'
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stockState));
+      alert('Inventory status updated successfully!');
+    }
+
+    loadInventory();
+  </script>
+</body>
+</html>
