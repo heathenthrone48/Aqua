@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - Stock Control</title>
+  <title>Admin Dashboard - Water Can Service</title>
   <style>
     :root {
       --primary: #0284c7;
@@ -25,18 +25,19 @@
     body {
       background-color: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+      padding: 24px;
     }
 
-    /* Auth Screen Overlay */
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Auth Overlay */
     #authOverlay {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.85);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -45,22 +46,17 @@
 
     .card {
       background: var(--surface);
-      padding: 32px;
+      padding: 24px;
       border-radius: 12px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .auth-card {
       width: 100%;
-      max-width: 400px;
+      max-width: 380px;
       text-align: center;
-    }
-
-    .card h2 {
-      margin-bottom: 8px;
-    }
-
-    .card p {
-      font-size: 0.9rem;
-      color: #64748b;
-      margin-bottom: 20px;
     }
 
     .input-field {
@@ -69,7 +65,7 @@
       border: 1px solid var(--border);
       border-radius: 6px;
       font-size: 1rem;
-      margin-bottom: 12px;
+      margin: 12px 0;
       outline: none;
     }
 
@@ -77,82 +73,113 @@
       border-color: var(--primary);
     }
 
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
     .btn {
-      width: 100%;
       background: var(--primary);
       color: white;
       border: none;
-      padding: 12px;
+      padding: 8px 16px;
       border-radius: 6px;
       font-weight: 600;
       cursor: pointer;
-      font-size: 1rem;
+    }
+
+    .btn-secondary {
+      background: #64748b;
     }
 
     .btn:hover {
       opacity: 0.9;
     }
 
-    .error-msg {
-      color: var(--danger);
-      font-size: 0.85rem;
-      margin-top: 8px;
-      display: none;
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
     }
 
-    /* Control Panel UI */
-    .status-box {
-      padding: 16px;
+    .product-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      margin: 20px 0;
-      font-weight: 600;
-      font-size: 1.1rem;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .product-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-top: 6px;
+      align-self: flex-start;
     }
 
     .in-stock {
       background-color: #dcfce7;
       color: var(--success);
-      border: 1px solid #bbf7d0;
     }
 
     .out-of-stock {
       background-color: #fee2e2;
       color: var(--danger);
-      border: 1px solid #fecaca;
     }
 
     .toggle-btn {
-      padding: 12px 20px;
-      font-size: 1rem;
+      width: 100%;
+      padding: 8px 12px;
       border: none;
       border-radius: 6px;
-      cursor: pointer;
       font-weight: 600;
-      width: 100%;
-      transition: background 0.2s;
-    }
-
-    .btn-out {
-      background-color: var(--danger);
-      color: white;
-    }
-
-    .btn-in {
-      background-color: var(--success);
-      color: white;
-    }
-
-    .logout-link {
-      display: inline-block;
-      margin-top: 20px;
-      color: #64748b;
-      text-decoration: none;
-      font-size: 0.85rem;
       cursor: pointer;
+      margin-top: 12px;
+      font-size: 0.85rem;
     }
 
-    .logout-link:hover {
-      color: var(--text);
+    .btn-out { background: var(--danger); color: white; }
+    .btn-in { background: var(--success); color: white; }
+
+    /* Orders Log Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #f1f5f9;
+    }
+
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.85rem;
+      display: none;
     }
   </style>
 </head>
@@ -160,91 +187,198 @@
 
   <!-- Password Authentication -->
   <div id="authOverlay">
-    <div class="card">
-      <h2>Admin Access</h2>
-      <p>Enter key to manage store stock</p>
+    <div class="card auth-card">
+      <h2>Admin Login</h2>
+      <p style="color: #64748b; font-size: 0.9rem; margin-top: 4px;">Enter key to access system panel</p>
       <input type="password" id="adminPasswordInput" class="input-field" placeholder="Enter password" onkeydown="if(event.key==='Enter') verifyPassword()">
-      <button class="btn" onclick="verifyPassword()">Login</button>
-      <div id="authError" class="error-msg">Incorrect password. Try again.</div>
+      <button class="btn" style="width: 100%;" onclick="verifyPassword()">Login</button>
+      <div id="authError" class="error-msg" style="margin-top: 10px;">Incorrect password.</div>
     </div>
   </div>
 
-  <!-- Admin Control Panel -->
-  <div class="card" id="adminPanel" style="display: none;">
-    <h2>Stock Management</h2>
-    <p>Toggle availability to enable or block orders on main page</p>
+  <!-- Main Dashboard View -->
+  <div class="container" id="adminDashboard" style="display: none;">
+    <header>
+      <h1>Admin Control Center</h1>
+      <div>
+        <button class="btn btn-secondary" onclick="logoutAdmin()">Logout</button>
+      </div>
+    </header>
 
-    <div id="statusIndicator" class="status-box in-stock">
-      Status: IN STOCK
+    <!-- Product Stock Control Grid (4 Products) -->
+    <div class="card">
+      <h3>Product Stock Management</h3>
+      <p style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">Toggle availability for each product individually</p>
+      
+      <div class="product-grid" id="productGridContainer">
+        <!-- Dynamic Product Cards Injected Here -->
+      </div>
     </div>
 
-    <button id="toggleBtn" class="toggle-btn btn-out" onclick="toggleStock()">
-      Set to Out of Stock
-    </button>
+    <!-- System Overview Card -->
+    <div class="card">
+      <h3>System Overview</h3>
+      <div style="display: flex; gap: 32px; margin-top: 16px;">
+        <div>
+          <span style="font-size: 2rem; font-weight: bold; color: var(--primary);" id="totalOrdersCount">0</span>
+          <p style="font-size: 0.85rem; color: #64748b;">Total Orders Logged</p>
+        </div>
+        <div>
+          <span style="font-size: 2rem; font-weight: bold; color: var(--success);" id="telegramStatus">Active</span>
+          <p style="font-size: 0.85rem; color: #64748b;">Telegram Dispatcher</p>
+        </div>
+      </div>
+    </div>
 
-    <div>
-      <span class="logout-link" onclick="logoutAdmin()">Log out</span>
+    <!-- Submissions Log Section -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3>Recent Submissions Log</h3>
+        <button class="btn" onclick="clearLogs()" style="background: #ef4444; font-size: 0.8rem; padding: 6px 12px;">Clear History</button>
+      </div>
+      
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Item / Qty</th>
+              <th>Address</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody">
+            <!-- Dynamic order rows inserted here -->
+          </tbody>
+        </table>
+        <div id="emptyLogMsg" style="text-align: center; padding: 24px; color: #64748b; font-size: 0.9rem;">
+          No local orders recorded yet.
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-    const ADMIN_PASSWORD = "admin"; // Set your password here
+    const ADMIN_PASSWORD = "admin";
+
+    // Definition of 4 catalog items
+    const PRODUCTS = [
+      { id: "prod_20l", name: "20L Water Can" },
+      { id: "prod_10l", name: "10L Water Can" },
+      { id: "prod_dispenser", name: "Tabletop Dispenser" },
+      { id: "prod_pump", name: "Manual Hand Pump" }
+    ];
 
     document.addEventListener('DOMContentLoaded', () => {
       if (sessionStorage.getItem('adminAuthenticated') === 'true') {
-        showPanel();
+        showDashboard();
       }
     });
 
     function verifyPassword() {
       const input = document.getElementById('adminPasswordInput').value;
-      const errorMsg = document.getElementById('authError');
-
       if (input === ADMIN_PASSWORD) {
         sessionStorage.setItem('adminAuthenticated', 'true');
-        errorMsg.style.display = 'none';
-        showPanel();
+        showDashboard();
       } else {
-        errorMsg.style.display = 'block';
+        document.getElementById('authError').style.display = 'block';
       }
     }
 
     function logoutAdmin() {
       sessionStorage.removeItem('adminAuthenticated');
       document.getElementById('authOverlay').style.display = 'flex';
-      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('adminDashboard').style.display = 'none';
       document.getElementById('adminPasswordInput').value = '';
     }
 
-    function showPanel() {
+    function showDashboard() {
       document.getElementById('authOverlay').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-      updateUI();
+      document.getElementById('adminDashboard').style.display = 'block';
+      renderProductControls();
+      loadLogs();
     }
 
-    function toggleStock() {
-      const isOutOfStock = localStorage.getItem('isOutOfStock') === 'true';
-      // Flip the status
-      localStorage.setItem('isOutOfStock', !isOutOfStock);
-      updateUI();
+    /* Render Product Stock Toggles */
+    function renderProductControls() {
+      const container = document.getElementById('productGridContainer');
+      const stockState = JSON.parse(localStorage.getItem('productStockState')) || {};
+
+      container.innerHTML = '';
+
+      PRODUCTS.forEach(product => {
+        // Default: true (In Stock) if not explicitly set to false
+        const isAvailable = stockState[product.id] !== false;
+
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div>
+            <div class="product-title">${escapeHtml(product.name)}</div>
+            <div class="status-badge ${isAvailable ? 'in-stock' : 'out-of-stock'}">
+              ${isAvailable ? 'IN STOCK' : 'OUT OF STOCK'}
+            </div>
+          </div>
+          <button class="toggle-btn ${isAvailable ? 'btn-out' : 'btn-in'}" 
+                  onclick="toggleProductStock('${product.id}')">
+            ${isAvailable ? 'Set Out of Stock' : 'Set In Stock'}
+          </button>
+        `;
+        container.appendChild(card);
+      });
     }
 
-    function updateUI() {
-      const isOutOfStock = localStorage.getItem('isOutOfStock') === 'true';
-      const statusIndicator = document.getElementById('statusIndicator');
-      const toggleBtn = document.getElementById('toggleBtn');
+    /* Toggle individual product stock status */
+    function toggleProductStock(productId) {
+      const stockState = JSON.parse(localStorage.getItem('productStockState')) || {};
+      const currentStatus = stockState[productId] !== false; // Default true
+      
+      stockState[productId] = !currentStatus;
+      localStorage.setItem('productStockState', JSON.stringify(stockState));
+      
+      renderProductControls();
+    }
 
-      if (isOutOfStock) {
-        statusIndicator.textContent = "Status: OUT OF STOCK";
-        statusIndicator.className = "status-box out-of-stock";
-        toggleBtn.textContent = "Set to In Stock";
-        toggleBtn.className = "toggle-btn btn-in";
-      } else {
-        statusIndicator.textContent = "Status: IN STOCK";
-        statusIndicator.className = "status-box in-stock";
-        toggleBtn.textContent = "Set to Out of Stock";
-        toggleBtn.className = "toggle-btn btn-out";
+    /* Load Order Logs */
+    function loadLogs() {
+      const orders = JSON.parse(localStorage.getItem('waterOrders')) || [];
+      const tbody = document.getElementById('logsTableBody');
+      const emptyMsg = document.getElementById('emptyLogMsg');
+      const countDisplay = document.getElementById('totalOrdersCount');
+
+      countDisplay.textContent = orders.length;
+      tbody.innerHTML = '';
+
+      if (orders.length === 0) {
+        emptyMsg.style.display = 'block';
+        return;
       }
+
+      emptyMsg.style.display = 'none';
+
+      orders.forEach(order => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${order.time || 'N/A'}</td>
+          <td>${escapeHtml(order.name || 'N/A')}</td>
+          <td>${escapeHtml(order.phone || 'N/A')}</td>
+          <td>${escapeHtml(order.item || '20L Can')} (${order.quantity || 1})</td>
+          <td>${escapeHtml(order.address || 'N/A')}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function clearLogs() {
+      if (confirm("Are you sure you want to clear local submission records?")) {
+        localStorage.removeItem('waterOrders');
+        loadLogs();
+      }
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
   </script>
 </body>
