@@ -1479,6 +1479,40 @@
         submitBtn.disabled = false;
       }
     });
+
+        function applyStockStatus() {
+      const saved = localStorage.getItem('neer_inventory_stock');
+      if (!saved) return;
+
+      const stock = JSON.parse(saved);
+      const cardMap = {
+        '20l': '20L Standard Bubble Top Jar',
+        '5l': 'Bailley 5L Packaged Jar',
+        'handpump': 'Manual Water Dispenser Hand Pump',
+        'electricpump': 'Automatic Electric Water Dispenser Pump'
+      };
+
+      Object.keys(cardMap).forEach(key => {
+        const productName = cardMap[key];
+        const isAvailable = stock[key] !== false; // Default true
+
+        const card = [...document.querySelectorAll('.water-card')]
+          .find(el => el.dataset.name === productName);
+
+        if (card) {
+          const btn = card.querySelector('.add-cart-btn');
+          if (!isAvailable) {
+            btn.disabled = true;
+            btn.innerText = 'OUT OF STOCK';
+            btn.style.background = '#94a3b8';
+            btn.style.cursor = 'not-allowed';
+          }
+        }
+      });
+    }
+
+    // Run on page load
+    applyStockStatus();
   </script>
 </body>
 </html>
