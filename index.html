@@ -732,37 +732,6 @@
       box-shadow: 0 12px 30px rgba(2, 132, 199, 0.45);
     }
 
-    /* Admin Link Styles */
-    .admin-link-container {
-      margin-top: 40px;
-      text-align: center;
-    }
-
-    .admin-portal-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 10px 20px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.35);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid var(--glass-border);
-      color: var(--text-dim);
-      font-size: 0.82rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      box-shadow: var(--glass-shadow);
-    }
-
-    .admin-portal-btn:hover {
-      background: rgba(255, 255, 255, 0.65);
-      color: #0284c7;
-      border-color: rgba(2, 132, 199, 0.4);
-      transform: translateY(-1px);
-    }
-
     .hidden { display: none !important; }
     .confirmation { text-align: center; padding: 60px 20px; }
     .confirmation h2 { color: var(--success); font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
@@ -1020,12 +989,6 @@
         <button type="submit" class="submit-btn" id="submit-order-btn">PLACE ORDER (PAY ON DELIVERY)</button>
       </div>
     </form>
-
-    <div class="admin-link-container">
-      <a href="admin.html" class="admin-portal-btn">
-        🔒 Admin Portal
-      </a>
-    </div>
   </div>
 
   <div class="container hidden" id="thankyou-screen">
@@ -1042,6 +1005,11 @@
       <p style="color: var(--text-muted); margin-bottom: 24px; font-weight: 500;">Your request has been dispatched. If needed, our team will reach out to you on <strong>+91 8884749700</strong>.</p>
       <button onclick="window.location.reload()" class="submit-btn" style="width: auto; padding: 14px 28px;">Place Another Order</button>
     </div>
+  </div>
+  <div class="admin-link-container">
+  <a href="admin.html" class="admin-portal-btn">
+    🔒 Admin Portal
+  </a>
   </div>
 
   <script>
@@ -1427,6 +1395,10 @@
       }
     }
 
+    initHeroCarousel();
+    initProductCarousels();
+    loadSavedCustomerData();
+
     function escapeHtml(value) {
       return value.replace(/[&<>"']/g, char => ({
         '&': '&amp;',
@@ -1444,44 +1416,6 @@
       return `NEER-${randomWord}-${randomNumber}`;
     }
 
-    function applyStockStatus() {
-      const saved = localStorage.getItem('neer_inventory_stock');
-      if (!saved) return;
-
-      const stock = JSON.parse(saved);
-      const cardMap = {
-        '20l': '20L Standard Bubble Top Jar',
-        '5l': 'Bailley 5L Packaged Jar',
-        'handpump': 'Manual Water Dispenser Hand Pump',
-        'electricpump': 'Automatic Electric Water Dispenser Pump'
-      };
-
-      Object.keys(cardMap).forEach(key => {
-        const productName = cardMap[key];
-        const isAvailable = stock[key] !== false; // Default true
-
-        const card = [...document.querySelectorAll('.water-card')]
-          .find(el => el.dataset.name === productName);
-
-        if (card) {
-          const btn = card.querySelector('.add-cart-btn');
-          if (!isAvailable) {
-            btn.disabled = true;
-            btn.innerText = 'OUT OF STOCK';
-            btn.style.background = '#94a3b8';
-            btn.style.cursor = 'not-allowed';
-          }
-        }
-      });
-    }
-
-    /* Initialize Components */
-    initHeroCarousel();
-    initProductCarousels();
-    loadSavedCustomerData();
-    applyStockStatus();
-
-    /* Form Submission Event */
     const form = document.getElementById('waterForm');
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -1550,6 +1484,47 @@
         submitBtn.disabled = false;
       }
     });
+
+    function applyStockStatus() {
+  // Use the matching key used by admin.html
+  const saved = localStorage.getItem('productStockState');
+  if (!saved) return;
+
+  const stockState = JSON.parse(saved);
+  
+  // Map admin.html product IDs directly to index.html data-name strings
+  const cardMap = {
+    'prod_20l': '20L Standard Bubble Top Jar',
+    'prod_10l': 'Bailley 5L Packaged Jar',
+    'prod_pump': 'Manual Water Dispenser Hand Pump',
+    'prod_dispenser': 'Automatic Electric Water Dispenser Pump'
+  };
+
+  Object.keys(cardMap).forEach(productId => {
+    const productName = cardMap[productId];
+    const isAvailable = stockState[productId] !== false; // Default is available
+
+    const card = [...document.querySelectorAll('.water-card')]
+      .find(el => el.dataset.name === productName);
+
+    if (card) {
+      const btn = card.querySelector('.add-cart-btn');
+      if (!isAvailable) {
+        btn.disabled = true;
+        btn.innerText = 'OUT OF STOCK';
+        btn.style.background = '#94a3b8';
+        btn.style.cursor = 'not-allowed';
+      } else {
+        btn.disabled = false;
+        btn.innerText = 'ADD TO CART';
+        btn.style.background = 'var(--accent-gradient)';
+        btn.style.cursor = 'pointer';
+      }
+    }
+  });
+}
+    // Run on page load
+    applyStockStatus();
   </script>
 </body>
 </html>
