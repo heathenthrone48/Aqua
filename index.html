@@ -462,6 +462,43 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 20px;
     }
+    
+    /* 1. Force 2 columns on mobile/smaller screens */
+    .water-grid {
+      display: grid;
+        grid-template-columns: repeat(2, 1fr); /* 2 equal columns side-by-side */
+          gap: 12px;                            /* Space between product cards */
+            padding: 12px;
+            }
+
+            /* 2. Adjust product cards inside the grid */
+            .water-grid > div {
+              display: flex;
+                flex-direction: column;
+                  justify-content: space-between;
+                    box-sizing: border-box;
+                    }
+
+                    /* 3. Keep images uniform inside tight columns */
+                    .water-grid img {
+                      width: 100%;
+                        height: auto;
+                          aspect-ratio: 1 / 1;      /* Keeps product images square */
+                            object-fit: cover;
+                            }
+
+                            /* 4. Font & Button scaling for 2-column fit */
+                            .water-grid h3, 
+                            .water-grid h4 {
+                              font-size: 0.95rem;        /* Keeps headers from wrapping excessively */
+                                margin: 6px 0;
+                                }
+
+                                .water-grid button {
+                                  width: 100%;
+                                    padding: 8px 4px;
+                                      font-size: 0.85rem;
+                                      }
 
     .water-card {
       background: var(--glass-bg);
@@ -894,6 +931,7 @@
       .reorder-banner { flex-direction: column; align-items: flex-start; }
       .reorder-btn { width: 100%; }
       .product-modal-card { padding: 20px; }
+      .water-grid { grid-template-columns: repeat(4, 1fr); /* 4 items per row on desktop */ gap: 20px;}
     }
   </style>
 </head>
