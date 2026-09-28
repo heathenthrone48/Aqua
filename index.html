@@ -895,6 +895,85 @@
       .reorder-btn { width: 100%; }
       .product-modal-card { padding: 20px; }
     }
+
+    /* ============================================================
+   2-COLUMN MOBILE GRID OVERRIDE (Add to bottom of <style>)
+   ============================================================ */
+
+/* Force exactly 2 columns on mobile/small screens */
+.water-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 10px !important;
+  padding: 10px 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Adjust card padding & dimensions to fit compact 2-column layout */
+.water-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important; /* Prevents text overflow breaking column width */
+  padding: 12px !important; /* Reduced from 20px for tighter mobile fit */
+  border-radius: 16px !important;
+}
+
+/* Scale card images to fit neatly */
+.water-card img,
+.water-grid img {
+  width: 100% !important;
+  max-height: 110px !important;
+  object-fit: contain !important;
+}
+
+/* Adjust text scaling for 2-column width */
+.water-card h3,
+.water-card h4 {
+  font-size: 0.85rem !important;
+  line-height: 1.2 !important;
+  margin: 4px 0 !important;
+}
+
+.water-card p {
+  font-size: 0.75rem !important;
+}
+
+.water-card .badge-type {
+  font-size: 0.60rem !important;
+  margin-bottom: 4px !important;
+}
+
+/* Make buttons and controls scale nicely inside narrow columns */
+.water-card .quantity-control,
+.water-card .qty-btn {
+  transform: scale(0.9) !important;
+  transform-origin: center !important;
+}
+
+.water-card button.add-btn,
+.water-card button {
+  font-size: 0.8rem !important;
+  padding: 6px 4px !important;
+}
+
+/* Desktop View: Expand back to 4 columns on larger screens */
+@media (min-width: 768px) {
+  .water-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  .water-card {
+    padding: 20px !important;
+    border-radius: 24px !important;
+  }
+  
+  .water-card img,
+  .water-grid img {
+    max-height: 150px !important;
+  }
+}
   </style>
 </head>
 <body>
