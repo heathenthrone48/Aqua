@@ -343,6 +343,10 @@
     }
 
     /* Product Cards & Grid */
+    .product-clickable-area {
+      cursor: pointer;
+    }
+
     .product-image-carousel {
       position: relative;
       width: 100%;
@@ -594,6 +598,131 @@
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
+    /* Product Detail View Modal Overlay */
+    .product-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .product-modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .product-modal-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    .product-modal-backdrop.active .product-modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .product-modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.8);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s ease;
+    }
+
+    .product-modal-close:hover {
+      background: #0f172a;
+      color: #ffffff;
+    }
+
+    .modal-image-container {
+      width: 100%;
+      height: 260px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .modal-image-container img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain;
+      padding: 12px;
+    }
+
+    /* Big Description Boxes Inside Modal */
+    .desc-box {
+      background: rgba(241, 245, 249, 0.7);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-top: 16px;
+    }
+
+    .desc-box-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #0369a1;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .desc-box-content {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .desc-box-list {
+      margin-left: 18px;
+      margin-top: 6px;
+    }
+
+    .desc-box-list li {
+      margin-bottom: 4px;
+    }
+
     /* Cart & Panels */
     .cart-panel, .panel {
       background: var(--glass-bg);
@@ -736,6 +865,29 @@
     .confirmation { text-align: center; padding: 60px 20px; }
     .confirmation h2 { color: var(--success); font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
 
+    .admin-link-container {
+      text-align: center;
+      margin-top: 32px;
+    }
+
+    .admin-portal-btn {
+      display: inline-block;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.3);
+      border: 1px solid var(--glass-border);
+      transition: all 0.2s ease;
+    }
+
+    .admin-portal-btn:hover {
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--text);
+    }
+
     @media (max-width: 620px) {
       header { padding: 12px 16px; }
       .contact-help-label { display: none; }
@@ -748,6 +900,7 @@
       .cart-item-total { grid-column: 2; grid-row: 2; }
       .reorder-banner { flex-direction: column; align-items: flex-start; }
       .reorder-btn { width: 100%; }
+      .product-modal-card { padding: 20px; }
     }
   </style>
 </head>
@@ -814,17 +967,20 @@
       <div class="water-grid">
         <!-- Water Can 1 -->
         <div class="water-card" data-category="water" data-name="20L Standard Bubble Top Jar" data-price="70">
-          <div class="product-image-carousel" data-images='["images/jar-20l-1.png","images/jar-20l-2.png"]'>
-            <div class="product-image-track"></div>
-            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
-            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
-            <div class="product-carousel-dots"></div>
-            <div class="product-image-count"></div>
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/jar-20l-1.png","images/jar-20l-2.png"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">RO Filtered</span>
+            <div class="water-title">20L Standard Jar</div>
+            <div class="water-desc">Purified multi-stage RO water jar for daily home and office consumption.</div>
           </div>
 
-          <span class="badge-type">RO Filtered</span>
-          <div class="water-title">20L Standard Jar</div>
-          <div class="water-desc">Purified multi-stage RO water jar for daily home and office consumption.</div>
           <div class="water-price">₹70 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ jar</span></div>
 
           <div class="card-bottom">
@@ -842,17 +998,20 @@
 
         <!-- Water Can 2 -->
         <div class="water-card" data-category="water" data-name="Bailley 5L Packaged Jar" data-price="65">
-          <div class="product-image-carousel" data-images='["images/bailley-5l-1.jpg","images/bailley-5l-2.jpg"]'>
-            <div class="product-image-track"></div>
-            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
-            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
-            <div class="product-carousel-dots"></div>
-            <div class="product-image-count"></div>
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bailley-5l-1.jpg","images/bailley-5l-2.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Packaged Water</span>
+            <div class="water-title">Bailley 5L Bottle</div>
+            <div class="water-desc">Sealed 5L packaged drinking water bottle from Parle Agro Bailley.</div>
           </div>
 
-          <span class="badge-type">Packaged Water</span>
-          <div class="water-title">Bailley 5L Bottle</div>
-          <div class="water-desc">Sealed 5L packaged drinking water bottle from Parle Agro Bailley.</div>
           <div class="water-price">₹65 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
 
           <div class="card-bottom">
@@ -870,17 +1029,20 @@
 
         <!-- Accessory 1 -->
         <div class="water-card" data-category="accessories" data-name="Manual Water Dispenser Hand Pump" data-price="250">
-          <div class="product-image-carousel" data-images='["images/hand-pump-1.jpg","images/hand-pump-2.jpg"]'>
-            <div class="product-image-track"></div>
-            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
-            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
-            <div class="product-carousel-dots"></div>
-            <div class="product-image-count"></div>
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/hand-pump-1.jpg","images/hand-pump-2.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Accessory</span>
+            <div class="water-title">Hand Pump Dispenser</div>
+            <div class="water-desc">Manual press pump machine compatible with 20L bubble top jars.</div>
           </div>
 
-          <span class="badge-type">Accessory</span>
-          <div class="water-title">Hand Pump Dispenser</div>
-          <div class="water-desc">Manual press pump machine compatible with 20L bubble top jars.</div>
           <div class="water-price">₹250 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ piece</span></div>
 
           <div class="card-bottom">
@@ -898,17 +1060,20 @@
 
         <!-- Accessory 2 -->
         <div class="water-card" data-category="accessories" data-name="Automatic Electric Water Dispenser Pump" data-price="450">
-          <div class="product-image-carousel" data-images='["images/electric-pump-1.jpg","images/electric-pump-2.jpg"]'>
-            <div class="product-image-track"></div>
-            <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="changeProductImage(this, -1)">‹</button>
-            <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="changeProductImage(this, 1)">›</button>
-            <div class="product-carousel-dots"></div>
-            <div class="product-image-count"></div>
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/electric-pump-1.jpg","images/electric-pump-2.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Rechargeable</span>
+            <div class="water-title">Electric Water Pump</div>
+            <div class="water-desc">USB rechargeable automatic water dispenser pump for 20L cans.</div>
           </div>
 
-          <span class="badge-type">Rechargeable</span>
-          <div class="water-title">Electric Water Pump</div>
-          <div class="water-desc">USB rechargeable automatic water dispenser pump for 20L cans.</div>
           <div class="water-price">₹450 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ piece</span></div>
 
           <div class="card-bottom">
@@ -991,6 +1156,60 @@
     </form>
   </div>
 
+  <!-- PRODUCT DETAIL POPUP MODAL VIEW -->
+  <div class="product-modal-backdrop" id="productModalBackdrop" onclick="closeProductModal(event)">
+    <div class="product-modal-card" onclick="event.stopPropagation()">
+      <button type="button" class="product-modal-close" onclick="closeProductModalDirect()">✕</button>
+
+      <span class="badge-type" id="modalBadge">RO FILTERED</span>
+      <h2 class="water-title" id="modalTitle" style="font-size:1.4rem; margin-top: 4px;">Product Name</h2>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;" id="modalSubtitle"></p>
+
+      <div class="modal-image-container">
+        <img id="modalImg" src="" alt="Product Image">
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px;">
+        <div class="water-price" id="modalPrice">₹0</div>
+        <div class="card-qty-controls">
+          <button type="button" class="card-qty-btn" onclick="changeModalQty(-1)">−</button>
+          <span class="card-qty-value" id="modalQtyVal">1</span>
+          <button type="button" class="card-qty-btn" onclick="changeModalQty(1)">+</button>
+        </div>
+      </div>
+
+      <button type="button" class="add-cart-btn" id="modalAddToCartBtn" style="margin-bottom: 20px;" onclick="addModalItemToCart()">
+        ADD TO CART
+      </button>
+
+      <!-- BIG DESCRIPTION BOXES BELOW IMAGE & ACTIONS -->
+      <div class="desc-box">
+        <div class="desc-box-title">💧 Key Features & Specifications</div>
+        <div class="desc-box-content" id="modalBoxFeatures">
+          Multi-stage purification process ensuring optimal mineral balance and pure refreshment. Safe, reliable daily hydration for homes, offices, and events.
+        </div>
+      </div>
+
+      <div class="desc-box">
+        <div class="desc-box-title">🛡️ Usage Guidelines & Hygiene</div>
+        <div class="desc-box-content">
+          <ul class="desc-box-list" id="modalBoxHygiene">
+            <li>Store in a cool, dry place away from direct sunlight.</li>
+            <li>Keep the seal intact until ready for dispenser attachment.</li>
+            <li>Ensure dispenser or pump nozzle is cleaned regularly prior to installation.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="desc-box">
+        <div class="desc-box-title">🚚 Delivery & Bottle Returns</div>
+        <div class="desc-box-content" id="modalBoxDelivery">
+          Fast local express delivery within 1 to 2 hours. Empty jars will be collected by our delivery driver upon drop-off.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="container hidden" id="thankyou-screen">
     <div class="panel confirmation">
       <div style="font-size: 2.5rem; margin-bottom: 8px;">🎉</div>
@@ -1006,16 +1225,82 @@
       <button onclick="window.location.reload()" class="submit-btn" style="width: auto; padding: 14px 28px;">Place Another Order</button>
     </div>
   </div>
+
   <div class="admin-link-container">
-  <a href="admin.html" class="admin-portal-btn">
-    🔒 Admin Portal
-  </a>
+    <a href="admin.html" class="admin-portal-btn">
+      🔒 Admin Portal
+    </a>
   </div>
 
   <script>
     /* LOCAL STORAGE KEYS */
     const STORAGE_KEY_USER = 'neer_bekuuu_user_info';
     const STORAGE_KEY_LAST_ORDER = 'neer_bekuuu_last_order';
+
+    let activeModalCardRef = null;
+
+    /* PRODUCT MODAL FUNCTIONALITY */
+    function openProductModal(clickableEl) {
+      const card = clickableEl.closest('.water-card');
+      activeModalCardRef = card;
+
+      const name = card.dataset.name;
+      const price = card.dataset.price;
+      const badge = card.querySelector('.badge-type').innerText;
+      const title = card.querySelector('.water-title').innerText;
+      const desc = card.querySelector('.water-desc').innerText;
+      const img = card.querySelector('.product-image-slide img')?.src || '';
+
+      document.getElementById('modalBadge').innerText = badge;
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalSubtitle').innerText = desc;
+      document.getElementById('modalPrice').innerHTML = `₹${price} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ unit</span>`;
+      document.getElementById('modalImg').src = img;
+      document.getElementById('modalQtyVal').innerText = card.querySelector('.card-qty-value').innerText || '1';
+
+      // Custom descriptions based on product type
+      const featuresBox = document.getElementById('modalBoxFeatures');
+      const hygieneBox = document.getElementById('modalBoxHygiene');
+      
+      if (card.dataset.category === 'accessories') {
+        featuresBox.innerText = "High-efficiency ergonomic water dispenser attachment designed for seamless compatibility with standard 20L bubble top jars. Durable food-grade material.";
+        hygieneBox.innerHTML = "<li>Wipe nozzle clean before first use.</li><li>Do not submerge electronic parts in water.</li><li>Charge via USB for ~3-4 hours before continuous use.</li>";
+      } else {
+        featuresBox.innerText = "Rigorous multi-stage Reverse Osmosis (RO) and UV purification treatment. Carefully balanced essential minerals offer a fresh and clean taste.";
+        hygieneBox.innerHTML = "<li>Store in a cool, dry place away from direct sunlight.</li><li>Keep the seal intact until ready for dispenser attachment.</li><li>Ensure dispenser nozzle is clean prior to installation.</li>";
+      }
+
+      document.getElementById('productModalBackdrop').classList.add('active');
+    }
+
+    function closeProductModal(e) {
+      if (e.target.id === 'productModalBackdrop') {
+        closeProductModalDirect();
+      }
+    }
+
+    function closeProductModalDirect() {
+      document.getElementById('productModalBackdrop').classList.remove('active');
+    }
+
+    function changeModalQty(change) {
+      const qtyEl = document.getElementById('modalQtyVal');
+      const current = parseInt(qtyEl.innerText, 10) || 1;
+      const updated = Math.max(1, current + change);
+      qtyEl.innerText = updated;
+
+      if (activeModalCardRef) {
+        activeModalCardRef.querySelector('.card-qty-value').innerText = updated;
+      }
+    }
+
+    function addModalItemToCart() {
+      if (activeModalCardRef) {
+        const addBtn = activeModalCardRef.querySelector('.add-cart-btn');
+        addToCart(addBtn);
+        closeProductModalDirect();
+      }
+    }
 
     /* Category Filter Functionality */
     function filterCategory(category, buttonEl) {
@@ -1148,7 +1433,7 @@
           <button type="button"
                   class="product-carousel-dot${index === 0 ? ' active' : ''}"
                   aria-label="Go to image ${index + 1}"
-                  onclick="goToProductImage(this, ${index})"></button>
+                  onclick="event.stopPropagation(); goToProductImage(this, ${index})"></button>
         `).join('');
 
         count.textContent = `${images.length} ${images.length === 1 ? 'photo' : 'photos'}`;
@@ -1460,7 +1745,6 @@
         const result = await response.json();
 
         if (response.ok && result.success) {
-          // Save customer data and last cart order to localStorage for fast future orders
           saveCustomerData({
             name: customerName,
             phone: customerPhone,
@@ -1485,7 +1769,7 @@
       }
     });
 
-        function applyStockStatus() {
+    function applyStockStatus() {
       const saved = localStorage.getItem('neer_inventory_stock');
       if (!saved) return;
 
@@ -1499,7 +1783,7 @@
 
       Object.keys(cardMap).forEach(key => {
         const productName = cardMap[key];
-        const isAvailable = stock[key] !== false; // Default true
+        const isAvailable = stock[key] !== false;
 
         const card = [...document.querySelectorAll('.water-card')]
           .find(el => el.dataset.name === productName);
@@ -1516,7 +1800,6 @@
       });
     }
 
-    // Run on page load
     applyStockStatus();
   </script>
 </body>
