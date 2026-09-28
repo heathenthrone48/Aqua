@@ -37,7 +37,6 @@
       -webkit-font-smoothing: antialiased; 
     }
 
-    /* Fixed Sticky Top Header - Layered Above Floating Categories */
     header {
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(16px);
@@ -105,7 +104,6 @@
 
     .container { max-width: 860px; margin: 0 auto; padding: 0 20px; }
 
-    /* Quick Reorder Banner */
     .reorder-banner {
       background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(6, 182, 212, 0.15) 100%);
       backdrop-filter: blur(16px);
@@ -167,7 +165,6 @@
       box-shadow: 0 6px 16px rgba(2, 132, 199, 0.4);
     }
 
-    /* Hero Banner Carousel */
     .hero-carousel-wrapper {
       position: relative;
       width: 100%;
@@ -280,7 +277,6 @@
     }
     .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(148, 163, 184, 0.4); }
 
-    /* Sticky Floating Category Filter Bar */
     .category-filter-wrapper {
       position: sticky;
       top: 85px;
@@ -342,7 +338,6 @@
       box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
     }
 
-    /* Product Cards & Grid */
     .product-clickable-area {
       cursor: pointer;
     }
@@ -598,7 +593,7 @@
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
-    /* Product Detail View Modal Overlay */
+    /* Product Modal Overlay */
     .product-modal-backdrop {
       position: fixed;
       inset: 0;
@@ -686,7 +681,6 @@
       padding: 12px;
     }
 
-    /* Big Description Boxes Inside Modal */
     .desc-box {
       background: rgba(241, 245, 249, 0.7);
       border: 1px solid var(--glass-border);
@@ -723,7 +717,6 @@
       margin-bottom: 4px;
     }
 
-    /* Cart & Panels */
     .cart-panel, .panel {
       background: var(--glass-bg);
       backdrop-filter: blur(16px);
@@ -924,7 +917,7 @@
 
   <div class="container" id="order-screen">
     
-    <!-- Quick Reorder Banner (Hidden by default, shown if previous order exists) -->
+    <!-- Quick Reorder Banner -->
     <div id="reorder-banner" class="reorder-banner hidden">
       <div class="reorder-info">
         <div class="reorder-title">
@@ -949,14 +942,14 @@
 
       <div class="section-label">01 / Choose Products</div>
 
-      <!-- Sticky Floating Category Filter Bar -->
+      <!-- Category Filter Tabs -->
       <div class="category-filter-wrapper">
         <div class="category-tabs">
           <button type="button" class="category-tab active" onclick="filterCategory('all', this)">
             ✨ All Items
           </button>
           <button type="button" class="category-tab" onclick="filterCategory('water', this)">
-            💧 Water Cans
+            💧 Water Category
           </button>
           <button type="button" class="category-tab" onclick="filterCategory('accessories', this)">
             🔌 Accessories
@@ -965,10 +958,12 @@
       </div>
 
       <div class="water-grid">
-        <!-- Water Can 1 -->
-        <div class="water-card" data-category="water" data-name="20L Standard Bubble Top Jar" data-price="70">
+
+        <!-- ================= BISLERI PRODUCTS ================= -->
+        <!-- 1. Bisleri 20L Can -->
+        <div class="water-card" data-category="water" data-name="Bisleri 20L Can" data-price="110">
           <div class="product-clickable-area" onclick="openProductModal(this)">
-            <div class="product-image-carousel" data-images='["images/jar-20l-1.png","images/jar-20l-2.png"]'>
+            <div class="product-image-carousel" data-images='["images/bisleri-20l.jpg","images/bisleri-20l-2.jpg"]'>
               <div class="product-image-track"></div>
               <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
               <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
@@ -976,12 +971,12 @@
               <div class="product-image-count"></div>
             </div>
 
-            <span class="badge-type">RO Filtered</span>
-            <div class="water-title">20L Standard Jar</div>
-            <div class="water-desc">Purified multi-stage RO water jar for daily home and office consumption.</div>
+            <span class="badge-type">Bisleri • Packaged Water</span>
+            <div class="water-title">Bisleri 20L Can</div>
+            <div class="water-desc">Standard 20 Litre Bisleri packaged drinking water jar for daily home and office consumption.</div>
           </div>
 
-          <div class="water-price">₹70 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ jar</span></div>
+          <div class="water-price">₹110 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div>
 
           <div class="card-bottom">
             <div class="card-qty-row">
@@ -996,8 +991,164 @@
           </div>
         </div>
 
-        <!-- Water Can 2 -->
-        <div class="water-card" data-category="water" data-name="Bailley 5L Packaged Jar" data-price="65">
+        <!-- 2. Bisleri 10L Can -->
+        <div class="water-card" data-category="water" data-name="Bisleri 10L Can" data-price="130">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bisleri-10l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Bisleri • Handle Jar</span>
+            <div class="water-title">Bisleri 10L Can</div>
+            <div class="water-desc">10 Litre compact Bisleri drinking water container with built-in handle grip for easy pouring.</div>
+          </div>
+
+          <div class="water-price">₹130 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- 3. Bisleri 5L Bottle -->
+        <div class="water-card" data-category="water" data-name="Bisleri 5L Bottle" data-price="80">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bisleri-5l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Bisleri • Packaged Bottle</span>
+            <div class="water-title">Bisleri 5L Bottle</div>
+            <div class="water-desc">Convenient 5 Litre sealed Bisleri packaged drinking water bottle.</div>
+          </div>
+
+          <div class="water-price">₹80 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- 4. Bisleri 2L Bottle -->
+        <div class="water-card" data-category="water" data-name="Bisleri 2L Bottle" data-price="30">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bisleri-2l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Bisleri • Portable</span>
+            <div class="water-title">Bisleri 2L Bottle</div>
+            <div class="water-desc">2 Litre Bisleri mineralized packaged drinking water bottle.</div>
+          </div>
+
+          <div class="water-price">₹30 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- 5. Bisleri 1L Bottle -->
+        <div class="water-card" data-category="water" data-name="Bisleri 1L Bottle" data-price="20">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bisleri-1l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Bisleri • Standard Bottle</span>
+            <div class="water-title">Bisleri 1L Bottle</div>
+            <div class="water-desc">1 Litre handy travel Bisleri packaged drinking water bottle.</div>
+          </div>
+
+          <div class="water-price">₹20 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- ================= BAILLEY PRODUCTS ================= -->
+        <!-- 6. Bailley 10L Can -->
+        <div class="water-card" data-category="water" data-name="Bailley 10L Can" data-price="120">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bailley-10l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Bailley • Handle Jar</span>
+            <div class="water-title">Bailley 10L Can</div>
+            <div class="water-desc">10 Litre packaged drinking water can from Parle Agro Bailley with dispenser tap or handle.</div>
+          </div>
+
+          <div class="water-price">₹120 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- 7. Bailley 5L Can -->
+        <div class="water-card" data-category="water" data-name="Bailley 5L Can" data-price="70">
           <div class="product-clickable-area" onclick="openProductModal(this)">
             <div class="product-image-carousel" data-images='["images/bailley-5l-1.jpg","images/bailley-5l-2.jpg"]'>
               <div class="product-image-track"></div>
@@ -1007,12 +1158,12 @@
               <div class="product-image-count"></div>
             </div>
 
-            <span class="badge-type">Packaged Water</span>
-            <div class="water-title">Bailley 5L Bottle</div>
-            <div class="water-desc">Sealed 5L packaged drinking water bottle from Parle Agro Bailley.</div>
+            <span class="badge-type">Bailley • Packaged Water</span>
+            <div class="water-title">Bailley 5L Can</div>
+            <div class="water-desc">Sealed 5 Litre packaged drinking water container from Parle Agro Bailley.</div>
           </div>
 
-          <div class="water-price">₹65 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+          <div class="water-price">₹70 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div>
 
           <div class="card-bottom">
             <div class="card-qty-row">
@@ -1027,7 +1178,133 @@
           </div>
         </div>
 
-        <!-- Accessory 1 -->
+        <!-- 8. Bailley 2L Bottle -->
+        <div class="water-card" data-category="water" data-name="Bailley 2L Bottle" data-price="30">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bailley-2l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Bailley • Portable</span>
+            <div class="water-title">Bailley 2L Bottle</div>
+            <div class="water-desc">2 Litre packaged purified drinking water bottle from Parle Agro Bailley.</div>
+          </div>
+
+          <div class="water-price">₹30 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- 9. Bailley 1L Bottle -->
+        <div class="water-card" data-category="water" data-name="Bailley 1L Bottle" data-price="20">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bailley-1l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Bailley • Standard Bottle</span>
+            <div class="water-title">Bailley 1L Bottle</div>
+            <div class="water-desc">1 Litre handy packaged drinking water bottle from Parle Agro Bailley.</div>
+          </div>
+
+          <div class="water-price">₹20 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- ================= KINLEY PRODUCTS ================= -->
+        <!-- 10. Kinley 2L Bottle -->
+        <div class="water-card" data-category="water" data-name="Kinley 2L Bottle" data-price="35">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/kinley-2l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Kinley • Coca-Cola</span>
+            <div class="water-title">Kinley 2L Bottle</div>
+            <div class="water-desc">2 Litre packaged drinking water bottle with reverse osmosis and microfiltration from Kinley.</div>
+          </div>
+
+          <div class="water-price">₹35 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- 11. Kinley 1L Bottle -->
+        <div class="water-card" data-category="water" data-name="Kinley 1L Bottle" data-price="20">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/kinley-1l.jpg"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">Kinley • Standard Bottle</span>
+            <div class="water-title">Kinley 1L Bottle</div>
+            <div class="water-desc">1 Litre handy packaged drinking water bottle from Kinley.</div>
+          </div>
+
+          <div class="water-price">₹20 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
+        <!-- ================= ACCESSORIES ================= -->
+        <!-- 12. Accessory - Hand Pump -->
         <div class="water-card" data-category="accessories" data-name="Manual Water Dispenser Hand Pump" data-price="250">
           <div class="product-clickable-area" onclick="openProductModal(this)">
             <div class="product-image-carousel" data-images='["images/hand-pump-1.jpg","images/hand-pump-2.jpg"]'>
@@ -1058,7 +1335,7 @@
           </div>
         </div>
 
-        <!-- Accessory 2 -->
+        <!-- 13. Accessory - Electric Pump -->
         <div class="water-card" data-category="accessories" data-name="Automatic Electric Water Dispenser Pump" data-price="450">
           <div class="product-clickable-area" onclick="openProductModal(this)">
             <div class="product-image-carousel" data-images='["images/electric-pump-1.jpg","images/electric-pump-2.jpg"]'>
@@ -1088,8 +1365,10 @@
             <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
           </div>
         </div>
+
       </div>
 
+      <!-- Cart Summary Panel -->
       <div class="cart-panel">
         <div class="cart-header">
           <h3>🛒 Selected Items</h3>
@@ -1161,7 +1440,7 @@
     <div class="product-modal-card" onclick="event.stopPropagation()">
       <button type="button" class="product-modal-close" onclick="closeProductModalDirect()">✕</button>
 
-      <span class="badge-type" id="modalBadge">RO FILTERED</span>
+      <span class="badge-type" id="modalBadge">PACKAGED WATER</span>
       <h2 class="water-title" id="modalTitle" style="font-size:1.4rem; margin-top: 4px;">Product Name</h2>
       <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;" id="modalSubtitle"></p>
 
@@ -1182,7 +1461,6 @@
         ADD TO CART
       </button>
 
-      <!-- BIG DESCRIPTION BOXES BELOW IMAGE & ACTIONS -->
       <div class="desc-box">
         <div class="desc-box-title">💧 Key Features & Specifications</div>
         <div class="desc-box-content" id="modalBoxFeatures">
@@ -1195,8 +1473,8 @@
         <div class="desc-box-content">
           <ul class="desc-box-list" id="modalBoxHygiene">
             <li>Store in a cool, dry place away from direct sunlight.</li>
-            <li>Keep the seal intact until ready for dispenser attachment.</li>
-            <li>Ensure dispenser or pump nozzle is cleaned regularly prior to installation.</li>
+            <li>Keep the seal intact until ready for consumption or dispenser attachment.</li>
+            <li>Ensure dispenser nozzle is cleaned regularly prior to installation.</li>
           </ul>
         </div>
       </div>
@@ -1210,6 +1488,7 @@
     </div>
   </div>
 
+  <!-- Thank You Screen -->
   <div class="container hidden" id="thankyou-screen">
     <div class="panel confirmation">
       <div style="font-size: 2.5rem; margin-bottom: 8px;">🎉</div>
@@ -1233,13 +1512,11 @@
   </div>
 
   <script>
-    /* LOCAL STORAGE KEYS */
     const STORAGE_KEY_USER = 'neer_bekuuu_user_info';
     const STORAGE_KEY_LAST_ORDER = 'neer_bekuuu_last_order';
 
     let activeModalCardRef = null;
 
-    /* PRODUCT MODAL FUNCTIONALITY */
     function openProductModal(clickableEl) {
       const card = clickableEl.closest('.water-card');
       activeModalCardRef = card;
@@ -1258,7 +1535,6 @@
       document.getElementById('modalImg').src = img;
       document.getElementById('modalQtyVal').innerText = card.querySelector('.card-qty-value').innerText || '1';
 
-      // Custom descriptions based on product type
       const featuresBox = document.getElementById('modalBoxFeatures');
       const hygieneBox = document.getElementById('modalBoxHygiene');
       
@@ -1267,7 +1543,7 @@
         hygieneBox.innerHTML = "<li>Wipe nozzle clean before first use.</li><li>Do not submerge electronic parts in water.</li><li>Charge via USB for ~3-4 hours before continuous use.</li>";
       } else {
         featuresBox.innerText = "Rigorous multi-stage Reverse Osmosis (RO) and UV purification treatment. Carefully balanced essential minerals offer a fresh and clean taste.";
-        hygieneBox.innerHTML = "<li>Store in a cool, dry place away from direct sunlight.</li><li>Keep the seal intact until ready for dispenser attachment.</li><li>Ensure dispenser nozzle is clean prior to installation.</li>";
+        hygieneBox.innerHTML = "<li>Store in a cool, dry place away from direct sunlight.</li><li>Keep the seal intact until ready for dispenser attachment or drinking.</li><li>Ensure dispenser nozzle is clean prior to installation.</li>";
       }
 
       document.getElementById('productModalBackdrop').classList.add('active');
@@ -1302,7 +1578,6 @@
       }
     }
 
-    /* Category Filter Functionality */
     function filterCategory(category, buttonEl) {
       document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
       buttonEl.classList.add('active');
@@ -1316,7 +1591,6 @@
       });
     }
 
-    /* Top Hero Banner Carousel */
     let heroTimer = null;
 
     function initHeroCarousel() {
@@ -1397,7 +1671,6 @@
       startHeroAutoPlay();
     }
 
-    /* Product Image Carousels */
     const productTimers = new Map();
 
     function initProductCarousels() {
@@ -1511,7 +1784,6 @@
       startProductAutoPlay(carousel);
     }
 
-    /* Cart Management */
     let cart = {};
 
     function changeCardQty(button, change) {
@@ -1605,7 +1877,6 @@
         .join(' | ');
     }
 
-    /* AUTO-FILL & REORDER LOCALSTORAGE FUNCTIONS */
     function loadSavedCustomerData() {
       try {
         const savedUser = localStorage.getItem(STORAGE_KEY_USER);
@@ -1660,7 +1931,6 @@
         if (lastOrder.cart) {
           cart = JSON.parse(JSON.stringify(lastOrder.cart));
           
-          // Highlight active product cards in the UI
           document.querySelectorAll('.water-card').forEach(card => {
             const name = card.dataset.name;
             if (cart[name]) {
@@ -1671,8 +1941,6 @@
           });
 
           renderCart();
-
-          // Scroll straight to the bottom "Place Order" button and total calculation
           document.getElementById('submit-order-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       } catch (e) {
@@ -1768,39 +2036,6 @@
         submitBtn.disabled = false;
       }
     });
-
-    function applyStockStatus() {
-      const saved = localStorage.getItem('neer_inventory_stock');
-      if (!saved) return;
-
-      const stock = JSON.parse(saved);
-      const cardMap = {
-        '20l': '20L Standard Bubble Top Jar',
-        '5l': 'Bailley 5L Packaged Jar',
-        'handpump': 'Manual Water Dispenser Hand Pump',
-        'electricpump': 'Automatic Electric Water Dispenser Pump'
-      };
-
-      Object.keys(cardMap).forEach(key => {
-        const productName = cardMap[key];
-        const isAvailable = stock[key] !== false;
-
-        const card = [...document.querySelectorAll('.water-card')]
-          .find(el => el.dataset.name === productName);
-
-        if (card) {
-          const btn = card.querySelector('.add-cart-btn');
-          if (!isAvailable) {
-            btn.disabled = true;
-            btn.innerText = 'OUT OF STOCK';
-            btn.style.background = '#94a3b8';
-            btn.style.cursor = 'not-allowed';
-          }
-        }
-      });
-    }
-
-    applyStockStatus();
   </script>
 </body>
 </html>
