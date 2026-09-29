@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEER BEKUUU — Express Water Delivery</title>
+  <title>NEER BEKU — Express Water Delivery</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -886,8 +886,35 @@
       .contact-help-label { display: none; }
       .category-filter-wrapper { top: 78px; }
       .hero-carousel-wrapper { aspect-ratio: 16 / 9; margin: 16px 0 10px; }
-      .water-grid { grid-template-columns: 1fr; }
-      .water-card { padding: 18px; }
+      .container { padding: 0 12px; }
+      .water-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .water-card { min-width: 0; padding: 7px; border-radius: 15px; }
+      .water-card .badge-type { font-size: 0.55rem; font-weight: 600; letter-spacing: 0; margin: 2px 3px 4px; line-height: 1.2; color: var(--text-muted); }
+      .water-card .water-title { font-size: 0.84rem; font-weight: 700; line-height: 1.25; margin: 0 3px 5px; overflow-wrap: anywhere; }
+      .water-card .water-desc { display: none; }
+      .water-card .water-price { font-size: 1rem; margin: 0 3px; }
+      .water-card .water-price span { font-size: 0.62rem !important; }
+      .water-card .product-image-carousel {
+        width: 100%; height: auto; padding: 0; aspect-ratio: 1 / 1;
+        margin-bottom: 8px; border: 0; border-radius: 12px;
+      }
+      .water-card .product-image-track { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .water-card .product-image-slide img { padding: 2px; }
+      .water-card .product-image-count { display: none; }
+      .water-card .product-carousel-arrow { width: 26px; height: 26px; font-size: 1rem; }
+      .water-card .card-bottom { display: flex; align-items: center; gap: 6px; padding-top: 9px; }
+      .water-card .card-qty-row { flex: 0 0 auto; justify-content: flex-start; margin: 0; }
+      .water-card .card-qty-label { display: none; }
+      .water-card .card-qty-controls { gap: 3px; padding: 3px; }
+      .water-card .card-qty-btn { width: 27px; height: 27px; }
+      .water-card .card-qty-value { font-size: 0.82rem; min-width: 14px; }
+      .water-card .add-cart-btn {
+        flex: 1; min-width: 0; width: auto; min-height: 37px;
+        padding: 8px 2px; font-size: 0; letter-spacing: 0; border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.17);
+      }
+      .water-card .add-cart-btn::after { content: 'Add'; font-size: 0.75rem; }
+      .water-card .add-cart-btn.added::after { content: 'Added'; font-size: 0.65rem; }
       .cart-item { grid-template-columns: 1fr auto; }
       .cart-item .remove-cart-btn { grid-column: 2; grid-row: 1; justify-self: end; }
       .cart-item-total { grid-column: 2; grid-row: 2; }
@@ -1525,7 +1552,7 @@
       const price = card.dataset.price;
       const badge = card.querySelector('.badge-type').innerText;
       const title = card.querySelector('.water-title').innerText;
-      const desc = card.querySelector('.water-desc').innerText;
+      const desc = card.querySelector('.water-desc').textContent.trim();
       const img = card.querySelector('.product-image-slide img')?.src || '';
 
       document.getElementById('modalBadge').innerText = badge;
@@ -1950,6 +1977,20 @@
 
     initHeroCarousel();
     initProductCarousels();
+
+    // Match the rendered media height to its actual width on narrow screens.
+    function syncMobileImageSquares() {
+      const mobile = window.matchMedia('(max-width: 620px)').matches;
+      document.querySelectorAll('.water-card .product-image-carousel').forEach(carousel => {
+        carousel.style.height = mobile ? `${carousel.getBoundingClientRect().width}px` : '';
+      });
+    }
+    syncMobileImageSquares();
+    window.addEventListener('resize', syncMobileImageSquares);
+    if (window.ResizeObserver) {
+      new ResizeObserver(syncMobileImageSquares).observe(document.querySelector('.water-grid'));
+    }
+
     loadSavedCustomerData();
 
     function escapeHtml(value) {
