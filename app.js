@@ -481,6 +481,24 @@
       return `NEER-${randomWord}-${randomNumber}`;
     }
 
+        function renderConfirmation(order) {
+      const rows = order.items.map(item => {
+        const row = document.createElement('div');
+        row.className = 'confirm-item';
+        const label = document.createElement('span');
+        label.textContent = `${item.name} × ${item.qty}`;
+        const amount = document.createElement('span');
+        amount.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
+        row.append(label, amount);
+        return row;
+      });
+      document.getElementById('confirm-items').replaceChildren(...rows);
+      document.getElementById('confirm-total').textContent = order.total;
+      document.getElementById('confirm-time').textContent = order.time;
+      document.getElementById('confirm-address').textContent = order.address;
+      document.getElementById('confirm-contact').textContent = `${order.name}, ${order.phone}`;
+    }
+
     let orderSubmitting = false;
     const form = document.getElementById('waterForm');
     form.addEventListener('submit', async function(e) {
@@ -550,6 +568,16 @@
           }, cart, totalBill);
 
           document.getElementById('order-ref-code').innerText = orderRef;
+          
+          renderConfirmation({
+            items: Object.values(cart),
+            total: totalBill,
+            time: document.getElementById('preferred-time').selectedOptions[0].textContent,
+            name: customerName,
+            phone: customerPhone,
+            address: customerAddress
+          });
+
           document.getElementById('order-screen').classList.add('hidden');
           document.getElementById('thankyou-screen').classList.remove('hidden');
           window.scrollTo(0, 0);

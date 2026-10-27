@@ -1,34 +1,54 @@
-# NEER BEKUUU site
+# 💧 NEER BEKUUU
 
-Keep these files together in the repository root. Put the existing product and banner images in `images/` with the exact filenames referenced by `index.html` in each `data-images` list. No images were included in the supplied files.
+A simple online store for ordering packaged drinking water (cans, bottles and dispensers), with an admin panel to control what's in stock.
 
-- `index.html`: storefront markup and product data (names, prices, image paths).
-- `styles.css`: storefront styles, including mobile layout.
-- `app.js`: storefront behavior (carousels, cart, modal, checkout).
-- `admin.html`, `admin.css`, `admin.js`: admin markup, styling, and behavior.
-- `wrangler.jsonc`: existing Cloudflare static-assets configuration.
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)
+![Cloudflare D1](https://img.shields.io/badge/Database-D1-F38020?logo=cloudflare&logoColor=white)
+![HTML/CSS/JS](https://img.shields.io/badge/Built%20with-HTML%20%7C%20CSS%20%7C%20JS-1572B6)
 
-Deploy all files together. The existing checkout submits to the separate `water-order-sms` Worker URL defined in `app.js`. The admin page uses browser-local storage for stock and order logs, as in the supplied code. The footer link does not secure the admin page; the admin password is in `admin.js`.
+## What it does
 
-To preview locally, run a static server from this directory (for example, `python3 -m http.server 8000`) and open `http://localhost:8000/`.
+**For customers**
+- Browse products with image carousels and prices
+- Add to cart and place an order from their phone
+- See live availability, so out-of-stock items update within about 10 seconds
 
+**For the owner (admin panel)**
+- Log in with a password
+- Mark any product In Stock or Out of Stock with one click
+- Changes are saved online and show up on every device
+- See recent order submissions
 
+## Products
 
-✅ Successfully created DB 'neer-beku' in region EEUR
-Created your new D1 database.
+| Brand | Items |
+|-------|-------|
+| Bisleri | 20L, 10L, 5L, 2L, 1L |
+| Bailley | 10L, 5L, 2L, 1L |
+| Kinley | 2L, 1L |
+| Accessories | Hand pump dispenser, electric water pump |
 
-To access your new D1 Database in your Worker, add the following snippet to your configuration file:
-{
-  "d1_databases": [
-    {
-      "binding": "neer_beku",
-      "database_name": "neer-beku",
-      "database_id": "5327a4c7-5291-4f24-8aa8-3e77ef28e6cf"
-    }
-  ]
-}
+## What's in the project
 
+| File | What it's for |
+|------|---------------|
+| `index.html`, `styles.css`, `app.js` | The customer storefront |
+| `admin.html`, `admin.css`, `admin.js` | The admin panel |
+| `worker.js` | The server side: login, stock API and serving the site |
+| `schema.sql` | The database table for stock |
+| `wrangler.jsonc` | Cloudflare settings |
 
+## How it fits together
 
-qx6h3N6nAo4zRPuXn1JclASdBrszHKED
-hyBxYMn1XOBvhfkfzNx1a95At8VOza6P
+```
+Customer / Admin  ->  Cloudflare Worker  ->  D1 database (stock)
+                            |
+                            +-> serves the website files
+```
+
+Checkout orders are sent to a separate Worker (`water-order-sms`) that handles notifications.
+
+## Notes
+
+- The admin order log is stored in the browser, so it only shows orders from that same device.
+- The admin password is stored as a Cloudflare secret, not in the code.

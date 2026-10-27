@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEER BEKUUU — Express Water Delivery</title>
+  <link rel="icon" type="image/png" href="images/favicon.png" sizes="64x64">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,8 +14,9 @@
 
   <header>
     <div class="brand">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#0284c7;"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-      NEER BEKUUU
+      <a href="/" class="logo-link">
+        <img src="images/logo.png" alt="NEER BEKUUU Logo" class="brand-logo">
+      </a>
     </div>
     <div class="header-actions">
       <span class="contact-help-label">Need Help?</span>
@@ -601,19 +603,39 @@
   </div>
 
   <!-- Thank You Screen -->
+    <!-- Order Confirmation Screen -->
   <div class="container hidden" id="thankyou-screen">
-    <div class="panel confirmation">
-      <div style="font-size: 2.5rem; margin-bottom: 8px;">🎉</div>
-      <h2>Order Placed Successfully!</h2>
-      
-      <div style="background: rgba(224, 242, 254, 0.5); backdrop-filter: blur(12px); border: 1.5px dashed #0284c7; border-radius: 16px; padding: 20px; margin: 20px 0 24px; display: inline-block; width: 100%; max-width: 420px;">
-        <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; color: #0369a1; text-transform: uppercase; display: block; margin-bottom: 4px;">Your Order Reference ID</span>
-        <strong id="order-ref-code" style="font-size: 1.5rem; font-weight: 800; color: #0284c7; letter-spacing: 0.5px;">NEER-AQUA-0000</strong>
-        <p style="font-size: 0.8rem; color: #475569; margin-top: 6px; font-weight: 500;">Please mention this simple code if you call or contact us regarding your order.</p>
+    <div class="panel confirmation" role="status" aria-live="polite">
+      <div class="confirm-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </div>
+      <h2>Order Confirmed</h2>
+      <p class="confirm-lead">Thank you for your order. We have received it and will contact you shortly to confirm delivery.</p>
+
+      <div class="confirm-ref">
+        <span class="confirm-ref-label">Order Reference</span>
+        <strong class="confirm-ref-code" id="order-ref-code">NEER-AQUA-0000</strong>
+        <span class="confirm-ref-note">Please quote this reference when contacting us about your order.</span>
       </div>
 
-      <p style="color: var(--text-muted); margin-bottom: 24px; font-weight: 500;">Your request has been dispatched. If needed, our team will reach out to you on <strong>+91 8884749700</strong>.</p>
-      <button onclick="window.location.reload()" class="submit-btn" style="width: auto; padding: 14px 28px;">Place Another Order</button>
+      <div class="confirm-summary">
+        <h3>Order Summary</h3>
+        <div id="confirm-items"></div>
+        <div class="confirm-total">
+          <span>Total Due on Delivery</span>
+          <strong id="confirm-total">₹0.00</strong>
+        </div>
+      </div>
+
+      <dl class="confirm-details">
+        <div><dt>Payment</dt><dd>Pay on delivery</dd></div>
+        <div><dt>Delivery Window</dt><dd id="confirm-time">—</dd></div>
+        <div><dt>Deliver To</dt><dd id="confirm-address">—</dd></div>
+        <div><dt>Contact</dt><dd id="confirm-contact">—</dd></div>
+      </dl>
+
+      <p class="confirm-help">Questions about your order? Call us on <a href="tel:+918884749700">+91 88847 49700</a>.</p>
+      <button type="button" onclick="window.location.reload()" class="submit-btn confirm-btn">Place Another Order</button>
     </div>
   </div>
 
