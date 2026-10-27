@@ -33,6 +33,7 @@
       }
 
       document.getElementById('productModalBackdrop').classList.add('active');
+      applyLiveStock();
     }
 
     function closeProductModal(e) {
@@ -282,6 +283,10 @@
     function addToCart(button) {
       const card = button.closest('.water-card');
       const name = card.dataset.name;
+      if (!stockReady || liveStock[name] !== true) {
+        alert('This product is currently unavailable.');
+        return;
+      }
       const price = parseFloat(card.dataset.price);
       const qty = parseInt(card.querySelector('.card-qty-value').textContent, 10) || 1;
 
@@ -297,7 +302,7 @@
 
       setTimeout(() => {
         button.classList.remove('added');
-        button.innerText = 'ADD TO CART';
+        applyLiveStock();
       }, 900);
 
       renderCart();
@@ -349,7 +354,7 @@
               <div class="cart-item-meta">${item.qty} × ₹${item.price.toFixed(2)}</div>
             </div>
             <div class="cart-item-total">₹${lineTotal.toFixed(2)}</div>
-            <button type="button" class="remove-cart-btn" onclick="removeFromCart(${JSON.stringify(item.name)})">Remove</button>
+            <button type="button" class="remove-cart-btn" onclick="removeFromCart(${escapeHtml(JSON.stringify(item.name))})">Remove</button>
           </div>
         `;
       }).join('');
@@ -408,7 +413,11 @@
       }
     }
 
-    function executeQuickReorder() {
+    async function executeQuickReorder() {
+      if (!(await refreshLiveStock())) {
+        alert('Cannot check stock right now. Please try again.');
+        return;
+      }
       try {
         const savedOrder = localStorage.getItem(STORAGE_KEY_LAST_ORDER);
         if (!savedOrder) return;
@@ -416,6 +425,9 @@
         const lastOrder = JSON.parse(savedOrder);
         if (lastOrder.cart) {
           cart = JSON.parse(JSON.stringify(lastOrder.cart));
+          const unavailable = Object.keys(cart).filter(name => liveStock[name] !== true);
+          unavailable.forEach(name => delete cart[name]);
+          if (unavailable.length) alert('Unavailable items were excluded: ' + unavailable.join(', '));
           
           document.querySelectorAll('.water-card').forEach(card => {
             const name = card.dataset.name;
@@ -469,9 +481,26 @@
       return `NEER-${randomWord}-${randomNumber}`;
     }
 
+    let orderSubmitting = false;
     const form = document.getElementById('waterForm');
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
+      if (orderSubmitting) return;
+      orderSubmitting = true;
+      const checkingButton = form.querySelector('.submit-btn');
+      checkingButton.disabled = true;
+      checkingButton.innerText = 'CHECKING STOCK...';
+      try {
+        if (!(await refreshLiveStock())) {
+          alert('Cannot check stock right now. Please try again.');
+          return;
+        }
+        const unavailable = Object.keys(cart).filter(name => liveStock[name] !== true);
+        if (unavailable.length) {
+          unavailable.forEach(removeFromCart);
+          alert('These items are out of stock and were removed: ' + unavailable.join(', ') + '. Please review your cart.');
+          return;
+        }
 
       if (Object.keys(cart).length === 0) {
         alert('Please add at least one product to your cart.');
@@ -535,4 +564,68 @@
         submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
         submitBtn.disabled = false;
       }
+      } finally {
+        orderSubmitting = false;
+        checkingButton.disabled = false;
+        checkingButton.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
+      }
     });
+
+// Shared stock from the existing /api/stock Worker endpoint.
+let liveStock = {};
+let stockReady = false;
+let stockRequest = null;
+
+function applyLiveStock() {
+  document.querySelectorAll('.water-card').forEach(card => {
+    const available = stockReady && liveStock[card.dataset.name] === true;
+    const button = card.querySelector('.add-cart-btn');
+    button.disabled = !available;
+    button.style.opacity = available ? '' : '0.6';
+    button.style.cursor = available ? '' : 'not-allowed';
+    button.textContent = !stockReady ? 'CHECKING STOCK…' : available ? 'ADD TO CART' : 'OUT OF STOCK';
+  });
+  if (activeModalCardRef) {
+    const button = document.getElementById('modalAddToCartBtn');
+    button.disabled = !stockReady || liveStock[activeModalCardRef.dataset.name] !== true;
+    button.textContent = !stockReady ? 'CHECKING STOCK…' : button.disabled ? 'OUT OF STOCK' : 'ADD TO CART';
+  }
+}
+
+function refreshLiveStock() {
+  if (stockRequest) return stockRequest;
+  stockRequest = (async () => {
+    try {
+      const response = await fetch('/api/stock', {
+        cache: 'no-store', signal: AbortSignal.timeout(10000)
+      });
+      if (!response.ok) throw new Error();
+      const data = await response.json();
+      const cards = [...document.querySelectorAll('.water-card')];
+      if (!data.stock || cards.some(card => typeof data.stock[card.dataset.name] !== 'boolean')) {
+        throw new Error('Unexpected stock response');
+      }
+      liveStock = data.stock;
+      stockReady = true;
+      stockNotice.textContent = 'Availability updates automatically.';
+      return true;
+    } catch {
+      stockReady = false;
+      stockNotice.textContent = 'Cannot check availability. Reconnecting…';
+      return false;
+    } finally { applyLiveStock(); }
+  })().finally(() => { stockRequest = null; });
+  return stockRequest;
+}
+
+const stockNotice = document.createElement('p');
+stockNotice.setAttribute('role', 'status');
+stockNotice.textContent = 'Checking availability…';
+document.querySelector('.water-grid').before(stockNotice);
+applyLiveStock();
+refreshLiveStock();
+setInterval(() => { if (!document.hidden) refreshLiveStock(); }, 10000);
+window.addEventListener('focus', refreshLiveStock);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshLiveStock();
+});

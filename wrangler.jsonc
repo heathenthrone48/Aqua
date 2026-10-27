@@ -1,7 +1,17 @@
 {
-  "name": "aqua",
+  "name": "neerbeku",
+  "main": "worker.js",
   "compatibility_date": "2026-09-22",
   "assets": {
-    "directory": "."
-  }
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "neer-beku",
+      "database_id": "5327a4c7-5291-4f24-8aa8-3e77ef28e6cf"
+    }
+  ]
 }
