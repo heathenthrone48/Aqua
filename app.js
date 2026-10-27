@@ -534,7 +534,21 @@
 
       const customerName = document.getElementById('customer-name').value;
       const customerPhone = document.getElementById('customer-phone').value;
-      const customerAddress = document.getElementById('customer-address').value;
+      
+      if (window.syncDeliveryAddress) {
+        window.syncDeliveryAddress();
+      }
+
+      const customerAddress = document.getElementById('customer-address').value.trim();
+      const latitude = document.getElementById('delivery-latitude').value || null;
+      const longitude = document.getElementById('delivery-longitude').value || null;
+      const addressSource = document.getElementById('delivery-address-source').value;
+
+      if (!customerAddress) {
+        alert('Please choose or enter your delivery address.');
+        return;
+      }
+
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
       const totalBill = document.getElementById('input-total-bill').value;
 
@@ -547,7 +561,10 @@
         cart: document.getElementById('cart-items-input').value,
         qty: document.getElementById('cart-count').textContent,
         bill: totalBill,
-        time: document.getElementById('preferred-time').value
+        time: document.getElementById('preferred-time').value,
+        latitude: latitude,
+        longitude: longitude,
+        addressSource: addressSource
       };
 
       try {

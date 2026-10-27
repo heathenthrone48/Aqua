@@ -956,3 +956,142 @@
       .footer-inner { padding: 20px 16px; }
       .footer-bottom { align-items: flex-start; }
     }
+
+    .location-section {
+  margin: 22px 0;
+  padding: 18px;
+  border: 1px solid var(--glass-border, #dce5e7);
+  border-radius: 18px;
+}
+
+.location-section h3 {
+  margin: 0 0 8px;
+}
+
+.location-help {
+  margin: 8px 0 14px;
+  color: var(--text-muted, #64748b);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.address-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.address-mode-btn {
+  min-height: 54px;
+  padding: 12px 8px;
+  border: 1px solid var(--glass-border, #dce5e7);
+  border-radius: 13px;
+  background: transparent;
+  color: var(--text, #17212b);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.address-mode-btn.active {
+  border: 2px solid #087f65;
+  background: #e8f6f0;
+  color: #075b49;
+}
+
+.location-action-btn {
+  width: 100%;
+  min-height: 48px;
+  margin: 10px 0;
+  border: 1px solid #b7d9ce;
+  border-radius: 12px;
+  background: #e8f6f0;
+  color: #075b49;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.location-action-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.location-status {
+  min-height: 20px;
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748b);
+}
+
+#delivery-map {
+  height: 260px;
+  width: 100%;
+  margin: 12px 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e7eee9;
+  z-index: 1;
+}
+
+.location-suggestions {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+}
+
+.location-suggestion {
+  padding: 12px;
+  border: 1px solid #dce5e7;
+  background: white;
+  color: #17212b;
+  text-align: left;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.location-suggestion + .location-suggestion {
+  border-top: 0;
+}
+
+#delivery-address-fields {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--glass-border, #dce5e7);
+}
+
+#delivery-address-fields[hidden],
+#manual-address-panel[hidden],
+#location-picker-panel[hidden] {
+  display: none !important;
+}
+
+.location-section .form-group {
+  margin-bottom: 16px;
+}
+
+.location-section input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+}
+
+@media (max-width: 480px) {
+  .location-section {
+    padding: 13px;
+  }
+
+  .address-mode {
+    gap: 7px;
+  }
+
+  .address-mode-btn {
+    font-size: 0.78rem;
+  }
+
+  #delivery-map {
+    height: 230px;
+  }
+}
