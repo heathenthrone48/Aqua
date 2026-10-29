@@ -13,5 +13,19 @@
       "database_name": "neer-beku",
       "database_id": "5327a4c7-5291-4f24-8aa8-3e77ef28e6cf"
     }
-  ]
+  ],
+  "env": {
+    "staging": {
+      "name": "neerbeku-staging",
+      "workers_dev": true,
+      "routes": [],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "neer-beku-staging",
+          "database_id": "fae8aa2e-5042-42f6-8621-132a25fe6bc2"
+        }
+      ]
+    }
+  }
 }
