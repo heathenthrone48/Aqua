@@ -69,3 +69,36 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
  .cart-page-title{font-size:27px}.cart-page .total-label{font-size:12px}.cart-page .total-price{font-size:23px}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Refined shared header: logo + support links + live cart count. */
+header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);border-bottom:1px solid #dfeaf2;box-shadow:0 4px 20px #12365005}
+.store-header-inner{max-width:1120px;margin:0 auto;padding:16px 28px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px}
+.store-brand{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-decoration:none;min-width:0}
+.store-logo{display:block;width:154px;height:48px;object-fit:contain;object-position:left center}
+.store-tagline{font-size:10px;font-weight:500;letter-spacing:.8px;color:#60798b;line-height:1.5}
+.store-help{display:flex;align-items:center;justify-content:flex-end;gap:20px;min-width:0}
+.store-help-copy{display:flex;flex-direction:column;gap:3px;color:#718594;font-size:11px;line-height:1.5;white-space:nowrap}
+.store-help-copy strong{font-weight:600;color:#29475d;font-size:12px}
+.store-contact{display:flex;gap:9px}
+.store-contact-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:11px 16px;border-radius:12px;border:1px solid #dce7f0;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;line-height:1.4;transition:background .15s ease}
+.store-contact-link svg{width:18px;height:18px;flex-shrink:0}
+.store-call{background:white;color:#234b68}.store-call:hover{background:#eef6fc}
+.store-whatsapp{background:#eaf8f0;border-color:#d0ecdc;color:#14643c}.store-whatsapp:hover{background:#d9f1e3}
+.store-external{font-size:16px;line-height:1}
+.store-cart{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:11px 13px;background:#edf5ff;border:1px solid #d7e8fa;border-radius:13px;text-decoration:none;color:#075fb7;font-size:12px;font-weight:700;white-space:nowrap}
+.store-cart:hover{background:#dfedff}.store-cart svg{width:22px;height:22px}
+.store-cart-count{display:grid;place-items:center;min-width:22px;height:22px;border-radius:20px;padding:0 6px;color:white;background:#0079f2;font-size:11px}
+.stock-error-notice{background:#fff5e8;border:1px solid #efd5ad;color:#78531e;border-radius:10px;font-size:13px;line-height:1.6;padding:12px 16px;margin:12px 0}
+@media(max-width:850px){.store-help-copy{display:none}.store-header-inner{gap:16px;padding:14px 20px}}
+@media(max-width:580px){
+ .store-header-inner{grid-template-columns:1fr auto;gap:12px;padding:12px 16px}
+ .store-brand{grid-column:1;grid-row:1;gap:2px}.store-logo{width:142px;height:40px}.store-tagline{font-size:9px;letter-spacing:.6px}
+ .store-cart{grid-column:2;grid-row:1;padding:10px 12px}
+ .store-help{grid-column:1 / -1;grid-row:2;display:block}
+ .store-contact{width:100%;gap:10px}.store-contact-link{flex:1;padding:10px 12px;min-height:44px;font-size:12px}
+}
+@media(prefers-reduced-motion:reduce){.store-contact-link{transition:none}}
+
+header.store-header{position:sticky;top:0;z-index:200}
+[hidden]{display:none!important}

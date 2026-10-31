@@ -17,23 +17,32 @@
 </head>
 <body class="shop-page">
 
-  <header>
-    <div class="brand">
-      <a href="/" class="logo-link">
-        <img src="images/logo.png" alt="NEER BEKUUU Logo" class="brand-logo">
+  <header class="store-header">
+    <div class="store-header-inner">
+      <a href="index.html" class="store-brand" aria-label="NeerBeku home">
+        <img src="images/logo.png" alt="NeerBeku" class="store-logo">
+        <span class="store-tagline">Water, delivered.</span>
       </a>
-    </div>
-    <div class="header-actions">
-      <!-- <span class="contact-help-label">Need Help?</span> -->
-      <a href="tel:+918884749700" class="contact-sub-link">
-        <span>📞</span> Call
+      <div class="store-help">
+        <span class="store-help-copy">Need a hand?<strong>Talk to our store</strong></span>
+        <nav class="store-contact" aria-label="Contact the store">
+          <a href="tel:+918884749700" class="store-contact-link store-call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1Z"/></svg>
+            <span>Call us</span>
+          </a>
+          <a href="https://wa.me/918884749700" target="_blank" rel="noopener noreferrer" class="store-contact-link store-whatsapp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a9 9 0 0 1-13.3 7.9L3 21l1.6-4.7A9 9 0 1 1 21 11.5Z"/><path d="m9 7 1.5 2.5-1 1a8 8 0 0 0 3 3l1-1L16 14c-.5 2-2.5 2-4.5 1S8 12 7.5 10 8 7 9 7Z"/></svg>
+            <span>WhatsApp</span><span class="store-external" aria-hidden="true">↗</span>
+          </a>
+        </nav>
+      </div>
+      <a class="store-cart" href="cart.html" aria-label="View your cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg>
+        <span class="store-cart-label">Cart</span><span class="store-cart-count" data-cart-count>0</span>
       </a>
-      <a href="https://wa.me/918884749700" target="_blank" rel="noopener noreferrer" class="contact-sub-link">
-        <span>💬</span> WhatsApp
-      </a>
-      <a class="header-cart" href="cart.html" aria-label="Open your cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg><span data-cart-count>0</span></a>
     </div>
   </header>
+
 
   <div class="container" id="order-screen">
     
