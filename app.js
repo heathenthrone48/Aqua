@@ -49,7 +49,7 @@
     function changeModalQty(change) {
       const qtyEl = document.getElementById('modalQtyVal');
       const current = parseInt(qtyEl.innerText, 10) || 1;
-      const updated = Math.max(1, current + change);
+      const updated = Math.min(99, Math.max(1, current + change));
       qtyEl.innerText = updated;
 
       if (activeModalCardRef) {
@@ -68,6 +68,7 @@
     function filterCategory(category, buttonEl) {
       document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
       buttonEl.classList.add('active');
+      document.querySelectorAll('.category-tab').forEach(tab => tab.setAttribute('aria-pressed', String(tab === buttonEl)));
 
       document.querySelectorAll('.water-card').forEach(card => {
         if (category === 'all' || card.dataset.category === category) {
@@ -271,13 +272,41 @@
       startProductAutoPlay(carousel);
     }
 
-    let cart = {};
+    const CART_STORAGE_KEY = 'neerbeku_cart_v1';
+    const catalog = window.NEER_CATALOG;
+    function normalizeCart(value) {
+      const clean = {};
+      if (!value || typeof value !== 'object') return clean;
+      for (const [name, item] of Object.entries(value)) {
+        if (!Object.hasOwn(catalog, name) || !item) continue;
+        const qty = Number(item.qty);
+        if (!Number.isInteger(qty) || qty < 1) continue;
+        clean[name] = { ...catalog[name], qty: Math.min(99, qty) };
+      }
+      return clean;
+    }
+    function readCart() {
+      try { return normalizeCart(JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '{}')); }
+      catch { return {}; }
+    }
+    let cart = readCart();
+    function persistCart() {
+      try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
+      catch { alert('Your browser could not save the cart. Please enable site storage before opening checkout.'); }
+    }
+    function changeCartQty(name, change) {
+      if (!cart[name] || orderSubmitting) return;
+      const qty = cart[name].qty + change;
+      if (qty <= 0) { removeFromCart(name); return; }
+      cart[name].qty = Math.min(99, qty);
+      renderCart();
+    }
 
     function changeCardQty(button, change) {
       const controls = button.closest('.card-qty-controls');
       const valueEl = controls.querySelector('.card-qty-value');
       const current = parseInt(valueEl.textContent, 10) || 1;
-      valueEl.textContent = Math.max(1, current + change);
+      valueEl.textContent = Math.min(99, Math.max(1, current + change));
     }
 
     function addToCart(button) {
@@ -291,9 +320,9 @@
       const qty = parseInt(card.querySelector('.card-qty-value').textContent, 10) || 1;
 
       if (cart[name]) {
-        cart[name].qty += qty;
+        cart[name].qty = Math.min(99, cart[name].qty + qty);
       } else {
-        cart[name] = { name, price, qty };
+        cart[name] = { ...catalog[name], qty };
       }
 
       button.classList.add('added');
@@ -320,67 +349,59 @@
       renderCart();
     }
 
-    function renderCart() {
+    function renderCart(save = true) {
+      cart = normalizeCart(cart);
+      if (save) persistCart();
       const items = Object.values(cart);
-      const cartItemsEl = document.getElementById('cart-items');
-      const cartCountEl = document.getElementById('cart-count');
-      const cartTotalEl = document.getElementById('cart-total');
-      const totalDisplayEl = document.getElementById('total-display');
-      const totalInputEl = document.getElementById('input-total-bill');
-      const cartItemsInputEl = document.getElementById('cart-items-input');
-
-      if (!items.length) {
-        cartItemsEl.innerHTML = '<div class="cart-empty">Your cart is empty. Select items and quantities above to build your order.</div>';
-        cartCountEl.textContent = '0';
-        cartTotalEl.textContent = '₹0.00';
-        totalDisplayEl.textContent = '₹0.00';
-        totalInputEl.value = '₹0.00';
-        cartItemsInputEl.value = '';
-        return;
+      const count = items.reduce((n, item) => n + item.qty, 0);
+      const total = items.reduce((n, item) => n + item.qty * item.price, 0);
+      const money = value => '₹' + value.toFixed(2);
+      document.querySelectorAll('[data-cart-count], #cart-count').forEach(el => el.textContent = count);
+      document.querySelectorAll('[data-cart-total], #cart-total, #total-display').forEach(el => el.textContent = money(total));
+      const totalInput = document.getElementById('input-total-bill');
+      if (totalInput) totalInput.value = money(total);
+      const itemsInput = document.getElementById('cart-items-input');
+      if (itemsInput) itemsInput.value = items.map(i => `${i.name} x ${i.qty} (${money(i.price * i.qty)})`).join(' | ');
+      const list = document.getElementById('cart-items');
+      if (list) {
+        list.innerHTML = items.length ? items.map(item => `
+          <article class="checkout-item">
+            <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
+            <div class="checkout-item-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} each</p>
+            <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button></div>
+            <button type="button" class="checkout-remove" data-cart-action="remove" data-product="${escapeHtml(item.name)}">Remove</button>
+            </div><strong class="checkout-line-total">${money(item.price * item.qty)}</strong>
+          </article>`).join('') : '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
       }
-
-      let total = 0;
-      let count = 0;
-
-      cartItemsEl.innerHTML = items.map(item => {
-        const lineTotal = item.price * item.qty;
-        total += lineTotal;
-        count += item.qty;
-
-        return `
-          <div class="cart-item">
-            <div>
-              <div class="cart-item-name">${escapeHtml(item.name)}</div>
-              <div class="cart-item-meta">${item.qty} × ₹${item.price.toFixed(2)}</div>
-            </div>
-            <div class="cart-item-total">₹${lineTotal.toFixed(2)}</div>
-            <button type="button" class="remove-cart-btn" onclick="removeFromCart(${escapeHtml(JSON.stringify(item.name))})">Remove</button>
-          </div>
-        `;
-      }).join('');
-
-      cartCountEl.textContent = count;
-      cartTotalEl.textContent = '₹' + total.toFixed(2);
-      totalDisplayEl.textContent = '₹' + total.toFixed(2);
-      totalInputEl.value = '₹' + total.toFixed(2);
-      cartItemsInputEl.value = items
-        .map(item => `${item.name} x ${item.qty} (₹${(item.price * item.qty).toFixed(2)})`)
-        .join(' | ');
+      const submit = document.getElementById('submit-order-btn');
+      if (submit) submit.disabled = !items.length || orderSubmitting;
+      document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
+    document.addEventListener('click', event => {
+      const button = event.target.closest('[data-cart-action]');
+      if (!button || orderSubmitting) return;
+      const name = button.dataset.product;
+      if (button.dataset.cartAction === 'remove') removeFromCart(name);
+      else changeCartQty(name, button.dataset.cartAction === 'plus' ? 1 : -1);
+    });
+    window.addEventListener('storage', event => {
+      if (event.key === CART_STORAGE_KEY && !orderSubmitting) { cart = readCart(); renderCart(false); }
+    });
+    window.addEventListener('pageshow', () => { if (!orderSubmitting) { cart = readCart(); renderCart(false); } });
 
     function loadSavedCustomerData() {
       try {
         const savedUser = localStorage.getItem(STORAGE_KEY_USER);
         if (savedUser) {
           const user = JSON.parse(savedUser);
-          if (user.name) document.getElementById('customer-name').value = user.name;
-          if (user.phone) document.getElementById('customer-phone').value = user.phone;
-          if (user.address) document.getElementById('customer-address').value = user.address;
-          if (user.notes) document.getElementById('landmark-notes').value = user.notes;
+          if (user.name && document.getElementById('customer-name')) document.getElementById('customer-name').value = user.name;
+          if (user.phone && document.getElementById('customer-phone')) document.getElementById('customer-phone').value = user.phone;
+          if (user.address && document.getElementById('customer-address')) document.getElementById('customer-address').value = user.address;
+          if (user.notes && document.getElementById('landmark-notes')) document.getElementById('landmark-notes').value = user.notes;
         }
 
         const savedOrder = localStorage.getItem(STORAGE_KEY_LAST_ORDER);
-        if (savedOrder && savedUser) {
+        if (savedOrder && savedUser && document.getElementById('reorder-banner')) {
           const user = JSON.parse(savedUser);
           const lastOrder = JSON.parse(savedOrder);
           
@@ -424,7 +445,7 @@
         
         const lastOrder = JSON.parse(savedOrder);
         if (lastOrder.cart) {
-          cart = JSON.parse(JSON.stringify(lastOrder.cart));
+          cart = normalizeCart(lastOrder.cart);
           const unavailable = Object.keys(cart).filter(name => liveStock[name] !== true);
           unavailable.forEach(name => delete cart[name]);
           if (unavailable.length) alert('Unavailable items were excluded: ' + unavailable.join(', '));
@@ -439,14 +460,14 @@
           });
 
           renderCart();
-          document.getElementById('submit-order-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          window.location.href = 'cart.html';
         }
       } catch (e) {
         console.error('Quick reorder failed:', e);
       }
     }
 
-    initHeroCarousel();
+    if (document.getElementById('heroCarousel')) initHeroCarousel();
     initProductCarousels();
 
     // Match the rendered media height to its actual width on narrow screens.
@@ -458,14 +479,14 @@
     }
     syncMobileImageSquares();
     window.addEventListener('resize', syncMobileImageSquares);
-    if (window.ResizeObserver) {
+    if (window.ResizeObserver && document.querySelector('.water-grid')) {
       new ResizeObserver(syncMobileImageSquares).observe(document.querySelector('.water-grid'));
     }
 
     loadSavedCustomerData();
 
     function escapeHtml(value) {
-      return value.replace(/[&<>"']/g, char => ({
+      return String(value).replace(/[&<>"']/g, char => ({
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
@@ -501,7 +522,7 @@
 
     let orderSubmitting = false;
     const form = document.getElementById('waterForm');
-    form.addEventListener('submit', async function(e) {
+    form?.addEventListener('submit', async function(e) {
       e.preventDefault();
       if (orderSubmitting) return;
       orderSubmitting = true;
@@ -549,6 +570,10 @@
         return;
       }
 
+      if (!['neerbeku.com', 'www.neerbeku.com'].includes(window.location.hostname)) {
+        alert('Staging preview: your cart and delivery details are valid. No order was sent. Real orders are enabled only on neerbeku.com.');
+        return;
+      }
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
       const totalBill = document.getElementById('input-total-bill').value;
 
@@ -597,6 +622,9 @@
 
           document.getElementById('order-screen').classList.add('hidden');
           document.getElementById('thankyou-screen').classList.remove('hidden');
+          cart = {};
+          persistCart();
+          renderCart(false);
           window.scrollTo(0, 0);
         } else {
           alert("Order dispatch failed: " + JSON.stringify(result.details || result));
@@ -611,7 +639,7 @@
       }
       } finally {
         orderSubmitting = false;
-        checkingButton.disabled = false;
+        checkingButton.disabled = Object.keys(cart).length === 0;
         checkingButton.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
       }
     });
@@ -646,7 +674,7 @@ function refreshLiveStock() {
       });
       if (!response.ok) throw new Error();
       const data = await response.json();
-      const cards = [...document.querySelectorAll('.water-card')];
+      const cards = Object.keys(catalog).map(name => ({ dataset: { name } }));
       if (!data.stock || cards.some(card => typeof data.stock[card.dataset.name] !== 'boolean')) {
         throw new Error('Unexpected stock response');
       }
@@ -666,7 +694,7 @@ function refreshLiveStock() {
 const stockNotice = document.createElement('p');
 stockNotice.setAttribute('role', 'status');
 stockNotice.textContent = 'Checking availability…';
-document.querySelector('.water-grid').before(stockNotice);
+(document.querySelector('.water-grid') || document.querySelector('.cart-panel')).before(stockNotice);
 applyLiveStock();
 refreshLiveStock();
 setInterval(() => { if (!document.hidden) refreshLiveStock(); }, 10000);
@@ -674,3 +702,16 @@ window.addEventListener('focus', refreshLiveStock);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) refreshLiveStock();
 });
+
+// Size the sticky category bar against the actual responsive header.
+const siteHeader = document.querySelector('header');
+function syncHeaderHeight() {
+  document.documentElement.style.setProperty('--shop-header-height', siteHeader.getBoundingClientRect().height + 'px');
+}
+syncHeaderHeight();
+if (window.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe(siteHeader);
+window.addEventListener('resize', syncHeaderHeight);
+renderCart(false);
+if (document.body.classList.contains('cart-page') && !['neerbeku.com', 'www.neerbeku.com'].includes(location.hostname)) {
+  document.getElementById('cart-feedback').textContent = 'Test checkout — orders will not be sent from this address.';
+}

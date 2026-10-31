@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Your cart — NeerBeku</title>
+<!-- Generic Favicon for Browsers -->
+<link href="images/favicon.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<!-- Specific size recommended for Google Search crawlers -->
+<link href="images/favicon.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="images/favicon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+<link href="cart-design.css" rel="stylesheet"/></head>
+<body class="cart-page">
+<header>
+<div class="brand">
+<a class="logo-link" href="/">
+<img alt="NEER BEKUUU Logo" class="brand-logo" src="images/logo.png"/>
+</a>
+</div>
+<div class="header-actions">
+<!-- <span class="contact-help-label">Need Help?</span> -->
+<a class="contact-sub-link" href="tel:+918884749700">
+<span>📞</span> Call
+      </a>
+<a class="contact-sub-link" href="https://wa.me/918884749700" rel="noopener noreferrer" target="_blank">
+<span>💬</span> WhatsApp
+      </a>
+<a aria-label="Open your cart" class="header-cart" href="cart.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg><span data-cart-count="">0</span></a></div>
+</header>
+<div class="container" id="order-screen"><a class="continue-shopping" href="index.html">← Continue shopping</a><h1 class="cart-page-title">Your cart</h1><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm"><div class="cart-panel">
+<div class="cart-header">
+<h3>Selected items</h3>
+<span class="cart-count" id="cart-count">0</span>
+</div>
+<div id="cart-items">
+<div class="cart-empty">Your cart is empty. Select items and quantities above to build your order.</div>
+</div>
+<div class="cart-total-row">
+<span>Cart Total</span>
+<span id="cart-total">₹0.00</span>
+</div>
+</div>
+<input id="cart-items-input" name="Cart_Items" type="hidden" value=""/>
+<input id="input-total-bill" name="Total_Estimated_Bill" type="hidden" value="₹0.00"/>
+<div class="panel">
+<div class="checkbox-group">
+<input checked="" id="emptyReturn" name="Empty_Jars_To_Return" type="checkbox" value="Yes"/>
+<label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
+</div>
+</div>
+<div class="section-label" id="delivery-details-section">Delivery details</div>
+<div class="panel">
+<!-- Customer details: keep these visible in both modes -->
+<div class="form-group">
+<label for="customer-name">Customer Name *</label>
+<input autocomplete="name" id="customer-name" name="customer-name" placeholder="Enter your full name" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="customer-phone">Mobile Number *</label>
+<input autocomplete="tel" id="customer-phone" name="customer-phone" placeholder="Enter your mobile number" required="" type="tel"/>
+</div>
+<hr/>
+<!-- Delivery address selector -->
+<section class="location-section">
+<h3>📍 Delivery Address</h3>
+<p class="location-help">
+    Choose how you want to provide your delivery address.
+  </p>
+<div class="address-mode">
+<button aria-pressed="true" class="address-mode-btn active" id="pick-location-tab" type="button">
+      📍 Pick a Location
+    </button>
+<button aria-pressed="false" class="address-mode-btn" id="manual-address-tab" type="button">
+      ✍️ Enter Manually
+    </button>
+</div>
+<!-- LOCATION MODE: no address form initially -->
+<div id="location-picker-panel">
+<label for="location-search">Search for an address</label>
+<input autocomplete="off" id="location-search" placeholder="Street, area or building" type="search"/>
+<div class="location-suggestions" id="location-suggestions"></div>
+<button class="location-action-btn" id="use-current-location" type="button">
+      ◎ Use My Current Location
+    </button>
+<p aria-live="polite" id="location-status" role="status">
+      Search for an address or use your current location.
+    </p>
+<div id="delivery-map"></div>
+<p class="location-help">
+      You can also tap the map to choose your delivery point.
+    </p>
+</div>
+<!-- MANUAL MODE: address form shown immediately -->
+<div hidden="" id="manual-address-panel">
+<p class="location-help">
+      Enter your address below. You do not need to share your location.
+    </p>
+</div>
+<!-- Shared fields: hidden until manual entry or location selection -->
+<div hidden="" id="delivery-address-fields">
+<h4 id="address-form-heading">Confirm your delivery address</h4>
+<div class="form-group">
+<label for="address-house">House / Flat / Building *</label>
+<input autocomplete="address-line2" id="address-house" placeholder="Flat number or building name" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-street">Street Address *</label>
+<input autocomplete="address-line1" id="address-street" placeholder="Street name and number" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-area">Area / Locality</label>
+<input id="address-area" placeholder="Neighbourhood or area" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-city">City *</label>
+<input autocomplete="address-level2" id="address-city" placeholder="City or town" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-postcode">Postal Code</label>
+<input autocomplete="postal-code" id="address-postcode" placeholder="Postal code" type="text"/>
+</div>
+<div class="form-group">
+<label for="landmark-notes">
+        Landmark / Delivery Instructions
+      </label>
+<input id="landmark-notes" name="Landmark_Notes" placeholder="Floor, gate, nearby shop" type="text"/>
+</div>
+</div>
+<!-- Compatibility with the existing checkout -->
+<input id="customer-address" name="Customer_Address" type="hidden"/>
+<input id="delivery-latitude" name="deliveryLatitude" type="hidden"/>
+<input id="delivery-longitude" name="deliveryLongitude" type="hidden"/>
+<input id="delivery-address-source" name="deliveryAddressSource" type="hidden" value="location"/>
+</section>
+<!-- Keep your existing delivery time, cart total and order button below -->
+<div class="form-group">
+<label for="preferred-time">Delivery Window</label>
+<select id="preferred-time" name="Preferred_Time">
+<option value="ASAP (Within 1-2 hours)">ASAP (Within 1-2 Hours)</option>
+<option value="Today - Afternoon">Today — Afternoon</option>
+<option value="Today - Evening">Today — Evening</option>
+<option value="Tomorrow Morning">Tomorrow — Morning</option>
+</select>
+</div>
+<h2 class="summary-heading">Order summary</h2><p class="payment-note">Payment: Pay on delivery</p><div class="total-banner">
+<span class="total-label">Total Amount Due</span>
+<span class="total-price" id="total-display">₹0.00</span>
+</div>
+<button class="submit-btn" id="submit-order-btn" type="submit">PLACE ORDER (PAY ON DELIVERY)</button>
+</div>
+</form>
+</div>
+<!-- PRODUCT DETAIL POPUP MODAL VIEW -->
+
+<!-- Thank You Screen -->
+<!-- Order Confirmation Screen -->
+<div class="container hidden" id="thankyou-screen">
+<div aria-live="polite" class="panel confirmation" role="status">
+<div aria-hidden="true" class="confirm-icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24" width="28"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+</div>
+<h2>Order Confirmed</h2>
+<p class="confirm-lead">Thank you for your order. We have received it and will contact you shortly to confirm delivery.</p>
+<div class="confirm-ref">
+<span class="confirm-ref-label">Order Reference</span>
+<strong class="confirm-ref-code" id="order-ref-code">NEER-AQUA-0000</strong>
+<span class="confirm-ref-note">Please quote this reference when contacting us about your order.</span>
+</div>
+<div class="confirm-summary">
+<h3>Order Summary</h3>
+<div id="confirm-items"></div>
+<div class="confirm-total">
+<span>Total Due on Delivery</span>
+<strong id="confirm-total">₹0.00</strong>
+</div>
+</div>
+<dl class="confirm-details">
+<div><dt>Payment</dt><dd>Pay on delivery</dd></div>
+<div><dt>Delivery Window</dt><dd id="confirm-time">—</dd></div>
+<div><dt>Deliver To</dt><dd id="confirm-address">—</dd></div>
+<div><dt>Contact</dt><dd id="confirm-contact">—</dd></div>
+</dl>
+<p class="confirm-help">Questions about your order? Call us on <a href="tel:+918884749700">+91 88847 49700</a>.</p>
+<button class="submit-btn confirm-btn" onclick="window.location.href='index.html'" type="button">Place Another Order</button>
+</div>
+</div>
+<footer class="site-footer">
+<div class="footer-inner">
+<div class="footer-heading">NEER BEKUUU</div>
+<p class="footer-byline">A water delivery service by <strong>Amrutha Store</strong>.</p>
+<p class="footer-description">Browse our packaged drinking water and dispenser accessories, choose your quantity, and place an order for delivery.</p>
+<nav aria-label="Store contact and location" class="footer-links">
+<a href="https://maps.app.goo.gl/9mWcH5nPK5VWgZbH7" rel="noopener noreferrer" target="_blank">View our location on Google Maps ↗</a>
+<a href="tel:+918884749700">Call us</a>
+<a href="https://wa.me/918884749700" rel="noopener noreferrer" target="_blank">WhatsApp us</a>
+</nav>
+<div class="footer-bottom">
+<span>© 2026 Amrutha Store. All rights reserved.</span>
+<a class="footer-admin-link" href="admin.html">Store access</a>
+</div>
+</div>
+</footer>
+<script src="catalog.js"></script><script src="app.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="location-picker.js"></script>
+<!-- Testing Staging Deployement env -->
+</body>
+</html>

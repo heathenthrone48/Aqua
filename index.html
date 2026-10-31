@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEER BEKUUU — Express Water Delivery</title>
   <!-- Generic Favicon for Browsers -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon.png">
   <!-- Specific size recommended for Google Search crawlers -->
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="images/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="cart-design.css">
 </head>
-<body>
+<body class="shop-page">
 
   <header>
     <div class="brand">
@@ -31,6 +31,7 @@
       <a href="https://wa.me/918884749700" target="_blank" rel="noopener noreferrer" class="contact-sub-link">
         <span>💬</span> WhatsApp
       </a>
+      <a class="header-cart" href="cart.html" aria-label="Open your cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg><span data-cart-count>0</span></a>
     </div>
   </header>
 
@@ -57,21 +58,21 @@
       <div class="hero-carousel-dots"></div>
     </div>
 
-    <form id="waterForm">
+    <div id="catalogue">
 
       <div class="section-label">01 / Choose Products</div>
 
       <!-- Category Filter Tabs -->
       <div class="category-filter-wrapper">
         <div class="category-tabs">
-          <button type="button" class="category-tab active" onclick="filterCategory('all', this)">
-            ✨ All Items
+          <button type="button" class="category-tab active" aria-pressed="true" onclick="filterCategory('all', this)">
+            All
           </button>
-          <button type="button" class="category-tab" onclick="filterCategory('water', this)">
-            💧 Water Category
+          <button type="button" class="category-tab" aria-pressed="false" onclick="filterCategory('water', this)">
+            Water
           </button>
-          <button type="button" class="category-tab" onclick="filterCategory('accessories', this)">
-            🔌 Accessories
+          <button type="button" class="category-tab" aria-pressed="false" onclick="filterCategory('accessories', this)">
+            Accessories
           </button>
         </div>
       </div>
@@ -487,183 +488,7 @@
 
       </div>
 
-      <!-- Cart Summary Panel -->
-      <div class="cart-panel">
-        <div class="cart-header">
-          <h3>🛒 Selected Items</h3>
-          <span class="cart-count" id="cart-count">0</span>
-        </div>
-        <div id="cart-items">
-          <div class="cart-empty">Your cart is empty. Select items and quantities above to build your order.</div>
-        </div>
-        <div class="cart-total-row">
-          <span>Cart Total</span>
-          <span id="cart-total">₹0.00</span>
-        </div>
-      </div>
-
-      <input type="hidden" name="Cart_Items" id="cart-items-input" value="">
-      <input type="hidden" name="Total_Estimated_Bill" id="input-total-bill" value="₹0.00">
-
-      <div class="panel">
-        <div class="checkbox-group">
-          <input type="checkbox" id="emptyReturn" name="Empty_Jars_To_Return" value="Yes" checked>
-          <label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
-        </div>
-      </div>
-
-      <div class="section-label" id="delivery-details-section">02 / Delivery Details</div>
-      <div class="panel">
-        <!-- Customer details: keep these visible in both modes -->
-<div class="form-group">
-  <label for="customer-name">Customer Name *</label>
-  <input id="customer-name" name="customer-name"
-         type="text" autocomplete="name"
-         placeholder="Enter your full name" required>
-</div>
-
-<div class="form-group">
-  <label for="customer-phone">Mobile Number *</label>
-  <input id="customer-phone" name="customer-phone"
-         type="tel" autocomplete="tel"
-         placeholder="Enter your mobile number" required>
-</div>
-
-<hr>
-
-<!-- Delivery address selector -->
-<section class="location-section">
-  <h3>📍 Delivery Address</h3>
-  <p class="location-help">
-    Choose how you want to provide your delivery address.
-  </p>
-
-  <div class="address-mode">
-    <button type="button" id="pick-location-tab"
-            class="address-mode-btn active"
-            aria-pressed="true">
-      📍 Pick a Location
-    </button>
-
-    <button type="button" id="manual-address-tab"
-            class="address-mode-btn"
-            aria-pressed="false">
-      ✍️ Enter Manually
-    </button>
-  </div>
-
-  <!-- LOCATION MODE: no address form initially -->
-  <div id="location-picker-panel">
-    <label for="location-search">Search for an address</label>
-    <input id="location-search" type="search"
-           placeholder="Street, area or building"
-           autocomplete="off">
-
-    <div id="location-suggestions"
-         class="location-suggestions"></div>
-
-    <button type="button" id="use-current-location"
-            class="location-action-btn">
-      ◎ Use My Current Location
-    </button>
-
-    <p id="location-status" role="status" aria-live="polite">
-      Search for an address or use your current location.
-    </p>
-
-    <div id="delivery-map"></div>
-
-    <p class="location-help">
-      You can also tap the map to choose your delivery point.
-    </p>
-  </div>
-
-  <!-- MANUAL MODE: address form shown immediately -->
-  <div id="manual-address-panel" hidden>
-    <p class="location-help">
-      Enter your address below. You do not need to share your location.
-    </p>
-  </div>
-
-  <!-- Shared fields: hidden until manual entry or location selection -->
-  <div id="delivery-address-fields" hidden>
-    <h4 id="address-form-heading">Confirm your delivery address</h4>
-
-    <div class="form-group">
-      <label for="address-house">House / Flat / Building *</label>
-      <input id="address-house" type="text"
-             autocomplete="address-line2"
-             placeholder="Flat number or building name" required>
     </div>
-
-    <div class="form-group">
-      <label for="address-street">Street Address *</label>
-      <input id="address-street" type="text"
-             autocomplete="address-line1"
-             placeholder="Street name and number" required>
-    </div>
-
-    <div class="form-group">
-      <label for="address-area">Area / Locality</label>
-      <input id="address-area" type="text"
-             placeholder="Neighbourhood or area">
-    </div>
-
-    <div class="form-group">
-      <label for="address-city">City *</label>
-      <input id="address-city" type="text"
-             autocomplete="address-level2"
-             placeholder="City or town" required>
-    </div>
-
-    <div class="form-group">
-      <label for="address-postcode">Postal Code</label>
-      <input id="address-postcode" type="text"
-             autocomplete="postal-code"
-             placeholder="Postal code">
-    </div>
-
-    <div class="form-group">
-      <label for="landmark-notes">
-        Landmark / Delivery Instructions
-      </label>
-      <input id="landmark-notes" name="Landmark_Notes"
-             type="text"
-             placeholder="Floor, gate, nearby shop">
-    </div>
-  </div>
-
-  <!-- Compatibility with the existing checkout -->
-  <input type="hidden" id="customer-address"
-         name="Customer_Address">
-  <input type="hidden" id="delivery-latitude"
-         name="deliveryLatitude">
-  <input type="hidden" id="delivery-longitude"
-         name="deliveryLongitude">
-  <input type="hidden" id="delivery-address-source"
-         name="deliveryAddressSource" value="location">
-</section>
-
-<!-- Keep your existing delivery time, cart total and order button below -->
-
-        <div class="form-group">
-          <label for="preferred-time">Delivery Window</label>
-          <select id="preferred-time" name="Preferred_Time">
-            <option value="ASAP (Within 1-2 hours)">ASAP (Within 1-2 Hours)</option>
-            <option value="Today - Afternoon">Today — Afternoon</option>
-            <option value="Today - Evening">Today — Evening</option>
-            <option value="Tomorrow Morning">Tomorrow — Morning</option>
-          </select>
-        </div>
-
-        <div class="total-banner">
-          <span class="total-label">Total Amount Due</span>
-          <span class="total-price" id="total-display">₹0.00</span>
-        </div>
-
-        <button type="submit" class="submit-btn" id="submit-order-btn">PLACE ORDER (PAY ON DELIVERY)</button>
-      </div>
-    </form>
   </div>
 
   <!-- PRODUCT DETAIL POPUP MODAL VIEW -->
@@ -719,43 +544,7 @@
     </div>
   </div>
 
-  <!-- Thank You Screen -->
-    <!-- Order Confirmation Screen -->
-  <div class="container hidden" id="thankyou-screen">
-    <div class="panel confirmation" role="status" aria-live="polite">
-      <div class="confirm-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-      </div>
-      <h2>Order Confirmed</h2>
-      <p class="confirm-lead">Thank you for your order. We have received it and will contact you shortly to confirm delivery.</p>
-
-      <div class="confirm-ref">
-        <span class="confirm-ref-label">Order Reference</span>
-        <strong class="confirm-ref-code" id="order-ref-code">NEER-AQUA-0000</strong>
-        <span class="confirm-ref-note">Please quote this reference when contacting us about your order.</span>
-      </div>
-
-      <div class="confirm-summary">
-        <h3>Order Summary</h3>
-        <div id="confirm-items"></div>
-        <div class="confirm-total">
-          <span>Total Due on Delivery</span>
-          <strong id="confirm-total">₹0.00</strong>
-        </div>
-      </div>
-
-      <dl class="confirm-details">
-        <div><dt>Payment</dt><dd>Pay on delivery</dd></div>
-        <div><dt>Delivery Window</dt><dd id="confirm-time">—</dd></div>
-        <div><dt>Deliver To</dt><dd id="confirm-address">—</dd></div>
-        <div><dt>Contact</dt><dd id="confirm-contact">—</dd></div>
-      </dl>
-
-      <p class="confirm-help">Questions about your order? Call us on <a href="tel:+918884749700">+91 88847 49700</a>.</p>
-      <button type="button" onclick="window.location.reload()" class="submit-btn confirm-btn">Place Another Order</button>
-    </div>
-  </div>
-
+<aside class="cart-dock" aria-label="Shopping cart"><div class="cart-dock-inner"><a class="cart-dock-summary" href="cart.html"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg></span><span><strong><span data-cart-count>0</span> items · <span data-cart-total>₹0.00</span></strong><small>Your water, ready to go</small></span></a><a class="view-cart-button" href="cart.html">View cart <span aria-hidden="true">→</span></a></div></aside>
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-heading">NEER BEKUUU</div>
@@ -773,9 +562,8 @@
     </div>
   </footer>
 
+  <script src="catalog.js"></script>
   <script src="app.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="location-picker.js"></script>
   <!-- Testing Staging Deployement env -->
 </body>
 </html>
