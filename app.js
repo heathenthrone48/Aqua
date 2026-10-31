@@ -570,10 +570,6 @@
         return;
       }
 
-      if (!['neerbeku.com', 'www.neerbeku.com'].includes(window.location.hostname)) {
-        alert('Staging preview: your cart and delivery details are valid. No order was sent. Real orders are enabled only on neerbeku.com.');
-        return;
-      }
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
       const totalBill = document.getElementById('input-total-bill').value;
 
