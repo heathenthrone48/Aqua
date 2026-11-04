@@ -196,6 +196,7 @@
     .hero-carousel-arrow {
       position: absolute;
       top: 50%;
+      padding: 0 0 3px;
       transform: translateY(-50%);
       width: 38px;
       height: 38px;
