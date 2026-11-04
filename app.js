@@ -155,7 +155,7 @@ function calculateOrderTotals(items) {
         const carousel = document.getElementById('heroCarousel');
         const index = parseInt(carousel.dataset.index || '0', 10);
         renderHeroSlide(index + 1);
-      }, 4000);
+      }, 3000);
     }
 
     function stopHeroAutoPlay() {

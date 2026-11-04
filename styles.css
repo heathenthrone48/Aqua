@@ -212,6 +212,7 @@
       line-height: 1;
       cursor: pointer;
       z-index: 5;
+      display: none;
       transition: all 0.2s ease;
     }
 
