@@ -111,8 +111,9 @@ header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);bor
   }
 
   .store-tagline {
-    width: min(230px, 100%);
-    max-width: 230px;
+    width: min(215px, calc(100% - 14px));
+    max-width: 215px;
+    margin-left: 14px;
     font-size: 15px;
     font-weight: 700;
     letter-spacing: 0;
@@ -172,8 +173,9 @@ header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);bor
   }
 
   .store-tagline {
-    width: min(175px, 100%);
-    max-width: 175px;
+    width: min(161px, calc(100% - 14px));
+    max-width: 161px;
+    margin-left: 14px;
     font-size: 12px;
     line-height: 1.2;
   }
