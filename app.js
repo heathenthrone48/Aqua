@@ -570,6 +570,9 @@
         return;
       }
 
+      const deliveryWindow = getDeliveryWindow();
+      if (!deliveryWindow) return;
+
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
       const totalBill = document.getElementById('input-total-bill').value;
 
@@ -582,7 +585,7 @@
         cart: document.getElementById('cart-items-input').value,
         qty: document.getElementById('cart-count').textContent,
         bill: totalBill,
-        time: document.getElementById('preferred-time').value,
+        time: deliveryWindow,
         latitude: latitude,
         longitude: longitude,
         addressSource: addressSource
@@ -610,7 +613,7 @@
           renderConfirmation({
             items: Object.values(cart),
             total: totalBill,
-            time: document.getElementById('preferred-time').selectedOptions[0].textContent,
+            time: deliveryWindow,
             name: customerName,
             phone: customerPhone,
             address: customerAddress
@@ -676,10 +679,12 @@ function refreshLiveStock() {
       }
       liveStock = data.stock;
       stockReady = true;
-      stockNotice.textContent = 'Availability updates automatically.';
+      stockNotice.textContent = '';
+      stockNotice.hidden = true;
       return true;
     } catch {
       stockReady = false;
+      stockNotice.hidden = false;
       stockNotice.textContent = 'Cannot check availability. Reconnecting…';
       return false;
     } finally { applyLiveStock(); }
@@ -689,7 +694,8 @@ function refreshLiveStock() {
 
 const stockNotice = document.createElement('p');
 stockNotice.setAttribute('role', 'status');
-stockNotice.textContent = 'Checking availability…';
+stockNotice.textContent = '';
+stockNotice.hidden = true;
 (document.querySelector('.water-grid') || document.querySelector('.cart-panel')).before(stockNotice);
 applyLiveStock();
 refreshLiveStock();
@@ -710,4 +716,64 @@ window.addEventListener('resize', syncHeaderHeight);
 renderCart(false);
 if (document.body.classList.contains('cart-page') && !['neerbeku.com', 'www.neerbeku.com'].includes(location.hostname)) {
   document.getElementById('cart-feedback').textContent = 'Test checkout — orders will not be sent from this address.';
+}
+
+// Resolve requested delivery dates in the store's timezone, not the visitor's.
+function storeDateParts() {
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(new Date()).map(p => [p.type, p.value]));
+  return { date: `${parts.year}-${parts.month}-${parts.day}`, hour: Number(parts.hour), minute: Number(parts.minute) };
+}
+function nextStoreDate(date) {
+  const next = new Date(date + 'T12:00:00Z');
+  next.setUTCDate(next.getUTCDate() + 1);
+  return next.toISOString().slice(0, 10);
+}
+function refreshDeliveryChoices() {
+  const select = document.getElementById('preferred-time');
+  if (!select) return;
+  const now = storeDateParts();
+  for (const option of select.options) {
+    if (option.dataset.day === 'today') option.disabled = now.hour >= Number(option.dataset.end);
+  }
+  const scheduled = select.value === 'scheduled';
+  document.getElementById('scheduled-delivery-fields').hidden = !scheduled;
+  for (const id of ['delivery-date', 'scheduled-slot']) {
+    const field = document.getElementById(id);
+    field.disabled = !scheduled;
+    field.required = scheduled;
+  }
+  document.getElementById('delivery-date').min = nextStoreDate(now.date);
+}
+function getDeliveryWindow() {
+  refreshDeliveryChoices();
+  const select = document.getElementById('preferred-time');
+  const now = storeDateParts();
+  const option = select.selectedOptions[0];
+  if (!option || option.disabled) {
+    alert('That delivery window has passed. Please choose another window.');
+    select.focus();
+    return null;
+  }
+  if (select.value === 'scheduled') {
+    const input = document.getElementById('delivery-date');
+    if (!input.value || !input.checkValidity() || input.value < input.min) {
+      input.reportValidity();
+      input.focus();
+      return null;
+    }
+    return `${input.value} - ${document.getElementById('scheduled-slot').value} (IST)`;
+  }
+  if (option.dataset.day) {
+    const date = option.dataset.day === 'today' ? now.date : nextStoreDate(now.date);
+    return `${option.textContent} - ${date} (IST)`;
+  }
+  return option.textContent;
+}
+if (document.getElementById('preferred-time')) {
+  document.getElementById('preferred-time').addEventListener('change', refreshDeliveryChoices);
+  window.addEventListener('focus', refreshDeliveryChoices);
+  refreshDeliveryChoices();
 }
