@@ -44,7 +44,7 @@
       el["address-postcode"].value
     ].map(v => v.trim()).filter(Boolean).join(", ");
 
-    if (combined) el["customer-address"].value = combined;
+    el["customer-address"].value = combined;
   }
 
   function showAddressForm(show) {
@@ -68,11 +68,13 @@
       picking ? "location" : "manual";
 
     if (picking) {
-      showAddressForm(locationChosen);
+      showAddressForm(true);
       heading.textContent = "Confirm your delivery address";
       initMap();
       setTimeout(() => map && map.invalidateSize(), 100);
     } else {
+      el["delivery-latitude"].value = "";
+      el["delivery-longitude"].value = "";
       showAddressForm(true);
       heading.textContent = "Enter your delivery address";
     }
@@ -337,6 +339,6 @@
   window.switchAddressMode = switchMode;
 
   // Start with the picker only; no address form is displayed.
-  showAddressForm(false);
-  switchMode("location");
+  showAddressForm(true);
+  switchMode("manual");
 })();

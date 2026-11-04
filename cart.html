@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Your cart — NeerBeku</title>
+<!-- Generic Favicon for Browsers -->
+<link href="images/favicon.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<!-- Specific size recommended for Google Search crawlers -->
+<link href="images/favicon.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="images/favicon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+<link href="cart-design.css" rel="stylesheet"/><link rel="stylesheet" href="footer.css">
+</head>
+<body class="cart-page">
+<header class="store-header">
+    <div class="store-header-inner">
+      <a href="index.html" class="store-brand" aria-label="NeerBeku home">
+        <img src="images/logo.png" alt="NeerBeku" class="store-logo">
+        <span class="store-tagline">Water, delivered.</span>
+      </a>
+      <div class="store-help">
+        <span class="store-help-copy">Need a hand?<strong>Talk to our store</strong></span>
+        <nav class="store-contact" aria-label="Contact the store">
+          <a href="tel:+916361370223" class="store-contact-link store-call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3a1 1 0 0 1-1 1C10.6 21 3 13.4 3 4a1 1 0 0 1 1-1Z"/></svg>
+            <span>Call us</span>
+          </a>
+          <a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer" class="store-contact-link store-whatsapp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a9 9 0 0 1-13.3 7.9L3 21l1.6-4.7A9 9 0 1 1 21 11.5Z"/><path d="m9 7 1.5 2.5-1 1a8 8 0 0 0 3 3l1-1L16 14c-.5 2-2.5 2-4.5 1S8 12 7.5 10 8 7 9 7Z"/></svg>
+            <span>WhatsApp</span><span class="store-external" aria-hidden="true">↗</span>
+          </a>
+        </nav>
+      </div>
+      <a class="store-cart" href="cart.html" aria-label="View your cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg>
+        <span class="store-cart-label">Cart</span><span class="store-cart-count" data-cart-count>0</span>
+      </a>
+    </div>
+  </header>
+
+<div class="container" id="order-screen"><a class="continue-shopping" href="index.html">← Continue shopping</a><h1 class="cart-page-title">Your cart</h1><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm"><div class="cart-panel">
+<div class="cart-header">
+<h3>Selected items</h3>
+<span class="cart-count" id="cart-count">0</span>
+</div>
+<div id="cart-items">
+<div class="cart-empty">Your cart is empty. Select items and quantities above to build your order.</div>
+</div>
+<div class="cart-total-row">
+<span>Cart Total</span>
+<span id="cart-total">₹0.00</span>
+</div>
+</div>
+<input id="cart-items-input" name="Cart_Items" type="hidden" value=""/>
+<input id="input-total-bill" name="Total_Estimated_Bill" type="hidden" value="₹0.00"/>
+<div class="panel">
+<div class="checkbox-group">
+<input checked="" id="emptyReturn" name="Empty_Jars_To_Return" type="checkbox" value="Yes"/>
+<label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
+</div>
+</div>
+<div class="section-label" id="delivery-details-section">Delivery details</div>
+<div class="panel">
+<!-- Customer details: keep these visible in both modes -->
+<div class="form-group">
+<label for="customer-name">Customer Name *</label>
+<input autocomplete="name" id="customer-name" name="customer-name" placeholder="Enter your full name" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="customer-phone">Mobile Number *</label>
+<input autocomplete="tel" id="customer-phone" name="customer-phone" placeholder="Enter your mobile number" required="" type="tel"/>
+</div>
+<hr/>
+<!-- Delivery address selector -->
+<section class="location-section">
+<h3>📍 Delivery Address</h3>
+<p class="location-help">
+    Choose how you want to provide your delivery address.
+  </p>
+<div class="address-mode">
+<button aria-pressed="true" class="address-mode-btn active" id="pick-location-tab" type="button">
+      📍 Pick a Location
+    </button>
+<button aria-pressed="false" class="address-mode-btn" id="manual-address-tab" type="button">
+      ✍️ Enter Manually
+    </button>
+</div>
+<!-- LOCATION MODE: no address form initially -->
+<div id="location-picker-panel">
+<label for="location-search">Search for an address</label>
+<input autocomplete="off" id="location-search" placeholder="Street, area or building" type="search"/>
+<div class="location-suggestions" id="location-suggestions"></div>
+<button class="location-action-btn" id="use-current-location" type="button">
+      ◎ Use My Current Location
+    </button>
+<p aria-live="polite" id="location-status" role="status">
+      Search for an address or use your current location.
+    </p>
+<div id="delivery-map"></div>
+<p class="location-help">
+      You can also tap the map to choose your delivery point.
+    </p>
+</div>
+<!-- MANUAL MODE: address form shown immediately -->
+<div hidden="" id="manual-address-panel">
+<p class="location-help">
+      Enter your address below. You do not need to share your location.
+    </p>
+</div>
+<!-- Shared fields: hidden until manual entry or location selection -->
+<div hidden="" id="delivery-address-fields">
+<h4 id="address-form-heading">Confirm your delivery address</h4>
+<div class="form-group">
+<label for="address-house">House / Flat / Building *</label>
+<input autocomplete="address-line2" id="address-house" placeholder="Flat number or building name" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-street">Street Address *</label>
+<input autocomplete="address-line1" id="address-street" placeholder="Street name and number" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-area">Area / Locality</label>
+<input id="address-area" placeholder="Neighbourhood or area" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-city">City *</label>
+<input autocomplete="address-level2" id="address-city" placeholder="City or town" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="address-postcode">Postal Code</label>
+<input autocomplete="postal-code" id="address-postcode" placeholder="Postal code" type="text"/>
+</div>
+<div class="form-group">
+<label for="landmark-notes">
+        Landmark / Delivery Instructions
+      </label>
+<input id="landmark-notes" name="Landmark_Notes" placeholder="Floor, gate, nearby shop" type="text"/>
+</div>
+</div>
+<!-- Compatibility with the existing checkout -->
+<input id="customer-address" name="Customer_Address" type="hidden"/>
+<input id="delivery-latitude" name="deliveryLatitude" type="hidden"/>
+<input id="delivery-longitude" name="deliveryLongitude" type="hidden"/>
+<input id="delivery-address-source" name="deliveryAddressSource" type="hidden" value="location"/>
+</section>
+<!-- Keep your existing delivery time, cart total and order button below -->
+<div class="form-group">
+<label for="preferred-time">Delivery Window</label>
+<select id="preferred-time" name="Preferred_Time"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
+<option value="Today - Morning (8 AM–11 AM)" data-day="today" data-end="11">Today - Morning (8 AM–11 AM)</option>
+<option value="Today - Midday (11 AM–2 PM)" data-day="today" data-end="14">Today - Midday (11 AM–2 PM)</option>
+<option value="Today - Afternoon (2 PM–5 PM)" data-day="today" data-end="17">Today - Afternoon (2 PM–5 PM)</option>
+<option value="Today - Evening (5 PM–8 PM)" data-day="today" data-end="20">Today - Evening (5 PM–8 PM)</option>
+<option value="Tomorrow - Morning (8 AM–11 AM)" data-day="tomorrow" data-end="11">Tomorrow - Morning (8 AM–11 AM)</option>
+<option value="Tomorrow - Midday (11 AM–2 PM)" data-day="tomorrow" data-end="14">Tomorrow - Midday (11 AM–2 PM)</option>
+<option value="Tomorrow - Afternoon (2 PM–5 PM)" data-day="tomorrow" data-end="17">Tomorrow - Afternoon (2 PM–5 PM)</option>
+<option value="Tomorrow - Evening (5 PM–8 PM)" data-day="tomorrow" data-end="20">Tomorrow - Evening (5 PM–8 PM)</option>
+<option value="scheduled">Schedule for Another Date</option></select>
+<div id="scheduled-delivery-fields" hidden>
+<label for="delivery-date">Delivery date</label><input type="date" id="delivery-date" disabled>
+<label for="scheduled-slot">Delivery window</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning (8 AM–11 AM)</option><option value="Midday (11 AM–2 PM)">Midday (11 AM–2 PM)</option><option value="Afternoon (2 PM–5 PM)">Afternoon (2 PM–5 PM)</option><option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option></select>
+</div><p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
+</div>
+<h2 class="summary-heading">Order summary</h2><p class="payment-note">Payment: Pay on delivery</p><div class="total-banner">
+<span class="total-label">Total Amount Due</span>
+<span class="total-price" id="total-display">₹0.00</span>
+</div>
+<button class="submit-btn" id="submit-order-btn" type="submit">PLACE ORDER (PAY ON DELIVERY)</button>
+</div>
+</form>
+</div>
+<!-- PRODUCT DETAIL POPUP MODAL VIEW -->
+
+<!-- Thank You Screen -->
+<!-- Order Confirmation Screen -->
+<div class="container hidden" id="thankyou-screen">
+<div aria-live="polite" class="panel confirmation" role="status">
+<div aria-hidden="true" class="confirm-icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24" width="28"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+</div>
+<h2>Order Confirmed</h2>
+<p class="confirm-lead">Thank you for your order. We have received it and will contact you shortly to confirm delivery.</p>
+<div class="confirm-ref">
+<span class="confirm-ref-label">Order Reference</span>
+<strong class="confirm-ref-code" id="order-ref-code">NEER-AQUA-0000</strong>
+<span class="confirm-ref-note">Please quote this reference when contacting us about your order.</span>
+</div>
+<div class="confirm-summary">
+<h3>Order Summary</h3>
+<div id="confirm-items"></div>
+<div class="confirm-total">
+<span>Total Due on Delivery</span>
+<strong id="confirm-total">₹0.00</strong>
+</div>
+</div>
+<dl class="confirm-details">
+<div><dt>Payment</dt><dd>Pay on delivery</dd></div>
+<div><dt>Delivery Window</dt><dd id="confirm-time">—</dd></div>
+<div><dt>Deliver To</dt><dd id="confirm-address">—</dd></div>
+<div><dt>Contact</dt><dd id="confirm-contact">—</dd></div>
+</dl>
+<p class="confirm-help">Questions about your order? Call us on <a href="tel:+916361370223">+91 63613 70223</a>.</p>
+<button class="submit-btn confirm-btn" onclick="window.location.href='index.html'" type="button">Place Another Order</button>
+</div>
+</div>
+<footer class="nb-footer">
+<div class="nb-footer-grid">
+<section class="nb-footer-brand"><a href="index.html"><img src="images/logo.png" alt="NeerBeku" width="220" height="70"></a><h2>Your local drinking water delivery partner</h2><p>A water delivery service by <strong>Amrutha Store.</strong> Order packaged drinking water, water cans and dispenser accessories online for delivery in serviceable areas around Bommasandra.</p></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3C10 23 1 14 3 3Z"/></svg>Contact Us</h2><ul class="nb-contact-list">
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3C10 23 1 14 3 3Z"/></svg><a href="tel:+916361370223">+91 63613 70223</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8l-5 2 2-5A9 9 0 1 1 21 11Z"/><path d="M8 9h8M8 13h5"/></svg><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Chat on WhatsApp ↗</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><a href="mailto:infoneerbeku@gmail.com">infoneerbeku@gmail.com</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span>Mon–Sun: 8:00 AM–9:00 PM<small>Order and delivery hours</small></span></li></ul></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Our Service Area</h2><p><strong>Bommasandra, Bengaluru</strong></p><p>Selected nearby locations, subject to serviceability.</p><div class="nb-area-tags"><span>Bommasandra</span><span>Nearby areas</span></div><a class="nb-map-link" href="https://maps.app.goo.gl/9mWcH5nPK5VWgZbH7" target="_blank" rel="noopener noreferrer">View our location on Google Maps ↗</a></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 14 4-4M9 16l-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 10a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-2 2"/></svg>Quick Links</h2><nav class="nb-policy-links" aria-label="Store policies">
+<a href="policies.html#delivery">Delivery Policy <span>›</span></a><a href="policies.html#availability">Service Availability <span>›</span></a><a href="policies.html#hours">Operating Hours <span>›</span></a><a href="policies.html#jar">Jar Returns &amp; Refunds <span>›</span></a><a href="policies.html#inspection">Jar Inspection <span>›</span></a><a href="policies.html#contact">Contact Support <span>›</span></a></nav></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="m8 12 3 3 5-6"/></svg>Business Info</h2><ul class="nb-contact-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 5 3h14l2 6M3 9h18v3H3ZM5 12v9h14v-9M9 21v-6h6v6"/></svg><span>Operated by: <strong>Amrutha Store</strong></span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Bommasandra, Bengaluru</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span>Daily: 8:00 AM–9:00 PM</span></li></ul><a class="nb-store-access" href="admin.html">Store access →</a></section>
+</div>
+<div class="nb-footer-features">
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span><strong>Local Delivery</strong><small>Subject to location and availability</small></span></div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 7 9-5 9 5v10l-9 5-9-5Zm0 0 9 5 9-5M12 12v10"/></svg><span><strong>Packaged Drinking Water</strong><small>Water bottles, jars and accessories</small></span></div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="m8 12 3 3 5-6"/></svg><span><strong>Easy Online Ordering</strong><small>Choose your preferred delivery window</small></span></div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8l-5 2 2-5A9 9 0 1 1 21 11Z"/><path d="M8 9h8M8 13h5"/></svg><span><strong>Local Customer Support</strong><small>Call or message our store</small></span></div>
+</div>
+<div class="nb-footer-bottom"><p>© 2026 Amrutha Store. All rights reserved. <strong>NeerBeku</strong></p><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Contact us on WhatsApp ↗</a><span>Payment: Pay on delivery</span></div>
+</footer>
+<script src="catalog.js"></script><script src="app.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="location-picker.js"></script>
+<!-- Testing Staging Deployement env -->
+</body>
+</html>
