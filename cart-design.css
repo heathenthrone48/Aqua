@@ -91,12 +91,103 @@ header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);bor
 .store-cart-count{display:grid;place-items:center;min-width:22px;height:22px;border-radius:20px;padding:0 6px;color:white;background:#0079f2;font-size:11px}
 .stock-error-notice{background:#fff5e8;border:1px solid #efd5ad;color:#78531e;border-radius:10px;font-size:13px;line-height:1.6;padding:12px 16px;margin:12px 0}
 @media(max-width:850px){.store-help-copy{display:none}.store-header-inner{gap:16px;padding:14px 20px}}
-@media(max-width:580px){
- .store-header-inner{grid-template-columns:1fr auto;gap:12px;padding:12px 16px}
- .store-brand{grid-column:1;grid-row:1;gap:2px}.store-logo{width:142px;height:40px}.store-tagline{font-size:9px;letter-spacing:.6px}
- .store-cart{grid-column:2;grid-row:1;padding:10px 12px}
- .store-help{grid-column:1 / -1;grid-row:2;display:block}
- .store-contact{width:100%;gap:10px}.store-contact-link{flex:1;padding:10px 12px;min-height:44px;font-size:12px}
+@media (max-width: 580px) {
+  .store-header-inner {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .store-brand {
+    grid-column: 1;
+    grid-row: 1;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .store-logo {
+    width: 150px;
+    height: 42px;
+  }
+
+  .store-tagline {
+    max-width: 210px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+
+  .store-help {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .store-help-copy,
+  .store-contact-link span {
+    display: none;
+  }
+
+  .store-contact {
+    gap: 6px;
+  }
+
+  .store-contact-link {
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .store-contact-link svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .store-cart {
+    grid-column: 3;
+    grid-row: 1;
+    min-height: 40px;
+    padding: 7px;
+    gap: 4px;
+  }
+
+  .store-cart-label {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .store-header-inner {
+    gap: 5px;
+    padding-inline: 9px;
+  }
+
+  .store-logo {
+    width: 128px;
+    height: 38px;
+  }
+
+  .store-tagline {
+    max-width: 170px;
+    font-size: 9px;
+  }
+
+  .store-contact {
+    gap: 4px;
+  }
+
+  .store-contact-link {
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+  }
+
+  .store-cart {
+    min-height: 36px;
+    padding: 5px;
+  }
 }
 @media(prefers-reduced-motion:reduce){.store-contact-link{transition:none}}
 
