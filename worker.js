@@ -1,3 +1,5 @@
+const MAINTENANCE_HTML = "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"robots\" content=\"noindex\"><title>NeerBeku — Opening Soon</title><style>\n*{box-sizing:border-box}body{margin:0;min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:24px;background:#edf7fc;color:#12364d;font-family:Arial,sans-serif}main{max-width:560px;width:100%;text-align:center;background:#fff;padding:56px 28px;border-radius:24px;box-shadow:0 16px 60px #12364d12}.brand{font-size:30px;font-weight:800;color:#087eaf;margin:0 0 40px}.tag{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#087eaf}h1{font-size:clamp(30px,7vw,44px);margin:16px 0 24px;line-height:1.1}p{font-size:17px;line-height:1.7;color:#506b7b;margin:12px 0}.thanks{font-size:14px;margin-top:32px}\n</style></head><body><main><div class=\"brand\">NeerBeku</div><div class=\"tag\">Opening soon</div><h1>We’re getting ready<br>to begin deliveries.</h1><p>We’re temporarily not accepting orders.</p><p>Please check back later for updates.</p><p class=\"thanks\">Thank you for your patience.</p></main></body></html>";
+
 const PRODUCT_IDS = new Set([
   "Bisleri 20L Can",
   "Bisleri 10L Can",
@@ -47,6 +49,22 @@ async function validPassword(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    if (env.MAINTENANCE_MODE === "true") {
+      const headers = {
+        "Cache-Control": "no-store, max-age=0",
+        "X-Robots-Tag": "noindex"
+      };
+      const isApi = url.pathname === "/api" || url.pathname.startsWith("/api/");
+      headers["Content-Type"] = isApi
+        ? "application/json; charset=utf-8"
+        : "text/html; charset=utf-8";
+      const body = isApi
+        ? JSON.stringify({ error: "We’re temporarily not accepting orders. Please check back later." })
+        : MAINTENANCE_HTML;
+      return new Response(request.method === "HEAD" ? null : body, { status: 503, headers });
+    }
+
 
     if (!url.pathname.startsWith("/api/")) {
       return env.ASSETS.fetch(request);
