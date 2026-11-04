@@ -1,3 +1,10 @@
+const DELIVERY_FEE = 15;
+function calculateOrderTotals(items) {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const deliveryFee = items.length ? DELIVERY_FEE : 0;
+  return { subtotal, deliveryFee, total: subtotal + deliveryFee };
+}
+
     const STORAGE_KEY_USER = 'neer_bekuuu_user_info';
     const STORAGE_KEY_LAST_ORDER = 'neer_bekuuu_last_order';
 
@@ -354,10 +361,14 @@
       if (save) persistCart();
       const items = Object.values(cart);
       const count = items.reduce((n, item) => n + item.qty, 0);
-      const total = items.reduce((n, item) => n + item.qty * item.price, 0);
+      const { subtotal, deliveryFee, total } = calculateOrderTotals(items);
       const money = value => '₹' + value.toFixed(2);
       document.querySelectorAll('[data-cart-count], #cart-count').forEach(el => el.textContent = count);
       document.querySelectorAll('[data-cart-total], #cart-total, #total-display').forEach(el => el.textContent = money(total));
+      const subtotalEl = document.getElementById('items-subtotal');
+      const deliveryEl = document.getElementById('delivery-fee');
+      if (subtotalEl) subtotalEl.textContent = money(subtotal);
+      if (deliveryEl) deliveryEl.textContent = money(deliveryFee);
       const totalInput = document.getElementById('input-total-bill');
       if (totalInput) totalInput.value = money(total);
       const itemsInput = document.getElementById('cart-items-input');
@@ -514,6 +525,9 @@
         return row;
       });
       document.getElementById('confirm-items').replaceChildren(...rows);
+      const breakdown = calculateOrderTotals(order.items);
+      document.getElementById('confirm-subtotal').textContent = '₹' + breakdown.subtotal.toFixed(2);
+      document.getElementById('confirm-delivery-fee').textContent = '₹' + breakdown.deliveryFee.toFixed(2);
       document.getElementById('confirm-total').textContent = order.total;
       document.getElementById('confirm-time').textContent = order.time;
       document.getElementById('confirm-address').textContent = order.address;
@@ -574,17 +588,20 @@
       if (!deliveryWindow) return;
 
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
-      const totalBill = document.getElementById('input-total-bill').value;
+      const orderTotals = calculateOrderTotals(Object.values(cart));
+      const totalBill = '₹' + orderTotals.total.toFixed(2);
 
       const payload = {
         orderId: orderRef,
         name: customerName,
         phone: customerPhone,
         address: customerAddress,
-        notes: landmarkNotes,
+        notes: `${landmarkNotes} | Items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}`,
         cart: document.getElementById('cart-items-input').value,
         qty: document.getElementById('cart-count').textContent,
         bill: totalBill,
+        subtotal: orderTotals.subtotal,
+        deliveryFee: orderTotals.deliveryFee,
         time: deliveryWindow,
         latitude: latitude,
         longitude: longitude,
