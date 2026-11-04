@@ -76,7 +76,7 @@ header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);bor
 .store-header-inner{max-width:1120px;margin:0 auto;padding:16px 28px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px}
 .store-brand{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-decoration:none;min-width:0}
 .store-logo{display:block;width:154px;height:48px;object-fit:contain;object-position:left center}
-.store-tagline{font-size:10px;font-weight:500;letter-spacing:.8px;color:#60798b;line-height:1.5}
+.store-tagline{font-size:10px;font-weight:700;letter-spacing:.8px;color:#60798b;line-height:1.5}
 .store-help{display:flex;align-items:center;justify-content:flex-end;gap:20px;min-width:0}
 .store-help-copy{display:flex;flex-direction:column;gap:3px;color:#718594;font-size:11px;line-height:1.5;white-space:nowrap}
 .store-help-copy strong{font-weight:600;color:#29475d;font-size:12px}
