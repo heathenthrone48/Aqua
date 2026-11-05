@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<meta name="google-client-id" content="851382474898-i55srvunioh0mgc4gv46bgh0mbf2u73g.apps.googleusercontent.com"/>
 <link href="styles.css" rel="stylesheet"/>
 <link href="cart-design.css" rel="stylesheet"/><link rel="stylesheet" href="footer.css">
 </head>
@@ -22,7 +23,7 @@
     <div class="store-header-inner">
       <a href="index.html" class="store-brand" aria-label="NeerBeku home">
         <img src="images/logo.png" alt="NeerBeku" class="store-logo">
-        <span class="store-tagline">Your local drinking water delivery partner</span>
+        <span class="store-tagline">Your local drinking water<br>delivery partner</span>
       </a>
       <div class="store-help">
         <span class="store-help-copy">Need a hand?<strong>Talk to our store</strong></span>
@@ -65,8 +66,38 @@
 <label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
 </div>
 </div>
-<div class="section-label" id="delivery-details-section">Delivery details</div>
-<div class="panel">
+<div class="section-label account-section-label" id="account-section-label">Your account</div>
+<div class="panel google-signin-panel">
+  <div class="account-card-heading">
+    <span class="account-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+    <div><h2 id="account-card-title">Faster checkout next time</h2><p>Sign in to save your delivery details and addresses to your NeerBeku account. Google verifies your identity; NeerBeku stores your saved details.</p></div>
+  </div>
+  <div class="account-card-controls">
+    <div id="google-signin-button"></div>
+    <div class="account-connected-badge" id="google-connected-identity" hidden>
+      <svg class="google-brand-mark" viewBox="0 0 48 48" role="img" aria-label="Google">
+        <path fill="#4285F4" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 5.8 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.3-.4-3.5z"/>
+        <path fill="#34A853" d="M6.3 14.7 12.9 19C14.7 14.7 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 5.8 29.3 4 24 4 16.4 4 9.8 8.3 6.3 14.7z"/>
+        <path fill="#FBBC05" d="M24 44c5.1 0 9.8-1.9 13.3-5.2l-6.1-5.2C29.1 35.2 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.5 39.5 16.2 44 24 44z"/>
+        <path fill="#EA4335" d="M43.6 20.5H42V20H24v8h11.3a12 12 0 0 1-4.1 5.6l6.1 5.2C41.1 35.2 44 29.9 44 24c0-1.3-.1-2.3-.4-3.5z"/>
+      </svg>
+      <span><strong>Connected through Google</strong><small id="google-connected-user"></small></span>
+    </div>
+    <div class="google-account-status" id="google-account-status" aria-live="polite" role="status"></div>
+    <button class="google-signout" id="google-signout" type="button" hidden>Sign out</button>
+  </div>
+</div>
+<section class="panel account-address-panel" id="account-address-panel" hidden>
+  <div class="account-address-top"><div><p class="account-eyebrow">YOUR NEERBEKU ACCOUNT</p><h3>Delivery address</h3></div><span class="account-secure-badge">Saved to your account</span></div>
+  <div class="account-active-address" id="account-active-address"></div>
+  <div class="account-address-actions">
+    <button class="account-action-secondary" id="choose-saved-address" type="button" hidden>Choose another address</button>
+    <button class="account-action-primary" id="add-saved-address" type="button">Add address</button>
+  </div>
+  <div class="saved-address-list" id="saved-address-list" hidden></div>
+  <p class="account-address-message" id="account-address-message" aria-live="polite" role="status"></p>
+</section>
+<div class="panel" id="delivery-entry-panel">
 <!-- Customer details: keep these visible in both modes -->
 <div class="form-group">
 <label for="customer-name">Customer Name *</label>
@@ -80,6 +111,10 @@
 <!-- Delivery address selector -->
 <section class="location-section">
 <h3>📍 Delivery Address</h3>
+<div class="form-group account-address-label-field">
+<label for="account-address-label">Save this address as</label>
+<input id="account-address-label" maxlength="40" placeholder="Home, Work, etc." type="text" value="Home"/>
+</div>
 <p class="location-help">
     Choose how you want to provide your delivery address.
   </p>
@@ -148,8 +183,16 @@
 <input id="delivery-latitude" name="deliveryLatitude" type="hidden"/>
 <input id="delivery-longitude" name="deliveryLongitude" type="hidden"/>
 <input id="delivery-address-source" name="deliveryAddressSource" type="hidden" value="location"/>
+<div class="account-save-address-row" id="account-save-address-row" hidden>
+  <button class="account-action-primary" id="save-address-to-account" type="button">Save address to my account</button>
+  <button class="account-action-secondary" id="cancel-address-entry" type="button" hidden>Cancel</button>
+  <p class="account-address-message" id="save-address-message" aria-live="polite" role="status"></p>
+</div>
 </section>
+</div>
+<div class="section-label delivery-section-label" id="delivery-details-section">Delivery details</div>
 <!-- Keep your existing delivery time, cart total and order button below -->
+<div class="panel checkout-details-panel">
 <div class="form-group">
 <label for="preferred-time">Delivery Window</label>
 <select id="preferred-time" name="Preferred_Time"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
@@ -230,9 +273,11 @@
 </div>
 <div class="nb-footer-bottom"><p>© 2026 Amrutha Store. All rights reserved. <strong>NeerBeku</strong></p><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Contact us on WhatsApp ↗</a><span>Payment: Pay on delivery</span></div>
 </footer>
-<script src="catalog.js"></script><script src="app.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="catalog.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="location-picker.js"></script>
+<script src="app.js"></script>
 <!-- Testing Staging Deployement env -->
 </body>
 </html>

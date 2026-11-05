@@ -155,7 +155,7 @@ function calculateOrderTotals(items) {
         const carousel = document.getElementById('heroCarousel');
         const index = parseInt(carousel.dataset.index || '0', 10);
         renderHeroSlide(index + 1);
-      }, 3000);
+      }, 4000);
     }
 
     function stopHeroAutoPlay() {
@@ -570,7 +570,16 @@ function calculateOrderTotals(items) {
       const customerName = document.getElementById('customer-name').value;
       const customerPhone = document.getElementById('customer-phone').value;
       
-      if (window.syncDeliveryAddress) {
+      const savedAccountAddress = window.getSelectedNeerBekuAddress?.();
+      if (savedAccountAddress) {
+        document.getElementById('customer-address').value = savedAccountAddress.address;
+        document.getElementById('delivery-latitude').value = savedAccountAddress.latitude || '';
+        document.getElementById('delivery-longitude').value = savedAccountAddress.longitude || '';
+        document.getElementById('delivery-address-source').value = 'saved-account';
+        document.getElementById('customer-name').value = savedAccountAddress.name;
+        document.getElementById('customer-phone').value = savedAccountAddress.phone;
+        document.getElementById('landmark-notes').value = savedAccountAddress.landmark || '';
+      } else if (window.syncDeliveryAddress) {
         window.syncDeliveryAddress();
       }
 
@@ -794,3 +803,297 @@ if (document.getElementById('preferred-time')) {
   window.addEventListener('focus', refreshDeliveryChoices);
   refreshDeliveryChoices();
 }
+
+
+// Google sign-in with NeerBeku-saved delivery addresses. Guest checkout remains available.
+(() => {
+  const clientId = document.querySelector('meta[name="google-client-id"]')?.content;
+  const button = document.getElementById('google-signin-button');
+  const status = document.getElementById('google-account-status');
+  if (!button || !status) return;
+
+  const signout = document.getElementById('google-signout');
+  const accountTitle = document.getElementById('account-card-title');
+  const connectedIdentity = document.getElementById('google-connected-identity');
+  const connectedUser = document.getElementById('google-connected-user');
+  const accountPanel = document.getElementById('account-address-panel');
+  const activeAddressEl = document.getElementById('account-active-address');
+  const addressListEl = document.getElementById('saved-address-list');
+  const chooseAddressButton = document.getElementById('choose-saved-address');
+  const addAddressButton = document.getElementById('add-saved-address');
+  const entryPanel = document.getElementById('delivery-entry-panel');
+  const saveRow = document.getElementById('account-save-address-row');
+  const saveButton = document.getElementById('save-address-to-account');
+  const cancelButton = document.getElementById('cancel-address-entry');
+  const addressMessage = document.getElementById('account-address-message');
+  const saveMessage = document.getElementById('save-address-message');
+  let addresses = [];
+  let selectedAddress = null;
+  let accountUser = null;
+  let showingAddressList = false;
+
+  const field = id => document.getElementById(id);
+  const setText = (element, value) => { if (element) element.textContent = value || ''; };
+  const escape = value => String(value || '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+  }[char]));
+
+  function setEntryVisible(visible) {
+    if (!entryPanel) return;
+    entryPanel.hidden = !visible;
+    entryPanel.querySelectorAll('input, select, textarea, button').forEach(control => {
+      if (control.id === 'delivery-date' || control.id === 'scheduled-slot') return;
+      control.disabled = !visible;
+    });
+  }
+
+  function showAccountAddress(address) {
+    selectedAddress = address || null;
+    if (!accountPanel) return;
+    accountPanel.hidden = false;
+    showingAddressList = false;
+    addressListEl.hidden = true;
+    chooseAddressButton.textContent = 'Choose another address';
+    chooseAddressButton.hidden = addresses.length < 2;
+    if (address) {
+      activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(address.address)}</span><span>${escape(address.name)} · ${escape(address.phone)}</span>${address.landmark ? `<small>${escape(address.landmark)}</small>` : ''}`;
+      setEntryVisible(false);
+      saveRow.hidden = true;
+      setText(addressMessage, 'This address is selected for your order.');
+    } else {
+      activeAddressEl.innerHTML = '<strong>No saved delivery address yet</strong><span>Add your details once and NeerBeku can show them here next time.</span>';
+      setEntryVisible(true);
+      saveRow.hidden = false;
+      cancelButton.hidden = addresses.length === 0;
+      setText(addressMessage, 'Your details are saved to your NeerBeku account when you choose “Save address”.');
+    }
+  }
+
+  function populateCheckoutFields(address) {
+    if (!address) return;
+    field('customer-name').value = address.name || accountUser?.name || '';
+    field('customer-phone').value = address.phone || '';
+    field('customer-address').value = address.address || '';
+    field('delivery-latitude').value = address.latitude || '';
+    field('delivery-longitude').value = address.longitude || '';
+    field('delivery-address-source').value = 'saved-account';
+    field('landmark-notes').value = address.landmark || '';
+  }
+
+  function renderAddressChoices() {
+    if (!addresses.length) {
+      addressListEl.replaceChildren();
+      return;
+    }
+    addressListEl.innerHTML = addresses.map(address => `
+      <article class="saved-address-option${selectedAddress?.id === address.id ? ' is-selected' : ''}">
+        <div><strong>${escape(address.label || 'Delivery address')}</strong><p>${escape(address.address)}</p><small>${escape(address.name)} · ${escape(address.phone)}</small></div>
+        <div class="saved-address-option-actions">
+          <button type="button" data-use-address="${escape(address.id)}">${selectedAddress?.id === address.id ? 'Selected' : 'Use this'}</button>
+          <button type="button" class="saved-address-delete" data-delete-address="${escape(address.id)}" aria-label="Delete ${escape(address.label || 'address')}">Delete</button>
+        </div>
+      </article>`).join('');
+    addressListEl.querySelectorAll('[data-use-address]').forEach(button => button.addEventListener('click', () => {
+      const choose = async () => {
+        const chosen = addresses.find(item => item.id === button.dataset.useAddress);
+        if (!chosen) return;
+        try {
+          const response = await fetch('/api/customer/addresses', {
+            method: 'PUT', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: chosen.id })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'Could not select this address.');
+          addresses = addresses.map(item => ({ ...item, is_default: item.id === chosen.id }));
+          populateCheckoutFields(chosen);
+          showAccountAddress(chosen);
+          renderAddressChoices();
+        } catch (error) { setText(addressMessage, error.message); }
+      };
+      choose();
+    }));
+    addressListEl.querySelectorAll('[data-delete-address]').forEach(button => button.addEventListener('click', async () => {
+      const address = addresses.find(item => item.id === button.dataset.deleteAddress);
+      if (!address || !confirm(`Delete the saved ${address.label || 'delivery'} address?`)) return;
+      setText(addressMessage, 'Deleting address…');
+      try {
+        const response = await fetch(`/api/customer/addresses?id=${encodeURIComponent(address.id)}`, {
+          method: 'DELETE', credentials: 'same-origin'
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Could not delete this address.');
+        addresses = result.addresses || [];
+        const next = addresses.find(item => item.is_default) || addresses[0] || null;
+        if (next) populateCheckoutFields(next);
+        showAccountAddress(next);
+        renderAddressChoices();
+      } catch (error) { setText(addressMessage, error.message); }
+    }));
+  }
+
+  async function loadAddresses() {
+    if (!accountUser) return;
+    setText(addressMessage, 'Loading your saved addresses…');
+    try {
+      const response = await fetch('/api/customer/addresses', { credentials: 'same-origin', cache: 'no-store' });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not load saved addresses.');
+      addresses = Array.isArray(result.addresses) ? result.addresses : [];
+      const preferred = addresses.find(item => item.is_default) || addresses[0] || null;
+      if (preferred) populateCheckoutFields(preferred);
+      showAccountAddress(preferred);
+      renderAddressChoices();
+    } catch (error) {
+      accountPanel.hidden = false;
+      setEntryVisible(true);
+      saveRow.hidden = true;
+      setText(addressMessage, `${error.message} You can still enter an address and check out as a guest.`);
+    }
+  }
+
+  function openAddressEntry() {
+    showAccountAddress(null);
+    selectedAddress = null;
+    setEntryVisible(true);
+    saveRow.hidden = false;
+    cancelButton.hidden = addresses.length === 0;
+    addressListEl.hidden = true;
+    showingAddressList = false;
+    setText(saveMessage, '');
+    field('customer-name').value ||= accountUser?.name || '';
+    field('customer-phone').value = '';
+    field('address-house').value = '';
+    field('address-street').value = '';
+    field('address-area').value = '';
+    field('address-city').value = '';
+    field('address-postcode').value = '';
+    field('landmark-notes').value = '';
+    field('customer-address').value = '';
+    field('delivery-latitude').value = '';
+    field('delivery-longitude').value = '';
+    field('account-address-label').value = addresses.length ? '' : 'Home';
+    window.switchAddressMode?.('manual');
+    entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function saveAddress() {
+    if (window.syncDeliveryAddress) window.syncDeliveryAddress();
+    const name = field('customer-name').value.trim();
+    const phone = field('customer-phone').value.trim();
+    const address = field('customer-address').value.trim();
+    const label = field('account-address-label').value.trim() || 'Delivery address';
+    if (!name || !phone || !address) {
+      setText(saveMessage, 'Enter your name, mobile number, and a complete delivery address first.');
+      return;
+    }
+    saveButton.disabled = true;
+    setText(saveMessage, 'Saving address…');
+    try {
+      const response = await fetch('/api/customer/addresses', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          label, name, phone, address,
+          landmark: field('landmark-notes').value.trim(),
+          latitude: field('delivery-latitude').value || null,
+          longitude: field('delivery-longitude').value || null,
+          isDefault: true
+        })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Could not save this address.');
+      addresses = result.addresses || [];
+      const saved = addresses.find(item => item.id === result.id) || addresses.find(item => item.is_default) || addresses[0];
+      if (saved) populateCheckoutFields(saved);
+      showAccountAddress(saved || null);
+      renderAddressChoices();
+      setText(addressMessage, 'Address saved. It will be available the next time you sign in.');
+    } catch (error) {
+      setText(saveMessage, error.message || 'Could not save this address.');
+    } finally { saveButton.disabled = false; }
+  }
+
+  function handleSignedIn(user) {
+    accountUser = user;
+    button.hidden = true;
+    status.hidden = true;
+    connectedIdentity.hidden = false;
+    setText(connectedUser, `${user.name || 'Customer'}${user.email ? ` · ${user.email}` : ''}`);
+    signout.hidden = false;
+    setText(accountTitle, 'Your NeerBeku account is connected');
+    setText(status, `Signed in as ${user.name}${user.email ? ` (${user.email})` : ''}.`);
+    if (user.name && !field('customer-name').value) field('customer-name').value = user.name;
+    loadAddresses();
+  }
+
+  window.getSelectedNeerBekuAddress = () => selectedAddress;
+  chooseAddressButton.addEventListener('click', () => {
+    showingAddressList = !showingAddressList;
+    addressListEl.hidden = !showingAddressList;
+    chooseAddressButton.textContent = showingAddressList ? 'Close address list' : 'Choose another address';
+  });
+  addAddressButton.addEventListener('click', openAddressEntry);
+  saveButton.addEventListener('click', saveAddress);
+  cancelButton.addEventListener('click', () => {
+    const preferred = addresses.find(item => item.is_default) || addresses[0] || null;
+    if (preferred) { populateCheckoutFields(preferred); showAccountAddress(preferred); }
+  });
+
+  window.handleGoogleCredential = async response => {
+    connectedIdentity.hidden = true;
+    status.hidden = false;
+    setText(status, 'Signing in…');
+    try {
+      const result = await fetch('/api/auth/google', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential })
+      });
+      const data = await result.json();
+      if (!result.ok) throw new Error(data.error || 'Sign-in failed.');
+      handleSignedIn(data.user);
+    } catch (error) { setText(status, error.message || 'Could not sign in. Please try again.'); }
+  };
+
+  signout.addEventListener('click', async () => {
+    try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); } catch {}
+    accountUser = null;
+    addresses = [];
+    selectedAddress = null;
+    accountPanel.hidden = true;
+    addressListEl.hidden = true;
+    saveRow.hidden = true;
+    setEntryVisible(true);
+    signout.hidden = true;
+    connectedIdentity.hidden = true;
+    status.hidden = false;
+    button.hidden = false;
+    setText(accountTitle, 'Faster checkout next time');
+    setText(status, 'Signed out. Guest checkout is still available.');
+  });
+
+  fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' })
+    .then(response => response.json())
+    .then(data => { if (data.signedIn) handleSignedIn(data.user); })
+    .catch(() => {});
+
+  if (!clientId || clientId.includes('YOUR_GOOGLE_CLIENT_ID')) {
+    setText(status, 'Google sign-in is not configured yet. Guest checkout is available.');
+    return;
+  }
+  let attempts = 0;
+  let renderedWidth = 0;
+  const renderButton = () => {
+    if (window.google?.accounts?.id) {
+      const availableWidth = button.parentElement?.getBoundingClientRect().width || 360;
+      const width = Math.max(200, Math.min(400, Math.floor(availableWidth)));
+      if (width === renderedWidth) return;
+      renderedWidth = width;
+      window.google.accounts.id.initialize({ client_id: clientId, callback: window.handleGoogleCredential });
+      window.google.accounts.id.renderButton(button, { theme: 'filled_blue', size: 'large', text: 'continue_with', shape: 'pill', width });
+    } else if (++attempts < 30) setTimeout(renderButton, 100);
+  };
+  renderButton();
+  window.addEventListener('resize', renderButton);
+})();

@@ -25,7 +25,10 @@
           "database_name": "neer-beku-staging",
           "database_id": "fae8aa2e-5042-42f6-8621-132a25fe6bc2"
         }
-      ]
+      ],
+      "vars": {
+        "GOOGLE_CLIENT_ID": "851382474898-i55srvunioh0mgc4gv46bgh0mbf2u73g.apps.googleusercontent.com"
+      }
     }
   },
   "vars": {
