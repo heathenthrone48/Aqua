@@ -281,3 +281,7 @@ header.store-header{position:sticky;top:0;z-index:200}
   .account-card-controls { padding-left: 0; }
   .cart-page .google-signin-panel { padding-left: 19px; }
 }
+
+/* The fixed cart dock is storefront-only; checkout should end at its footer. */
+body.cart-page { padding-bottom: 0 !important; }
+.cart-page .nb-footer { margin-bottom: 0; }

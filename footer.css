@@ -17,9 +17,6 @@
 @media(max-width:650px){.nb-footer{padding:28px 18px 24px;margin-top:40px}.nb-footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 18px}.nb-footer-brand{grid-column:1 / -1}.nb-footer h2{font-size:14px;gap:7px}.nb-footer h2 svg{width:21px}.nb-contact-list li{gap:7px;font-size:12px}.nb-footer-features{padding:18px 0;gap:18px}.nb-footer-features>div{padding:0 12px;gap:9px}.nb-footer-features svg{width:25px;height:25px}.nb-footer-features strong{font-size:11px}.nb-footer-features small{font-size:10px}.nb-footer-bottom{align-items:flex-start;flex-direction:column;gap:10px}}
 @media(max-width:360px){.nb-footer-grid{grid-template-columns:1fr}.nb-footer-brand{grid-column:auto}.nb-footer-features{grid-template-columns:1fr}.nb-footer-features>div{border:0}}
 
-/* Checkout and confirmation fee breakdown. */
-.fee-breakdown{margin:16px 0;color:#29475d;font-size:14px}.fee-breakdown>div{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:7px 0}.fee-breakdown strong{white-space:nowrap;color:#102b4e}
-
 /* Shared logo tagline and the policy page's actual brand image. */
 .store-tagline{max-width:230px;white-space:normal;letter-spacing:0;font-size:10px;line-height:1.5}
 .policy-brand{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;text-decoration:none}
@@ -27,3 +24,39 @@
 .policy-brand span{max-width:230px;font-size:10px;line-height:1.5;color:#60798b;font-weight:500}
 .top .nav{gap:18px}.top .nav>small{flex-shrink:0}
 @media(max-width:580px){.store-tagline,.policy-brand span{max-width:190px;font-size:9px}.policy-brand img{width:142px;height:40px}.top .nav{padding:12px 16px}.top .nav>small{font-size:11px}}
+
+/* Compact, viewport-safe footer; especially tuned for mobile checkout. */
+.nb-footer { width:100%; max-width:100%; box-sizing:border-box; margin-top:24px; padding:32px 24px 16px; overflow-x:clip; }
+.nb-footer-grid,.nb-footer-features,.nb-footer-bottom { width:100%; max-width:1180px; }
+.nb-footer-grid { gap:18px; }
+.nb-footer-grid>section { min-width:0; overflow-wrap:anywhere; }
+@media(max-width:650px) {
+  .nb-footer { margin-top:12px; padding:20px 14px 12px; font-size:11px; line-height:1.5; }
+  .nb-footer-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 12px; }
+  .nb-footer-brand { grid-column:1 / -1; }
+  .nb-footer-brand img { width:170px; height:52px; margin:0 0 4px; }
+  .nb-footer-brand h2 { margin:0 0 6px; font-size:11px; }
+  .nb-footer-brand p { max-width:620px; margin:0; font-size:11px; line-height:1.5; }
+  .nb-footer h2 { gap:6px; margin:0 0 8px; font-size:12px; line-height:1.3; }
+  .nb-footer h2 svg { width:18px; height:18px; }
+  .nb-contact-list li { gap:6px; margin:0 0 7px; font-size:11px; line-height:1.45; }
+  .nb-contact-list li:last-child { margin-bottom:0; }
+  .nb-contact-list svg { width:16px; height:18px; }
+  .nb-area-tags { gap:5px; margin:8px 0; }
+  .nb-area-tags span { padding:3px 8px; font-size:10px; }
+  .nb-map-link { margin-top:4px; font-size:10px; }
+  .nb-policy-links a { gap:5px; padding:4px 0; font-size:10px; line-height:1.35; }
+  .nb-policy-links span { font-size:16px; }
+  .nb-store-access { margin-top:5px; }
+  .nb-footer-features { display:none; }
+  .nb-footer-bottom { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:7px 12px; margin-top:14px; padding-top:10px; font-size:10px; }
+  .nb-footer-bottom p { grid-column:1 / -1; line-height:1.4; }
+  .nb-footer-bottom a,.nb-footer-bottom span { min-width:0; overflow-wrap:anywhere; }
+}
+@media(max-width:360px) {
+  .nb-footer { padding-inline:12px; }
+  .nb-footer-grid { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .nb-footer-brand { grid-column:auto; }
+  .nb-footer-bottom { grid-template-columns:minmax(0,1fr); }
+  .nb-footer-bottom p { grid-column:auto; }
+}
