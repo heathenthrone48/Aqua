@@ -199,3 +199,10 @@ header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);bor
 
 header.store-header{position:sticky;top:0;z-index:200}
 [hidden]{display:none!important}
+
+
+/* Google sign-in panel */
+.google-signin-panel { display: grid; gap: 10px; }
+.google-signin-panel > p { margin: 0; color: #29475d; font-size: 14px; }
+.google-account-status { color: #29475d; font-size: 13px; }
+.google-signout { justify-self: start; border: 1px solid #d7e8fa; border-radius: 8px; padding: 8px 12px; background: #edf5ff; color: #075fb7; font-weight: 700; cursor: pointer; }

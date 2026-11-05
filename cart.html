@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<meta name="google-client-id" content="851382474898-i55srvunioh0mgc4gv46bgh0mbf2u73g.apps.googleusercontent.com"/>
 <link href="styles.css" rel="stylesheet"/>
 <link href="cart-design.css" rel="stylesheet"/><link rel="stylesheet" href="footer.css">
 </head>
@@ -22,7 +23,7 @@
     <div class="store-header-inner">
       <a href="index.html" class="store-brand" aria-label="NeerBeku home">
         <img src="images/logo.png" alt="NeerBeku" class="store-logo">
-        <span class="store-tagline">Your local drinking water delivery partner</span>
+        <span class="store-tagline">Your local drinking water<br>delivery partner</span>
       </a>
       <div class="store-help">
         <span class="store-help-copy">Need a hand?<strong>Talk to our store</strong></span>
@@ -66,6 +67,12 @@
 </div>
 </div>
 <div class="section-label" id="delivery-details-section">Delivery details</div>
+<div class="panel google-signin-panel">
+  <p><strong>Save time at checkout</strong> — sign in with Google to fill your name.</p>
+  <div id="google-signin-button"></div>
+  <div class="google-account-status" id="google-account-status" aria-live="polite" role="status"></div>
+  <button class="google-signout" id="google-signout" type="button" hidden>Sign out</button>
+</div>
 <div class="panel">
 <!-- Customer details: keep these visible in both modes -->
 <div class="form-group">
@@ -230,6 +237,7 @@
 </div>
 <div class="nb-footer-bottom"><p>© 2026 Amrutha Store. All rights reserved. <strong>NeerBeku</strong></p><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Contact us on WhatsApp ↗</a><span>Payment: Pay on delivery</span></div>
 </footer>
+<script src="https://accounts.google.com/gsi/client"></script>
 <script src="catalog.js"></script><script src="app.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="location-picker.js"></script>

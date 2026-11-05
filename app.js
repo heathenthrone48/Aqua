@@ -155,7 +155,7 @@ function calculateOrderTotals(items) {
         const carousel = document.getElementById('heroCarousel');
         const index = parseInt(carousel.dataset.index || '0', 10);
         renderHeroSlide(index + 1);
-      }, 3000);
+      }, 4000);
     }
 
     function stopHeroAutoPlay() {
@@ -794,3 +794,59 @@ if (document.getElementById('preferred-time')) {
   window.addEventListener('focus', refreshDeliveryChoices);
   refreshDeliveryChoices();
 }
+
+
+// Optional Google customer sign-in (guest checkout remains available).
+(() => {
+  const clientId = document.querySelector('meta[name="google-client-id"]')?.content;
+  const button = document.getElementById('google-signin-button');
+  const status = document.getElementById('google-account-status');
+  const signout = document.getElementById('google-signout');
+  if (!button || !status) return;
+
+  function showSignedIn(user) {
+    status.textContent = `Signed in as ${user.name}${user.email ? ` (${user.email})` : ''}.`;
+    signout.hidden = false;
+    const nameField = document.getElementById('customer-name');
+    if (nameField && user.name && !nameField.value) nameField.value = user.name;
+  }
+
+  window.handleGoogleCredential = async response => {
+    status.textContent = 'Signing in…';
+    try {
+      const result = await fetch('/api/auth/google', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential })
+      });
+      const data = await result.json();
+      if (!result.ok) throw new Error(data.error || 'Sign-in failed.');
+      showSignedIn(data.user);
+    } catch (error) {
+      status.textContent = error.message || 'Could not sign in. Please try again.';
+    }
+  };
+
+  signout?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    status.textContent = 'Signed out. You can still place an order as a guest.';
+    signout.hidden = true;
+  });
+
+  fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' })
+    .then(response => response.json()).then(data => { if (data.signedIn) showSignedIn(data.user); })
+    .catch(() => {});
+
+  if (!clientId || clientId.includes('YOUR_GOOGLE_CLIENT_ID')) {
+    status.textContent = 'Google sign-in is not configured yet. Guest checkout is available.';
+    return;
+  }
+  let attempts = 0;
+  const renderButton = () => {
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.initialize({ client_id: clientId, callback: window.handleGoogleCredential });
+      window.google.accounts.id.renderButton(button, { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular' });
+    } else if (++attempts < 30) setTimeout(renderButton, 100);
+  };
+  renderButton();
+})();
