@@ -814,6 +814,8 @@ if (document.getElementById('preferred-time')) {
 
   const signout = document.getElementById('google-signout');
   const accountTitle = document.getElementById('account-card-title');
+  const connectedIdentity = document.getElementById('google-connected-identity');
+  const connectedUser = document.getElementById('google-connected-user');
   const accountPanel = document.getElementById('account-address-panel');
   const activeAddressEl = document.getElementById('account-active-address');
   const addressListEl = document.getElementById('saved-address-list');
@@ -1015,6 +1017,9 @@ if (document.getElementById('preferred-time')) {
   function handleSignedIn(user) {
     accountUser = user;
     button.hidden = true;
+    status.hidden = true;
+    connectedIdentity.hidden = false;
+    setText(connectedUser, `${user.name || 'Customer'}${user.email ? ` · ${user.email}` : ''}`);
     signout.hidden = false;
     setText(accountTitle, 'Your NeerBeku account is connected');
     setText(status, `Signed in as ${user.name}${user.email ? ` (${user.email})` : ''}.`);
@@ -1036,6 +1041,8 @@ if (document.getElementById('preferred-time')) {
   });
 
   window.handleGoogleCredential = async response => {
+    connectedIdentity.hidden = true;
+    status.hidden = false;
     setText(status, 'Signing in…');
     try {
       const result = await fetch('/api/auth/google', {
@@ -1059,6 +1066,8 @@ if (document.getElementById('preferred-time')) {
     saveRow.hidden = true;
     setEntryVisible(true);
     signout.hidden = true;
+    connectedIdentity.hidden = true;
+    status.hidden = false;
     button.hidden = false;
     setText(accountTitle, 'Faster checkout next time');
     setText(status, 'Signed out. Guest checkout is still available.');

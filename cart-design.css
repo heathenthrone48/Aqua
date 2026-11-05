@@ -285,3 +285,14 @@ header.store-header{position:sticky;top:0;z-index:200}
 /* The fixed cart dock is storefront-only; checkout should end at its footer. */
 body.cart-page { padding-bottom: 0 !important; }
 .cart-page .nb-footer { margin-bottom: 0; }
+
+/* Make the Google provider visible after the account is connected. */
+.account-connected-badge { display:flex; align-items:center; justify-content:flex-start; gap:13px; min-height:64px; padding:11px 15px; border:1px solid #d4e5ef; border-radius:14px; background:rgba(255,255,255,.92); box-shadow:0 4px 14px rgba(25,80,110,.06); }
+.account-connected-badge[hidden] { display:none !important; }
+.google-brand-mark { display:block; flex:0 0 34px; width:34px; height:34px; }
+.account-connected-badge>span { display:grid; gap:3px; min-width:0; }
+.account-connected-badge strong { color:#173b58; font-size:13px; line-height:1.35; }
+.account-connected-badge small { color:#526e80; font-size:12px; line-height:1.4; overflow-wrap:anywhere; }
+@media(max-width:700px) {
+  .account-connected-badge { width:100%; box-sizing:border-box; }
+}
