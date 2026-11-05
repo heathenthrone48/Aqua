@@ -46,6 +46,63 @@ async function validPassword(request, env) {
     difference | (value ^ b[index]), 0) === 0;
 }
 
+
+const GOOGLE_ISSUERS = new Set(["accounts.google.com", "https://accounts.google.com"]);
+const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
+
+function base64UrlToBytes(value) {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  return Uint8Array.from(atob(padded), char => char.charCodeAt(0));
+}
+
+async function verifyGoogleCredential(credential, clientId) {
+  if (!credential || !clientId) throw new Error("Google sign-in is not configured");
+  const parts = credential.split(".");
+  if (parts.length !== 3) throw new Error("Invalid Google credential");
+  const header = JSON.parse(new TextDecoder().decode(base64UrlToBytes(parts[0])));
+  const claims = JSON.parse(new TextDecoder().decode(base64UrlToBytes(parts[1])));
+  if (header.alg !== "RS256" || !header.kid) throw new Error("Invalid Google token header");
+  const jwksResponse = await fetch("https://www.googleapis.com/oauth2/v3/certs", { cf: { cacheTtl: 3600, cacheEverything: true } });
+  if (!jwksResponse.ok) throw new Error("Could not retrieve Google signing keys");
+  const jwks = await jwksResponse.json();
+  const jwk = jwks.keys.find(key => key.kid === header.kid && key.kty === "RSA");
+  if (!jwk) throw new Error("Unknown Google signing key");
+  const publicKey = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
+  const signedData = new TextEncoder().encode(`${parts[0]}.${parts[1]}`);
+  const validSignature = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", publicKey, base64UrlToBytes(parts[2]), signedData);
+  const now = Math.floor(Date.now() / 1000);
+  if (!validSignature || !GOOGLE_ISSUERS.has(claims.iss) || claims.aud !== clientId || claims.exp <= now || (claims.nbf && claims.nbf > now) || !claims.sub || claims.email_verified !== true) {
+    throw new Error("Google credential could not be verified");
+  }
+  return { sub: claims.sub, email: claims.email || "", name: claims.name || "Customer" };
+}
+
+async function sha256Hex(value) {
+  const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)));
+  return [...bytes].map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function sessionCookie(token, maxAge = SESSION_TTL_SECONDS) {
+  return `__Host-neerbeku_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+}
+
+function readSessionToken(request) {
+  const cookies = request.headers.get("Cookie") || "";
+  const pair = cookies.split(";").map(value => value.trim()).find(value => value.startsWith("__Host-neerbeku_session="));
+  return pair ? pair.slice("__Host-neerbeku_session=".length) : "";
+}
+
+async function getCurrentUser(request, env) {
+  const token = readSessionToken(request);
+  if (!token) return null;
+  const hash = await sha256Hex(token);
+  const now = Math.floor(Date.now() / 1000);
+  const row = await env.DB.prepare(`SELECT users.google_sub, users.email, users.name FROM auth_sessions
+    JOIN auth_users AS users ON users.google_sub = auth_sessions.google_sub
+    WHERE auth_sessions.token_hash = ? AND auth_sessions.expires_at > ?`).bind(hash, now).first();
+  return row || null;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -77,6 +134,40 @@ export default {
         request.headers.get("Origin") !== url.origin
       ) {
         return json({ error: "Invalid origin" }, 403);
+      }
+
+      if (url.pathname === "/api/auth/google" && request.method === "POST") {
+        let data;
+        try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
+        try {
+          const profile = await verifyGoogleCredential(data.credential, env.GOOGLE_CLIENT_ID);
+          const now = Math.floor(Date.now() / 1000);
+          await env.DB.prepare(`INSERT INTO auth_users (google_sub, email, name, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?) ON CONFLICT(google_sub) DO UPDATE SET email = excluded.email, name = excluded.name, updated_at = excluded.updated_at`)
+            .bind(profile.sub, profile.email, profile.name, now, now).run();
+          const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
+          const token = [...tokenBytes].map(byte => byte.toString(16).padStart(2, "0")).join("");
+          const tokenHash = await sha256Hex(token);
+          const expiresAt = now + SESSION_TTL_SECONDS;
+          await env.DB.prepare("INSERT INTO auth_sessions (token_hash, google_sub, expires_at, created_at) VALUES (?, ?, ?, ?)")
+            .bind(tokenHash, profile.sub, expiresAt, now).run();
+          return Response.json({ success: true, user: { email: profile.email, name: profile.name } }, {
+            headers: { "Cache-Control": "no-store", "Set-Cookie": sessionCookie(token) }
+          });
+        } catch (error) {
+          return json({ error: error.message === "Google sign-in is not configured" ? error.message : "Google sign-in could not be verified" }, 401);
+        }
+      }
+
+      if (url.pathname === "/api/auth/session" && request.method === "GET") {
+        const user = await getCurrentUser(request, env);
+        return user ? json({ signedIn: true, user: { email: user.email, name: user.name } }) : json({ signedIn: false });
+      }
+
+      if (url.pathname === "/api/auth/logout" && request.method === "POST") {
+        const token = readSessionToken(request);
+        if (token) await env.DB.prepare("DELETE FROM auth_sessions WHERE token_hash = ?").bind(await sha256Hex(token)).run();
+        return Response.json({ success: true }, { headers: { "Cache-Control": "no-store", "Set-Cookie": sessionCookie("", 0) } });
       }
 
       if (
