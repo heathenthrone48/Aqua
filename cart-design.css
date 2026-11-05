@@ -233,3 +233,51 @@ header.store-header{position:sticky;top:0;z-index:200}
 .saved-address-option-actions { margin-top:10px; }
 .saved-address-option-actions .saved-address-delete { color:#9a3c36; }
 #delivery-entry-panel[hidden],#account-address-panel[hidden],#saved-address-list[hidden],#account-save-address-row[hidden] { display:none !important; }
+
+/* Wide, prominent account sign-in section in checkout */
+.cart-page .container { max-width: 1080px; }
+.cart-page .account-section-label { margin-top: 32px; margin-bottom: 10px; color: #087eaf; font-size: 24px; font-weight: 800; letter-spacing: -.35px; }
+.cart-page .google-signin-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 400px);
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  min-height: 150px;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 28px 34px;
+  border: 2px solid #9bd7ef;
+  border-radius: 22px;
+  background: linear-gradient(112deg, #e8f8ff 0%, #f4fbff 48%, #fff 100%);
+  box-shadow: 0 12px 34px rgba(15, 105, 153, .12);
+}
+.cart-page .google-signin-panel::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 7px; background: linear-gradient(180deg, #05a5d4, #0878e8); }
+.account-card-heading { display: flex; align-items: center; gap: 19px; min-width: 0; }
+.account-card-icon { display: grid; place-items: center; flex: 0 0 62px; width: 62px; height: 62px; border-radius: 19px; background: linear-gradient(145deg, #0878e8, #08a3cf); color: white; box-shadow: 0 8px 18px rgba(0, 112, 204, .2); }
+.account-card-icon svg { width: 32px; height: 32px; }
+.account-card-heading h2 { margin: 0 0 8px; color: #0c3152; font-size: 22px; line-height: 1.2; letter-spacing: -.45px; }
+.account-card-heading p { max-width: 620px; margin: 0; color: #526e80; font-size: 14px; line-height: 1.65; }
+.account-card-controls { display: grid; justify-items: stretch; gap: 10px; min-width: 0; }
+#google-signin-button { display: flex; justify-content: flex-end; min-height: 44px; }
+.google-account-status { color: #244c64; font-size: 14px; font-weight: 700; line-height: 1.5; text-align: right; overflow-wrap: anywhere; }
+.google-signout { justify-self: end; min-height: 42px; padding: 9px 17px; border: 1px solid #bdd9ea; border-radius: 11px; background: #fff; color: #075fb7; font: inherit; font-weight: 700; cursor: pointer; }
+.google-signout:hover { background: #edf8ff; }
+.cart-page .delivery-section-label { margin-top: 24px; }
+@media (max-width: 700px) {
+  .cart-page .google-signin-panel { grid-template-columns: 1fr; gap: 17px; min-height: 0; padding: 22px 19px 22px 23px; border-radius: 18px; }
+  .account-card-heading { align-items: flex-start; gap: 13px; }
+  .account-card-icon { flex-basis: 48px; width: 48px; height: 48px; border-radius: 15px; }
+  .account-card-icon svg { width: 26px; height: 26px; }
+  .account-card-heading h2 { font-size: 19px; }
+  .account-card-heading p { font-size: 13px; }
+  .account-card-controls { justify-items: start; padding-left: 61px; }
+  #google-signin-button { justify-content: flex-start; width: 100%; }
+  .google-account-status { text-align: left; }
+  .google-signout { justify-self: start; }
+}
+@media (max-width: 400px) {
+  .account-card-controls { padding-left: 0; }
+  .cart-page .google-signin-panel { padding-left: 19px; }
+}

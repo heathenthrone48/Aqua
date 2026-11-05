@@ -66,13 +66,17 @@
 <label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
 </div>
 </div>
-<div class="section-label" id="delivery-details-section">Delivery details</div>
+<div class="section-label account-section-label" id="account-section-label">Your account</div>
 <div class="panel google-signin-panel">
-  <p><strong>Faster checkout next time</strong></p>
-  <p>Sign in to choose and save delivery addresses and contact details to your NeerBeku account. Google only verifies your identity; these details are stored by NeerBeku.</p>
-  <div id="google-signin-button"></div>
-  <div class="google-account-status" id="google-account-status" aria-live="polite" role="status"></div>
-  <button class="google-signout" id="google-signout" type="button" hidden>Sign out</button>
+  <div class="account-card-heading">
+    <span class="account-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+    <div><h2 id="account-card-title">Faster checkout next time</h2><p>Sign in to save your delivery details and addresses to your NeerBeku account. Google verifies your identity; NeerBeku stores your saved details.</p></div>
+  </div>
+  <div class="account-card-controls">
+    <div id="google-signin-button"></div>
+    <div class="google-account-status" id="google-account-status" aria-live="polite" role="status"></div>
+    <button class="google-signout" id="google-signout" type="button" hidden>Sign out</button>
+  </div>
 </div>
 <section class="panel account-address-panel" id="account-address-panel" hidden>
   <div class="account-address-top"><div><p class="account-eyebrow">YOUR NEERBEKU ACCOUNT</p><h3>Delivery address</h3></div><span class="account-secure-badge">Saved to your account</span></div>
@@ -177,6 +181,7 @@
 </div>
 </section>
 </div>
+<div class="section-label delivery-section-label" id="delivery-details-section">Delivery details</div>
 <!-- Keep your existing delivery time, cart total and order button below -->
 <div class="panel checkout-details-panel">
 <div class="form-group">

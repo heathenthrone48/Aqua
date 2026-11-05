@@ -813,6 +813,7 @@ if (document.getElementById('preferred-time')) {
   if (!button || !status) return;
 
   const signout = document.getElementById('google-signout');
+  const accountTitle = document.getElementById('account-card-title');
   const accountPanel = document.getElementById('account-address-panel');
   const activeAddressEl = document.getElementById('account-active-address');
   const addressListEl = document.getElementById('saved-address-list');
@@ -1015,6 +1016,7 @@ if (document.getElementById('preferred-time')) {
     accountUser = user;
     button.hidden = true;
     signout.hidden = false;
+    setText(accountTitle, 'Your NeerBeku account is connected');
     setText(status, `Signed in as ${user.name}${user.email ? ` (${user.email})` : ''}.`);
     if (user.name && !field('customer-name').value) field('customer-name').value = user.name;
     loadAddresses();
@@ -1058,6 +1060,7 @@ if (document.getElementById('preferred-time')) {
     setEntryVisible(true);
     signout.hidden = true;
     button.hidden = false;
+    setText(accountTitle, 'Faster checkout next time');
     setText(status, 'Signed out. Guest checkout is still available.');
   });
 
@@ -1071,11 +1074,17 @@ if (document.getElementById('preferred-time')) {
     return;
   }
   let attempts = 0;
+  let renderedWidth = 0;
   const renderButton = () => {
     if (window.google?.accounts?.id) {
+      const availableWidth = button.parentElement?.getBoundingClientRect().width || 360;
+      const width = Math.max(200, Math.min(400, Math.floor(availableWidth)));
+      if (width === renderedWidth) return;
+      renderedWidth = width;
       window.google.accounts.id.initialize({ client_id: clientId, callback: window.handleGoogleCredential });
-      window.google.accounts.id.renderButton(button, { theme: 'outline', size: 'large', text: 'signin_with', shape: 'rectangular' });
+      window.google.accounts.id.renderButton(button, { theme: 'filled_blue', size: 'large', text: 'continue_with', shape: 'pill', width });
     } else if (++attempts < 30) setTimeout(renderButton, 100);
   };
   renderButton();
+  window.addEventListener('resize', renderButton);
 })();
