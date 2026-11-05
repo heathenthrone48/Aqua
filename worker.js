@@ -164,6 +164,100 @@ export default {
         return user ? json({ signedIn: true, user: { email: user.email, name: user.name } }) : json({ signedIn: false });
       }
 
+      if (url.pathname === "/api/customer/addresses") {
+        const user = await getCurrentUser(request, env);
+        if (!user) return json({ error: "Sign in to access saved addresses" }, 401);
+
+        if (request.method === "GET") {
+          const { results } = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
+            latitude, longitude, is_default FROM customer_addresses
+            WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
+          return json({ addresses: results.map(row => ({
+            id: row.id, label: row.label, name: row.name, phone: row.phone,
+            address: row.address, landmark: row.landmark || "",
+            latitude: row.latitude, longitude: row.longitude,
+            is_default: row.is_default === 1
+          })) });
+        }
+
+        if (request.method === "POST") {
+          let data;
+          try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
+          const label = String(data.label || "Delivery address").trim().slice(0, 40);
+          const name = String(data.name || "").trim();
+          const phone = String(data.phone || "").trim();
+          const address = String(data.address || "").trim();
+          const landmark = String(data.landmark || "").trim().slice(0, 250);
+          const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
+          const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
+          if (!name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
+              !address || address.length > 500 ||
+              (latitude !== null && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) ||
+              (longitude !== null && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180))) {
+            return json({ error: "Enter a valid name, mobile number, and delivery address" }, 400);
+          }
+          const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM customer_addresses WHERE google_sub = ?")
+            .bind(user.google_sub).first();
+          if (count.count >= 10) return json({ error: "You can save up to 10 delivery addresses" }, 400);
+
+          const id = crypto.randomUUID();
+          const now = Math.floor(Date.now() / 1000);
+          await env.DB.batch([
+            env.DB.prepare("UPDATE customer_addresses SET is_default = 0 WHERE google_sub = ?").bind(user.google_sub),
+            env.DB.prepare(`INSERT INTO customer_addresses
+              (id, google_sub, label, name, phone, address, landmark, latitude, longitude, is_default, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
+              .bind(id, user.google_sub, label || "Delivery address", name, phone, address, landmark, latitude, longitude, now, now)
+          ]);
+          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
+            latitude, longitude, is_default FROM customer_addresses
+            WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
+          return json({ success: true, id, addresses: refreshed.results.map(row => ({
+            id: row.id, label: row.label, name: row.name, phone: row.phone,
+            address: row.address, landmark: row.landmark || "",
+            latitude: row.latitude, longitude: row.longitude,
+            is_default: row.is_default === 1
+          })) });
+        }
+
+        if (request.method === "PUT") {
+          let data;
+          try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
+          const id = String(data.id || "");
+          const owned = await env.DB.prepare("SELECT id FROM customer_addresses WHERE id = ? AND google_sub = ?")
+            .bind(id, user.google_sub).first();
+          if (!owned) return json({ error: "Saved address not found" }, 404);
+          await env.DB.batch([
+            env.DB.prepare("UPDATE customer_addresses SET is_default = 0 WHERE google_sub = ?").bind(user.google_sub),
+            env.DB.prepare("UPDATE customer_addresses SET is_default = 1, updated_at = ? WHERE id = ? AND google_sub = ?")
+              .bind(Math.floor(Date.now() / 1000), id, user.google_sub)
+          ]);
+          return json({ success: true });
+        }
+
+        if (request.method === "DELETE") {
+          const id = url.searchParams.get("id") || "";
+          await env.DB.prepare("DELETE FROM customer_addresses WHERE id = ? AND google_sub = ?")
+            .bind(id, user.google_sub).run();
+          let { results } = await env.DB.prepare(`SELECT id FROM customer_addresses
+            WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
+          if (results.length && !(await env.DB.prepare("SELECT id FROM customer_addresses WHERE google_sub = ? AND is_default = 1")
+              .bind(user.google_sub).first())) {
+            await env.DB.prepare("UPDATE customer_addresses SET is_default = 1 WHERE id = ? AND google_sub = ?")
+              .bind(results[0].id, user.google_sub).run();
+          }
+          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
+            latitude, longitude, is_default FROM customer_addresses
+            WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
+          return json({ success: true, addresses: refreshed.results.map(row => ({
+            id: row.id, label: row.label, name: row.name, phone: row.phone,
+            address: row.address, landmark: row.landmark || "",
+            latitude: row.latitude, longitude: row.longitude,
+            is_default: row.is_default === 1
+          })) });
+        }
+      }
+
       if (url.pathname === "/api/auth/logout" && request.method === "POST") {
         const token = readSessionToken(request);
         if (token) await env.DB.prepare("DELETE FROM auth_sessions WHERE token_hash = ?").bind(await sha256Hex(token)).run();

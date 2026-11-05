@@ -68,12 +68,23 @@
 </div>
 <div class="section-label" id="delivery-details-section">Delivery details</div>
 <div class="panel google-signin-panel">
-  <p><strong>Save time at checkout</strong> — sign in with Google to fill your name.</p>
+  <p><strong>Faster checkout next time</strong></p>
+  <p>Sign in to choose and save delivery addresses and contact details to your NeerBeku account. Google only verifies your identity; these details are stored by NeerBeku.</p>
   <div id="google-signin-button"></div>
   <div class="google-account-status" id="google-account-status" aria-live="polite" role="status"></div>
   <button class="google-signout" id="google-signout" type="button" hidden>Sign out</button>
 </div>
-<div class="panel">
+<section class="panel account-address-panel" id="account-address-panel" hidden>
+  <div class="account-address-top"><div><p class="account-eyebrow">YOUR NEERBEKU ACCOUNT</p><h3>Delivery address</h3></div><span class="account-secure-badge">Saved to your account</span></div>
+  <div class="account-active-address" id="account-active-address"></div>
+  <div class="account-address-actions">
+    <button class="account-action-secondary" id="choose-saved-address" type="button" hidden>Choose another address</button>
+    <button class="account-action-primary" id="add-saved-address" type="button">Add address</button>
+  </div>
+  <div class="saved-address-list" id="saved-address-list" hidden></div>
+  <p class="account-address-message" id="account-address-message" aria-live="polite" role="status"></p>
+</section>
+<div class="panel" id="delivery-entry-panel">
 <!-- Customer details: keep these visible in both modes -->
 <div class="form-group">
 <label for="customer-name">Customer Name *</label>
@@ -87,6 +98,10 @@
 <!-- Delivery address selector -->
 <section class="location-section">
 <h3>📍 Delivery Address</h3>
+<div class="form-group account-address-label-field">
+<label for="account-address-label">Save this address as</label>
+<input id="account-address-label" maxlength="40" placeholder="Home, Work, etc." type="text" value="Home"/>
+</div>
 <p class="location-help">
     Choose how you want to provide your delivery address.
   </p>
@@ -155,8 +170,15 @@
 <input id="delivery-latitude" name="deliveryLatitude" type="hidden"/>
 <input id="delivery-longitude" name="deliveryLongitude" type="hidden"/>
 <input id="delivery-address-source" name="deliveryAddressSource" type="hidden" value="location"/>
+<div class="account-save-address-row" id="account-save-address-row" hidden>
+  <button class="account-action-primary" id="save-address-to-account" type="button">Save address to my account</button>
+  <button class="account-action-secondary" id="cancel-address-entry" type="button" hidden>Cancel</button>
+  <p class="account-address-message" id="save-address-message" aria-live="polite" role="status"></p>
+</div>
 </section>
+</div>
 <!-- Keep your existing delivery time, cart total and order button below -->
+<div class="panel checkout-details-panel">
 <div class="form-group">
 <label for="preferred-time">Delivery Window</label>
 <select id="preferred-time" name="Preferred_Time"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
@@ -238,9 +260,10 @@
 <div class="nb-footer-bottom"><p>© 2026 Amrutha Store. All rights reserved. <strong>NeerBeku</strong></p><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Contact us on WhatsApp ↗</a><span>Payment: Pay on delivery</span></div>
 </footer>
 <script src="https://accounts.google.com/gsi/client"></script>
-<script src="catalog.js"></script><script src="app.js"></script>
+<script src="catalog.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="location-picker.js"></script>
+<script src="app.js"></script>
 <!-- Testing Staging Deployement env -->
 </body>
 </html>

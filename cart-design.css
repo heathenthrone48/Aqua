@@ -206,3 +206,30 @@ header.store-header{position:sticky;top:0;z-index:200}
 .google-signin-panel > p { margin: 0; color: #29475d; font-size: 14px; }
 .google-account-status { color: #29475d; font-size: 13px; }
 .google-signout { justify-self: start; border: 1px solid #d7e8fa; border-radius: 8px; padding: 8px 12px; background: #edf5ff; color: #075fb7; font-weight: 700; cursor: pointer; }
+
+/* NeerBeku account and saved delivery address */
+.google-signin-panel > p { margin: 0 0 9px; }
+.google-signin-panel > p + p { max-width: 620px; color: var(--text-muted); font-size: .9rem; line-height: 1.55; }
+.account-address-panel { border: 1px solid #cce7f2; background: linear-gradient(145deg, #f4fbff, #fff); }
+.account-address-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.account-address-top h3 { margin:0; color:#123b5a; }
+.account-eyebrow { margin:0 0 4px; color:#087eaf; font-size:.72rem; font-weight:800; letter-spacing:.11em; }
+.account-secure-badge { padding:7px 10px; border-radius:999px; background:#e3f5ed; color:#18734c; font-size:.72rem; font-weight:700; white-space:nowrap; }
+.account-active-address { display:grid; gap:6px; padding:15px; border:1px solid #d9e8ef; border-radius:14px; background:#fff; color:#31495a; line-height:1.5; overflow-wrap:anywhere; }
+.saved-address-label { color:#103a58; font-size:1.02rem; }
+.account-active-address small { color:#667c89; }
+.account-address-actions,.saved-address-option-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px; }
+.account-action-primary,.account-action-secondary,.saved-address-option-actions button { min-height:42px; padding:10px 14px; border:0; border-radius:10px; font:inherit; font-weight:700; cursor:pointer; }
+.account-action-primary { background:#087fba; color:#fff; }
+.account-action-primary:hover { background:#066b9e; }
+.account-action-secondary,.saved-address-option-actions button { border:1px solid #d5e3eb; background:#fff; color:#24465c; }
+.account-save-address-row { margin-top:14px; padding-top:14px; border-top:1px solid #e2edf2; }
+.account-address-message { min-height:1.3em; margin:9px 0 0; color:#557080; font-size:.88rem; }
+.saved-address-list { display:grid; gap:10px; margin-top:14px; }
+.saved-address-option { padding:13px; border:1px solid #d8e7ee; border-radius:12px; background:#fff; }
+.saved-address-option.is-selected { border-color:#1689bd; box-shadow:0 0 0 2px #1689bd18; }
+.saved-address-option p { margin:5px 0; color:#405a69; line-height:1.45; }
+.saved-address-option small { color:#647c89; }
+.saved-address-option-actions { margin-top:10px; }
+.saved-address-option-actions .saved-address-delete { color:#9a3c36; }
+#delivery-entry-panel[hidden],#account-address-panel[hidden],#saved-address-list[hidden],#account-save-address-row[hidden] { display:none !important; }
