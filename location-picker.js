@@ -58,7 +58,10 @@
     showAddressForm(true);
     heading.textContent = "Confirm your delivery address";
     initMap();
-    setTimeout(() => map && map.invalidateSize(), 100);
+    setTimeout(() => {
+      if (map) map.invalidateSize();
+      $("delivery-map").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 150);
   }
 
   locationTab.addEventListener("click", switchMode);
@@ -319,7 +322,8 @@
   window.syncDeliveryAddress = updateAddress;
   window.switchAddressMode = switchMode;
 
-  // Require a map/GPS location and a written address for every checkout.
+  // Keep manual address fields visible at all times. GPS or map selection
+  // supplies coordinates only; customers can always edit their written address.
   showAddressForm(true);
   switchMode("location");
 })();
