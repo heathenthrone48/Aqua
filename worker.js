@@ -16,6 +16,14 @@ const PRODUCT_IDS = new Set([
   "Automatic Electric Water Dispenser Pump"
 ]);
 
+const DEFAULT_PRICING={"version":1,"deliveryCentre":{"latitude":12.815047,"longitude":77.691037},"maxDeliveryRadiusKm":5.5,"distanceBands":[{"maxDistanceKm":1,"fees":[{"maxSubtotal":300,"fee":20},{"maxSubtotal":null,"fee":0}]},{"maxDistanceKm":2,"fees":[{"maxSubtotal":200,"fee":30},{"maxSubtotal":400,"fee":20},{"maxSubtotal":600,"fee":10},{"maxSubtotal":null,"fee":0}]},{"maxDistanceKm":4,"fees":[{"maxSubtotal":250,"fee":50},{"maxSubtotal":500,"fee":40},{"maxSubtotal":750,"fee":30},{"maxSubtotal":900,"fee":20},{"maxSubtotal":null,"fee":0}]},{"maxDistanceKm":5.5,"fees":[{"maxSubtotal":400,"fee":60},{"maxSubtotal":700,"fee":50},{"maxSubtotal":1000,"fee":40},{"maxSubtotal":1200,"fee":20},{"maxSubtotal":null,"fee":0}]}],"handlingFees":[{"maxSubtotal":200,"fee":5},{"maxSubtotal":500,"fee":7},{"maxSubtotal":1000,"fee":8},{"maxSubtotal":null,"fee":10}]};
+function isValidPricing(c){
+ if(!c||c.version!==1||!c.deliveryCentre||!Number.isFinite(c.deliveryCentre.latitude)||c.deliveryCentre.latitude < -90||c.deliveryCentre.latitude>90||!Number.isFinite(c.deliveryCentre.longitude)||c.deliveryCentre.longitude < -180||c.deliveryCentre.longitude>180||c.maxDeliveryRadiusKm!==5.5||!Array.isArray(c.distanceBands)||c.distanceBands.length!==4||!Array.isArray(c.handlingFees))return false;
+ const tiers=a=>Array.isArray(a)&&a.length>0&&a.every((t,n)=>t&&(t.maxSubtotal===null||(Number.isFinite(t.maxSubtotal)&&t.maxSubtotal>=0))&&Number.isFinite(t.fee)&&t.fee>=0&&(n===a.length-1?t.maxSubtotal===null:t.maxSubtotal!==null&&(n===0||t.maxSubtotal>a[n-1].maxSubtotal)));
+ let last=0;for(const b of c.distanceBands){if(!Number.isFinite(b.maxDistanceKm)||b.maxDistanceKm<=last||!tiers(b.fees))return false;last=b.maxDistanceKm;}
+ return last===5.5&&tiers(c.handlingFees);
+}
+
 function json(data, status = 200) {
   return Response.json(data, {
     status,
@@ -239,7 +247,20 @@ export default {
           const id = url.searchParams.get("id") || "";
           await env.DB.prepare("DELETE FROM customer_addresses WHERE id = ? AND google_sub = ?")
             .bind(id, user.google_sub).run();
-          let { results } = await env.DB.prepare(`SELECT id FROM customer_addresses
+          let { results } = await env.DB.prepare(`SELECT id FROM customer_a      if(url.pathname==="/api/pricing"&&request.method==="GET"){
+        const row=await env.DB.prepare("SELECT config_json,updated_at FROM pricing_settings WHERE id=1").first();
+        return json({config:row?JSON.parse(row.config_json):DEFAULT_PRICING,updatedAt:row?.updated_at||null});
+      }
+      if(url.pathname==="/api/admin/pricing"&&request.method==="PUT"){
+        if(!(await validPassword(request,env)))return json({error:"Please log in again"},401);
+        let data;try{data=await request.json();}catch{return json({error:"Invalid request"},400);}
+        if(!isValidPricing(data))return json({error:"Invalid pricing configuration"},400);
+        const now=Math.floor(Date.now()/1000);
+        await env.DB.prepare("INSERT INTO pricing_settings(id,config_json,updated_at) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET config_json=excluded.config_json,updated_at=excluded.updated_at").bind(JSON.stringify(data),now).run();
+        return json({success:true,updatedAt:now});
+      }
+
+ddresses
             WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           if (results.length && !(await env.DB.prepare("SELECT id FROM customer_addresses WHERE google_sub = ? AND is_default = 1")
               .bind(user.google_sub).first())) {

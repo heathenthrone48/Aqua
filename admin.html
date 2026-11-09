@@ -38,6 +38,14 @@
       </div>
     </div>
 
+    <div class="card">
+      <h3>Delivery Pricing Configuration</h3>
+      <p class="pricing-note">Staging configuration only. Customer checkout is not connected to these settings yet.</p>
+      <label for="pricingConfigEditor">Pricing rules (JSON)</label>
+      <textarea id="pricingConfigEditor" class="pricing-editor" spellcheck="false"></textarea>
+      <div class="pricing-actions"><button class="btn btn-secondary" type="button" onclick="loadPricingConfig()">Reload</button><button class="btn" type="button" id="savePricingButton" onclick="savePricingConfig()">Save Pricing</button></div>
+      <p id="pricingStatus" role="status" class="pricing-status"></p>
+    </div>
     <!-- System Overview Card -->
     <div class="card">
       <h3>System Overview</h3>
