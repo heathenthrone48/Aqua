@@ -91,7 +91,6 @@ async function showDashboard() {
   document.getElementById('adminDashboard').style.display = 'block';
   loadLogs();
   await refreshAdminStock();
-  await loadPricingConfig();
 }
 
 function hideDashboard() {
@@ -205,6 +204,3 @@ window.addEventListener('focus', refreshAdminStock);
     function escapeHtml(text) {
       return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
-
-async function loadPricingConfig(){const e=document.getElementById('pricingConfigEditor'),s=document.getElementById('pricingStatus');if(!e||!adminPassword)return;s.textContent='Loading pricing configuration…';try{const r=await stockApi('/api/pricing');e.value=JSON.stringify(r.config,null,2);s.textContent=r.updatedAt?'Loaded saved configuration.':'Loaded defaults. Save to store in staging.';}catch(x){s.textContent='Could not load pricing: '+x.message;}}
-async function savePricingConfig(){const e=document.getElementById('pricingConfigEditor'),s=document.getElementById('pricingStatus'),b=document.getElementById('savePricingButton');if(!e||!adminPassword||b.disabled)return;let c;try{c=JSON.parse(e.value);}catch{s.textContent='Invalid JSON. Correct formatting before saving.';return;}b.disabled=true;s.textContent='Saving pricing configuration…';try{await stockApi('/api/admin/pricing','PUT',c);s.textContent='Pricing configuration saved to staging database.';}catch(x){s.textContent='Could not save pricing: '+x.message;}finally{b.disabled=false;}}

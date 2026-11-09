@@ -75,6 +75,7 @@
     } else {
       el["delivery-latitude"].value = "";
       el["delivery-longitude"].value = "";
+      document.dispatchEvent(new Event("deliverylocationchange"));
       showAddressForm(true);
       heading.textContent = "Enter your delivery address";
     }
@@ -200,6 +201,7 @@
     el["delivery-latitude"].value = lat.toFixed(7);
     el["delivery-longitude"].value = lon.toFixed(7);
     el["delivery-address-source"].value = source;
+    document.dispatchEvent(new Event("deliverylocationchange"));
 
     locationChosen = true;
     showAddressForm(true);

@@ -1,9 +1,42 @@
-const DELIVERY_FEE = 15;
-function calculateOrderTotals(items) {
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const deliveryFee = items.length ? DELIVERY_FEE : 0;
-  return { subtotal, deliveryFee, total: subtotal + deliveryFee };
+const DELIVERY_CENTRE = { latitude: 12.815047, longitude: 77.691037 };
+const MAX_DELIVERY_RADIUS_KM = 5.5;
+function getDeliveryDistanceKm() {
+  const latValue = document.getElementById('delivery-latitude')?.value;
+  const lonValue = document.getElementById('delivery-longitude')?.value;
+  if (!latValue || !lonValue) return null;
+  const latitude = Number(latValue), longitude = Number(lonValue);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  const rad = value => value * Math.PI / 180;
+  const dLat = rad(latitude - DELIVERY_CENTRE.latitude), dLon = rad(longitude - DELIVERY_CENTRE.longitude);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(DELIVERY_CENTRE.latitude)) * Math.cos(rad(latitude)) * Math.sin(dLon / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
+function getDeliveryFee(distanceKm, subtotal) {
+  if (distanceKm == null || distanceKm > MAX_DELIVERY_RADIUS_KM) return 0;
+  const band = distanceKm < 1 ? 0 : distanceKm <= 2 ? 1 : distanceKm <= 4 ? 2 : 3;
+  const tiers = [
+    [{ max: 300, fee: 15 }, { max: Infinity, fee: 0 }],
+    [{ max: 200, fee: 25 }, { max: 400, fee: 15 }, { max: 600, fee: 5 }, { max: Infinity, fee: 0 }],
+    [{ max: 250, fee: 45 }, { max: 500, fee: 35 }, { max: 750, fee: 25 }, { max: 900, fee: 15 }, { max: Infinity, fee: 0 }],
+    [{ max: 400, fee: 55 }, { max: 700, fee: 45 }, { max: 1000, fee: 35 }, { max: 1200, fee: 15 }, { max: Infinity, fee: 0 }]
+  ];
+  return tiers[band].find(t => subtotal <= t.max).fee;
+}
+function getHandlingFee(subtotal) {
+  if (subtotal <= 200) return 5;
+  if (subtotal <= 500) return 7;
+  if (subtotal <= 1000) return 8;
+  return 10;
+}
+function calculateOrderTotals(items, distanceKm = getDeliveryDistanceKm()) {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const handlingFee = items.length ? getHandlingFee(subtotal) : 0;
+  const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, subtotal) : 0;
+  return { subtotal, deliveryFee, handlingFee, distanceKm, total: subtotal + deliveryFee + handlingFee };
+}
+document.addEventListener('deliverylocationchange', () => {
+  if (typeof renderCart === 'function') renderCart(false);
+});
 
     const STORAGE_KEY_USER = 'neer_bekuuu_user_info';
     const STORAGE_KEY_LAST_ORDER = 'neer_bekuuu_last_order';
@@ -361,14 +394,16 @@ function calculateOrderTotals(items) {
       if (save) persistCart();
       const items = Object.values(cart);
       const count = items.reduce((n, item) => n + item.qty, 0);
-      const { subtotal, deliveryFee, total } = calculateOrderTotals(items);
+      const { subtotal, deliveryFee, handlingFee, total, distanceKm } = calculateOrderTotals(items);
       const money = value => '₹' + value.toFixed(2);
       document.querySelectorAll('[data-cart-count], #cart-count').forEach(el => el.textContent = count);
       document.querySelectorAll('[data-cart-total], #cart-total, #total-display').forEach(el => el.textContent = money(total));
       const subtotalEl = document.getElementById('items-subtotal');
       const deliveryEl = document.getElementById('delivery-fee');
       if (subtotalEl) subtotalEl.textContent = money(subtotal);
-      if (deliveryEl) deliveryEl.textContent = money(deliveryFee);
+      if (deliveryEl) deliveryEl.textContent = distanceKm == null ? 'Choose location' : money(deliveryFee);
+       const handlingEl = document.getElementById('handling-fee');
+       if (handlingEl) handlingEl.textContent = money(handlingFee);
       const totalInput = document.getElementById('input-total-bill');
       if (totalInput) totalInput.value = money(total);
       const itemsInput = document.getElementById('cart-items-input');
@@ -525,9 +560,10 @@ function calculateOrderTotals(items) {
         return row;
       });
       document.getElementById('confirm-items').replaceChildren(...rows);
-      const breakdown = calculateOrderTotals(order.items);
+      const breakdown = calculateOrderTotals(order.items, order.distanceKm);
       document.getElementById('confirm-subtotal').textContent = '₹' + breakdown.subtotal.toFixed(2);
       document.getElementById('confirm-delivery-fee').textContent = '₹' + breakdown.deliveryFee.toFixed(2);
+       document.getElementById('confirm-handling-fee').textContent = '₹' + breakdown.handlingFee.toFixed(2);
       document.getElementById('confirm-total').textContent = order.total;
       document.getElementById('confirm-time').textContent = order.time;
       document.getElementById('confirm-address').textContent = order.address;
@@ -597,7 +633,16 @@ function calculateOrderTotals(items) {
       if (!deliveryWindow) return;
 
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
-      const orderTotals = calculateOrderTotals(Object.values(cart));
+      const deliveryDistanceKm = getDeliveryDistanceKm();
+      if (deliveryDistanceKm === null) {
+        alert('Please choose your delivery location using GPS or the map so we can check serviceability.');
+        return;
+      }
+      if (deliveryDistanceKm > MAX_DELIVERY_RADIUS_KM) {
+        alert('Sorry, this address is outside our 5.5 km delivery area. You can browse products, but checkout is not available at this location.');
+        return;
+      }
+      const orderTotals = calculateOrderTotals(Object.values(cart), deliveryDistanceKm);
       const totalBill = '₹' + orderTotals.total.toFixed(2);
 
       const payload = {
@@ -605,12 +650,14 @@ function calculateOrderTotals(items) {
         name: customerName,
         phone: customerPhone,
         address: customerAddress,
-        notes: `${landmarkNotes} | Items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}`,
+        notes: `${landmarkNotes} | Items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}; Handling fee: ₹${orderTotals.handlingFee.toFixed(2)}`,
         cart: document.getElementById('cart-items-input').value,
         qty: document.getElementById('cart-count').textContent,
         bill: totalBill,
         subtotal: orderTotals.subtotal,
         deliveryFee: orderTotals.deliveryFee,
+        handlingFee: orderTotals.handlingFee,
+        distanceKm: deliveryDistanceKm,
         time: deliveryWindow,
         latitude: latitude,
         longitude: longitude,
@@ -638,6 +685,7 @@ function calculateOrderTotals(items) {
           
           renderConfirmation({
             items: Object.values(cart),
+            distanceKm: deliveryDistanceKm,
             total: totalBill,
             time: deliveryWindow,
             name: customerName,
