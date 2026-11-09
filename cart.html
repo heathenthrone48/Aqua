@@ -116,14 +116,14 @@
 <input id="account-address-label" maxlength="40" placeholder="Home, Work, etc." type="text" value="Home"/>
 </div>
 <p class="location-help">
-    Choose how you want to provide your delivery address.
+    First select your delivery location using GPS or the map, then enter your complete delivery address.
   </p>
 <div class="address-mode">
 <button aria-pressed="true" class="address-mode-btn active" id="pick-location-tab" type="button">
       📍 Pick a Location
     </button>
 <button aria-pressed="false" class="address-mode-btn" id="manual-address-tab" type="button">
-      ✍️ Enter Manually
+      ✍️ Enter Address
     </button>
 </div>
 <!-- LOCATION MODE: no address form initially -->
@@ -139,13 +139,13 @@
     </p>
 <div id="delivery-map"></div>
 <p class="location-help">
-      You can also tap the map to choose your delivery point.
+      Select a pin on the map or use GPS. This location is required even when you type your address manually.
     </p>
 </div>
 <!-- MANUAL MODE: address form shown immediately -->
 <div hidden="" id="manual-address-panel">
 <p class="location-help">
-      Enter your address below. You do not need to share your location.
+      Enter your complete delivery address below. A GPS or map location is also required.
     </p>
 </div>
 <!-- Shared fields: hidden until manual entry or location selection -->
@@ -160,8 +160,8 @@
 <input autocomplete="address-line1" id="address-street" placeholder="Street name and number" required="" type="text"/>
 </div>
 <div class="form-group">
-<label for="address-area">Area / Locality</label>
-<input id="address-area" placeholder="Neighbourhood or area" type="text"/>
+<label for="address-area">Area / Locality *</label>
+<input id="address-area" placeholder="Neighbourhood or area" required="" type="text"/>
 </div>
 <div class="form-group">
 <label for="address-city">City *</label>

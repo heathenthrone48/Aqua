@@ -136,6 +136,39 @@ export default {
         return json({ error: "Invalid origin" }, 403);
       }
 
+      if (url.pathname === "/api/delivery/route" && request.method === "POST") {
+        if (!env.GOOGLE_MAPS_API_KEY) return json({ error: "Road distance service is not configured yet." }, 503);
+        let data;
+        try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
+        const latitude = Number(data.latitude), longitude = Number(data.longitude);
+        if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+            !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+          return json({ error: "Choose a valid GPS or map location." }, 400);
+        }
+        const routeResponse = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": env.GOOGLE_MAPS_API_KEY,
+            "X-Goog-FieldMask": "routes.distanceMeters,routes.duration"
+          },
+          body: JSON.stringify({
+            origin: { location: { latLng: { latitude: 12.815047, longitude: 77.691037 } } },
+            destination: { location: { latLng: { latitude, longitude } } },
+            travelMode: "DRIVE",
+            routingPreference: "TRAFFIC_UNAWARE"
+          })
+        });
+        const routeData = await routeResponse.json();
+        if (!routeResponse.ok || !routeData.routes?.[0]?.distanceMeters) {
+          return json({ error: "Could not calculate a road route for this location. Please adjust the map pin and try again." }, 422);
+        }
+        const distanceKm = routeData.routes[0].distanceMeters / 1000;
+        return json({ distanceKm: Number(distanceKm.toFixed(3)), distanceMeters: routeData.routes[0].distanceMeters,
+          duration: routeData.routes[0].duration || null, withinServiceArea: distanceKm <= 5.5 },
+          { headers: { "Cache-Control": "no-store" } });
+      }
+
       if (url.pathname === "/api/auth/google" && request.method === "POST") {
         let data;
         try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }

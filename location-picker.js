@@ -54,30 +54,23 @@
   function switchMode(nextMode) {
     mode = nextMode;
     const picking = mode === "location";
-
     locationTab.classList.toggle("active", picking);
     manualTab.classList.toggle("active", !picking);
-
     locationTab.setAttribute("aria-pressed", String(picking));
     manualTab.setAttribute("aria-pressed", String(!picking));
-
-    locationPanel.hidden = !picking;
-    manualPanel.hidden = picking;
-
-    el["delivery-address-source"].value =
-      picking ? "location" : "manual";
-
+    // Location and written address are both mandatory for every order.
+    locationPanel.hidden = false;
+    manualPanel.hidden = false;
+    showAddressForm(true);
     if (picking) {
-      showAddressForm(true);
       heading.textContent = "Confirm your delivery address";
       initMap();
       setTimeout(() => map && map.invalidateSize(), 100);
+      locationPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } else {
-      el["delivery-latitude"].value = "";
-      el["delivery-longitude"].value = "";
-      document.dispatchEvent(new Event("deliverylocationchange"));
-      showAddressForm(true);
       heading.textContent = "Enter your delivery address";
+      $("address-house").focus();
+      addressFields.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
@@ -340,7 +333,7 @@
   window.syncDeliveryAddress = updateAddress;
   window.switchAddressMode = switchMode;
 
-  // Start with the picker only; no address form is displayed.
+  // Require a map/GPS location and a written address for every checkout.
   showAddressForm(true);
-  switchMode("manual");
+  switchMode("location");
 })();

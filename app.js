@@ -1,15 +1,33 @@
 const DELIVERY_CENTRE = { latitude: 12.815047, longitude: 77.691037 };
 const MAX_DELIVERY_RADIUS_KM = 5.5;
-function getDeliveryDistanceKm() {
-  const latValue = document.getElementById('delivery-latitude')?.value;
-  const lonValue = document.getElementById('delivery-longitude')?.value;
-  if (!latValue || !lonValue) return null;
-  const latitude = Number(latValue), longitude = Number(lonValue);
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
-  const rad = value => value * Math.PI / 180;
-  const dLat = rad(latitude - DELIVERY_CENTRE.latitude), dLon = rad(longitude - DELIVERY_CENTRE.longitude);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(DELIVERY_CENTRE.latitude)) * Math.cos(rad(latitude)) * Math.sin(dLon / 2) ** 2;
-  return 6371 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+let cachedRoadDistanceKm = null;
+let cachedRouteKey = "";
+let routeRequest = null;
+function getDeliveryCoordinates() {
+  const lat = document.getElementById('delivery-latitude')?.value;
+  const lon = document.getElementById('delivery-longitude')?.value;
+  if (!lat || !lon) return null;
+  const latitude = Number(lat), longitude = Number(lon);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+      !Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude, key: latitude.toFixed(7) + ',' + longitude.toFixed(7) };
+}
+async function fetchRoadDistance(force = false) {
+  const coordinates = getDeliveryCoordinates();
+  if (!coordinates) throw new Error('Please select your delivery location using GPS or the map.');
+  if (!force && cachedRouteKey === coordinates.key && cachedRoadDistanceKm !== null) return cachedRoadDistanceKm;
+  if (routeRequest) routeRequest.abort();
+  routeRequest = new AbortController();
+  const response = await fetch('/api/delivery/route', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ latitude: coordinates.latitude, longitude: coordinates.longitude }),
+    signal: routeRequest.signal, cache: 'no-store'
+  });
+  const result = await response.json();
+  if (!response.ok || !Number.isFinite(Number(result.distanceKm))) throw new Error(result.error || 'Road distance could not be calculated.');
+  cachedRouteKey = coordinates.key;
+  cachedRoadDistanceKm = Number(result.distanceKm);
+  return cachedRoadDistanceKm;
 }
 function getDeliveryFee(distanceKm, subtotal) {
   if (distanceKm == null || distanceKm > MAX_DELIVERY_RADIUS_KM) return 0;
@@ -28,7 +46,7 @@ function getHandlingFee(subtotal) {
   if (subtotal <= 1000) return 8;
   return 10;
 }
-function calculateOrderTotals(items, distanceKm = getDeliveryDistanceKm()) {
+function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const handlingFee = items.length ? getHandlingFee(subtotal) : 0;
   const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, subtotal) : 0;
@@ -394,14 +412,14 @@ document.addEventListener('deliverylocationchange', () => {
       if (save) persistCart();
       const items = Object.values(cart);
       const count = items.reduce((n, item) => n + item.qty, 0);
-      const { subtotal, deliveryFee, handlingFee, total, distanceKm } = calculateOrderTotals(items);
+      const { subtotal, deliveryFee, handlingFee, total } = calculateOrderTotals(items, cachedRoadDistanceKm);
       const money = value => '₹' + value.toFixed(2);
       document.querySelectorAll('[data-cart-count], #cart-count').forEach(el => el.textContent = count);
       document.querySelectorAll('[data-cart-total], #cart-total, #total-display').forEach(el => el.textContent = money(total));
       const subtotalEl = document.getElementById('items-subtotal');
       const deliveryEl = document.getElementById('delivery-fee');
       if (subtotalEl) subtotalEl.textContent = money(subtotal);
-      if (deliveryEl) deliveryEl.textContent = distanceKm == null ? 'Choose location' : money(deliveryFee);
+      if (deliveryEl) deliveryEl.textContent = cachedRoadDistanceKm == null ? 'Calculating road distance…' : money(deliveryFee);
        const handlingEl = document.getElementById('handling-fee');
        if (handlingEl) handlingEl.textContent = money(handlingFee);
       const totalInput = document.getElementById('input-total-bill');
@@ -633,9 +651,16 @@ document.addEventListener('deliverylocationchange', () => {
       if (!deliveryWindow) return;
 
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
-      const deliveryDistanceKm = getDeliveryDistanceKm();
-      if (deliveryDistanceKm === null) {
-        alert('Please choose your delivery location using GPS or the map so we can check serviceability.');
+      const requiredAddressFields = ['address-house', 'address-street', 'address-area', 'address-city'];
+      if (requiredAddressFields.some(id => !document.getElementById(id)?.value.trim())) {
+        alert('Please complete your house/flat, street, area and city details.');
+        return;
+      }
+      let deliveryDistanceKm;
+      try {
+        deliveryDistanceKm = await fetchRoadDistance(true);
+      } catch (error) {
+        alert(error.message || 'We could not calculate your road distance. Please select your location again.');
         return;
       }
       if (deliveryDistanceKm > MAX_DELIVERY_RADIUS_KM) {
