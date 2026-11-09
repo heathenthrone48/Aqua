@@ -137,37 +137,78 @@ export default {
       }
 
       if (url.pathname === "/api/delivery/route" && request.method === "POST") {
-        if (!env.GOOGLE_MAPS_API_KEY) return json({ error: "Road distance service is not configured yet." }, 503);
-        let data;
-        try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
-        const latitude = Number(data.latitude), longitude = Number(data.longitude);
-        if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-            !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-          return json({ error: "Choose a valid GPS or map location." }, 400);
-        }
-        const routeResponse = await fetch("https://routes.googleapis.com/directions/v2:computeRoutes", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": env.GOOGLE_MAPS_API_KEY,
-            "X-Goog-FieldMask": "routes.distanceMeters,routes.duration"
-          },
-          body: JSON.stringify({
-            origin: { location: { latLng: { latitude: 12.815047, longitude: 77.691037 } } },
-            destination: { location: { latLng: { latitude, longitude } } },
-            travelMode: "DRIVE",
-            routingPreference: "TRAFFIC_UNAWARE"
-          })
-        });
-        const routeData = await routeResponse.json();
-        if (!routeResponse.ok || !routeData.routes?.[0]?.distanceMeters) {
-          return json({ error: "Could not calculate a road route for this location. Please adjust the map pin and try again." }, 422);
-        }
-        const distanceKm = routeData.routes[0].distanceMeters / 1000;
-        return json({ distanceKm: Number(distanceKm.toFixed(3)), distanceMeters: routeData.routes[0].distanceMeters,
-          duration: routeData.routes[0].duration || null, withinServiceArea: distanceKm <= 5.5 },
-          { headers: { "Cache-Control": "no-store" } });
-      }
+  if (!env.ORS_API_KEY) {
+    return json({ error: "Road distance service is not configured yet." }, 503);
+  }
+
+  let data;
+  try {
+    data = await request.json();
+  } catch {
+    return json({ error: "Invalid request" }, 400);
+  }
+
+  const latitude = Number(data.latitude);
+  const longitude = Number(data.longitude);
+
+  if (
+    !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+    !Number.isFinite(longitude) || longitude < -180 || longitude > 180
+  ) {
+    return json({ error: "Choose a valid GPS or map location." }, 400);
+  }
+
+  const routeResponse = await fetch(
+    "https://api.openrouteservice.org/v2/directions/driving-car",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": env.ORS_API_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        coordinates: [
+          [77.691037, 12.815047],
+          [longitude, latitude]
+        ],
+        instructions: false
+      })
+    }
+  );
+
+  let routeData;
+  try {
+    routeData = await routeResponse.json();
+  } catch {
+    return json({ error: "Invalid response from road distance service." }, 502);
+  }
+
+  const summary = routeData.features?.[0]?.properties?.summary;
+
+  if (
+    !routeResponse.ok ||
+    !Number.isFinite(summary?.distance) ||
+    summary.distance <= 0
+  ) {
+    return json({
+      error: "Could not calculate a road route for this location. Please adjust the map pin and try again."
+    }, 422);
+  }
+
+  const distanceMeters = summary.distance;
+  const distanceKm = distanceMeters / 1000;
+
+  return json({
+    distanceKm: Number(distanceKm.toFixed(3)),
+    distanceMeters,
+    duration: Number.isFinite(summary.duration)
+      ? `${Math.round(summary.duration)}s`
+      : null,
+    withinServiceArea: distanceKm <= 5.5
+  }, {
+    headers: { "Cache-Control": "no-store" }
+  });
+}
 
       if (url.pathname === "/api/auth/google" && request.method === "POST") {
         let data;
