@@ -116,14 +116,14 @@
 <input id="account-address-label" maxlength="40" placeholder="Home, Work, etc." type="text" value="Home"/>
 </div>
 <p class="location-help">
-    First select your delivery location using GPS or the map, then enter your complete delivery address.
+    Choose your location using GPS or the map, then complete your delivery address.
   </p>
 <div class="address-mode">
 <button aria-pressed="true" class="address-mode-btn active" id="pick-location-tab" type="button">
       📍 Pick a Location
     </button>
-<button aria-pressed="false" class="address-mode-btn" id="manual-address-tab" type="button">
-      ✍️ Enter Address
+<button class="address-mode-btn" id="use-current-location" type="button">
+      ◎ Use My Current Location
     </button>
 </div>
 <!-- LOCATION MODE: no address form initially -->
@@ -131,21 +131,12 @@
 <label for="location-search">Search for an address</label>
 <input autocomplete="off" id="location-search" placeholder="Street, area or building" type="search"/>
 <div class="location-suggestions" id="location-suggestions"></div>
-<button class="location-action-btn" id="use-current-location" type="button">
-      ◎ Use My Current Location
-    </button>
 <p aria-live="polite" id="location-status" role="status">
       Search for an address or use your current location.
     </p>
 <div id="delivery-map"></div>
 <p class="location-help">
-      Select a pin on the map or use GPS. This location is required even when you type your address manually.
-    </p>
-</div>
-<!-- MANUAL MODE: address form shown immediately -->
-<div hidden="" id="manual-address-panel">
-<p class="location-help">
-      Enter your complete delivery address below. A GPS or map location is also required.
+      Select a pin on the map or use your current location. A location is required for every order.
     </p>
 </div>
 <!-- Shared fields: hidden until manual entry or location selection -->
