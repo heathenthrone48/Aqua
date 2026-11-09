@@ -13,7 +13,9 @@
   const el = Object.fromEntries(ids.map(id => [id, $(id)]));
 
   const locationTab = $("pick-location-tab");
+  const manualTab = $("manual-address-tab");
   const locationPanel = $("location-picker-panel");
+  const manualPanel = $("manual-address-panel");
   const addressFields = $("delivery-address-fields");
   const heading = $("address-form-heading");
   const search = $("location-search");
@@ -53,19 +55,27 @@
     mode = nextMode;
     const picking = mode === "location";
     locationTab.classList.toggle("active", picking);
+    manualTab.classList.toggle("active", !picking);
     locationTab.setAttribute("aria-pressed", String(picking));
+    manualTab.setAttribute("aria-pressed", String(!picking));
     // Location and written address are both mandatory for every order.
     locationPanel.hidden = false;
+    manualPanel.hidden = false;
     showAddressForm(true);
     if (picking) {
       heading.textContent = "Confirm your delivery address";
       initMap();
       setTimeout(() => map && map.invalidateSize(), 100);
       locationPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } else {
+      heading.textContent = "Enter your delivery address";
+      $("address-house").focus();
+      addressFields.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
   locationTab.addEventListener("click", () => switchMode("location"));
+  manualTab.addEventListener("click", () => switchMode("manual"));
 
   function initMap() {
     if (map || !window.L) return;
@@ -283,7 +293,7 @@
 
   gpsButton.addEventListener("click", () => {
     if (!navigator.geolocation) {
-      setStatus("GPS is unavailable. Please select your location on the map.");
+      setStatus("GPS is unavailable. Search for your address instead.");
       return;
     }
 
@@ -306,8 +316,8 @@
         gpsButton.disabled = false;
 
         setStatus(error.code === 1
-          ? "Location permission denied. Please select your location on the map."
-          : "Could not determine your location. Please select your location on the map.");
+          ? "Location permission denied. Search or enter your address manually."
+          : "Could not determine your location. Please try searching.");
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
