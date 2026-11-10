@@ -296,3 +296,14 @@ body.cart-page { padding-bottom: 0 !important; }
 @media(max-width:700px) {
   .account-connected-badge { width:100%; box-sizing:border-box; }
 }
+
+
+/* Clearly identify the four mandatory manual delivery-address fields. */
+.cart-page .required-address-label {
+  color: #c62828;
+  font-weight: 700;
+}
+.cart-page .required-address-label span[aria-hidden="true"] {
+  color: #c62828;
+  font-weight: 800;
+}
