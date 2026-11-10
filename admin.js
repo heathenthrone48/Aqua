@@ -1,24 +1,18 @@
     const PRODUCTS = [
-  // BISLERI
   { id: "Bisleri 20L Can", name: "Bisleri 20L Can" },
   { id: "Bisleri 10L Can", name: "Bisleri 10L Can" },
   { id: "Bisleri 5L Bottle", name: "Bisleri 5L Bottle" },
-  { id: "Bisleri 2L Bottle", name: "Bisleri 2L Bottle" },
-  { id: "Bisleri 1L Bottle", name: "Bisleri 1L Bottle" },
-
-  // BAILLEY
-  { id: "Bailley 10L Can", name: "Bailley 10L Can" },
-  { id: "Bailley 5L Can", name: "Bailley 5L Can" },
-  { id: "Bailley 2L Bottle", name: "Bailley 2L Bottle" },
-  { id: "Bailley 1L Bottle", name: "Bailley 1L Bottle" },
-
-  // KINLEY
-  { id: "Kinley 2L Bottle", name: "Kinley 2L Bottle" },
-  { id: "Kinley 1L Bottle", name: "Kinley 1L Bottle" },
-
-  // ACCESSORIES
-  { id: "Manual Water Dispenser Hand Pump", name: "Hand Pump Dispenser" },
-  { id: "Automatic Electric Water Dispenser Pump", name: "Electric Water Pump" }
+  { id: "Bisleri 2L Case", name: "Bisleri 2L Case" },
+  { id: "Bisleri 1L Case", name: "Bisleri 1L Case" },
+  { id: "Bisleri 500ml Case", name: "Bisleri 500ml Case" },
+  { id: "Bailey 10L Can", name: "Bailey 10L Can" },
+  { id: "Bailey 5L Can", name: "Bailey 5L Can" },
+  { id: "Bailey 2L Case", name: "Bailey 2L Case" },
+  { id: "Bailey 1L Case", name: "Bailey 1L Case" },
+  { id: "Kinley 2L Case", name: "Kinley 2L Case" },
+  { id: "Kinley 1L Case", name: "Kinley 1L Case" },
+  { id: "Manual Water Dispenser Hand Pump", name: "Manual Water Dispenser Hand Pump" },
+  { id: "Automatic Electric Water Dispenser Pump", name: "Automatic Electric Water Dispenser Pump" }
 ];
 
 // Availability is shared through Cloudflare D1. The password stays in memory only.
