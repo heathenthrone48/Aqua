@@ -20,6 +20,8 @@ let adminPassword = "";
 let stockState = {};
 let savingStock = false;
 let loadingStock = false;
+let priceState = {};
+let savingPriceId = "";
 let loginPending = false;
 
 function stockMessage(text) {
@@ -84,13 +86,99 @@ async function showDashboard() {
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('adminDashboard').style.display = 'block';
   loadLogs();
-  await refreshAdminStock();
+  await Promise.all([refreshAdminStock(), refreshAdminPrices()]);
 }
 
 function hideDashboard() {
   document.getElementById('authOverlay').style.display = 'flex';
   document.getElementById('adminDashboard').style.display = 'none';
   document.getElementById('authError').style.display = 'none';
+}
+
+
+async function refreshAdminPrices() {
+  const status = document.getElementById('priceStatus');
+  const body = document.getElementById('priceTableBody');
+  try {
+    const data = await stockApi('/api/prices');
+    if (!data.prices || PRODUCTS.some(product => !data.prices[product.id])) {
+      throw new Error('Unexpected price response. Check the Worker and D1 migration.');
+    }
+    priceState = data.prices;
+    renderPriceTable();
+    status.textContent = 'Connected — prices are shared across devices.';
+  } catch (problem) {
+    body.replaceChildren();
+    status.textContent = 'Cannot load prices. Apply product-prices-schema.sql to the staging D1 database, then refresh. ' + problem.message;
+  }
+}
+
+function renderPriceTable() {
+  const body = document.getElementById('priceTableBody');
+  body.replaceChildren();
+  PRODUCTS.forEach(product => {
+    const price = priceState[product.id];
+    if (!price) return;
+    const row = document.createElement('tr');
+    const name = document.createElement('td');
+    name.textContent = product.name;
+    const sellingCell = document.createElement('td');
+    const sellingInput = document.createElement('input');
+    sellingInput.type = 'number';
+    sellingInput.min = '0';
+    sellingInput.max = '1000000';
+    sellingInput.step = '0.01';
+    sellingInput.className = 'price-input';
+    sellingInput.setAttribute('aria-label', product.name + ' selling price');
+    sellingInput.value = Number(price.sellingPrice).toFixed(2);
+    const mrpCell = document.createElement('td');
+    const mrpInput = document.createElement('input');
+    mrpInput.type = 'number';
+    mrpInput.min = '0';
+    mrpInput.max = '1000000';
+    mrpInput.step = '0.01';
+    mrpInput.className = 'price-input';
+    mrpInput.setAttribute('aria-label', product.name + ' MRP');
+    mrpInput.value = Number(price.mrp).toFixed(2);
+    sellingCell.append(sellingInput);
+    mrpCell.append(mrpInput);
+    const actionCell = document.createElement('td');
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'btn price-save-btn';
+    save.textContent = 'Save';
+    save.disabled = Boolean(savingPriceId);
+    save.onclick = () => saveProductPrice(product.id, sellingInput, mrpInput, save);
+    actionCell.append(save);
+    row.append(name, sellingCell, mrpCell, actionCell);
+    body.append(row);
+  });
+}
+
+async function saveProductPrice(id, sellingInput, mrpInput, button) {
+  if (!adminPassword || savingPriceId) return;
+  const sellingPrice = Number(sellingInput.value);
+  const mrp = Number(mrpInput.value);
+  if (!sellingInput.value.trim() || !mrpInput.value.trim() ||
+      !Number.isFinite(sellingPrice) || !Number.isFinite(mrp) ||
+      sellingPrice < 0 || mrp < 0 || sellingPrice > 1000000 || mrp > 1000000) {
+    document.getElementById('priceStatus').textContent = 'Enter valid non-negative prices for both fields.';
+    return;
+  }
+  savingPriceId = id;
+  button.disabled = true;
+  button.textContent = 'Saving…';
+  document.getElementById('priceStatus').textContent = 'Saving price…';
+  try {
+    await stockApi('/api/prices', 'PUT', { id, sellingPrice, mrp });
+    priceState[id] = { sellingPrice, mrp };
+    document.getElementById('priceStatus').textContent = 'Saved. Storefront and cart will use the new prices on their next refresh.';
+  } catch (problem) {
+    document.getElementById('priceStatus').textContent = 'Could not save price. ' + problem.message;
+  } finally {
+    savingPriceId = '';
+    renderPriceTable();
+  }
 }
 
 async function refreshAdminStock() {
