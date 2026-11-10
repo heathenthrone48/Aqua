@@ -107,7 +107,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    if (env.MAINTENANCE_MODE === "true") {
+    const isDeliveryRouteTest = url.pathname === "/api/delivery/route" && request.method === "POST";
+
+    if (env.MAINTENANCE_MODE === "true" && !isDeliveryRouteTest) {
       const headers = {
         "Cache-Control": "no-store, max-age=0",
         "X-Robots-Tag": "noindex"
