@@ -6,7 +6,7 @@ let routeRequest = null;
 function getDeliveryCoordinates() {
   const lat = document.getElementById('delivery-latitude')?.value;
   const lon = document.getElementById('delivery-longitude')?.value;
-  if (!lat || !lon) return null;
+  if (lat === undefined || lat === null || lat === '' || lon === undefined || lon === null || lon === '') return null;
   const latitude = Number(lat), longitude = Number(lon);
   if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
       !Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
@@ -17,18 +17,55 @@ async function fetchRoadDistance(force = false) {
   if (!coordinates) throw new Error('Please select your delivery location using GPS or the map.');
   if (!force && cachedRouteKey === coordinates.key && cachedRoadDistanceKm !== null) return cachedRoadDistanceKm;
   if (routeRequest) routeRequest.abort();
-  routeRequest = new AbortController();
+  const controller = new AbortController();
+  routeRequest = controller;
   const response = await fetch('/api/delivery/route', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ latitude: coordinates.latitude, longitude: coordinates.longitude }),
-    signal: routeRequest.signal, cache: 'no-store'
+    signal: controller.signal,
+    cache: 'no-store'
   });
   const result = await response.json();
-  if (!response.ok || !Number.isFinite(Number(result.distanceKm))) throw new Error(result.error || 'Road distance could not be calculated.');
+  if (!response.ok || !Number.isFinite(Number(result.distanceKm))) {
+    throw new Error(result.error || 'Road distance could not be calculated.');
+  }
+  if (routeRequest !== controller) throw new DOMException('Route request superseded', 'AbortError');
   cachedRouteKey = coordinates.key;
   cachedRoadDistanceKm = Number(result.distanceKm);
   return cachedRoadDistanceKm;
 }
+async function refreshDeliveryQuote() {
+  const feeEl = document.getElementById('delivery-fee');
+  const submit = document.getElementById('submit-order-btn');
+  const coordinates = getDeliveryCoordinates();
+  cachedRoadDistanceKm = null;
+  cachedRouteKey = '';
+  if (routeRequest) routeRequest.abort();
+  if (!coordinates) {
+    if (feeEl) feeEl.textContent = 'Choose location';
+    if (typeof renderCart === 'function') renderCart(false);
+    return;
+  }
+  if (feeEl) feeEl.textContent = 'Calculating road distance…';
+  try {
+    const distanceKm = await fetchRoadDistance();
+    if (getDeliveryCoordinates()?.key !== coordinates.key) return;
+    if (distanceKm > MAX_DELIVERY_RADIUS_KM) {
+      if (feeEl) feeEl.textContent = 'Outside 5.5 km service area';
+      if (submit) submit.disabled = true;
+    } else if (feeEl) {
+      feeEl.textContent = '₹' + getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)).toFixed(2);
+    }
+    if (typeof renderCart === 'function') renderCart(false);
+  } catch (error) {
+    if (error.name === 'AbortError') return;
+    if (feeEl) feeEl.textContent = 'Unable to calculate — retry location';
+    if (submit) submit.disabled = true;
+  }
+}
+document.addEventListener('deliverylocationchange', refreshDeliveryQuote);
+
 function getDeliveryFee(distanceKm, subtotal) {
   if (distanceKm == null || distanceKm > MAX_DELIVERY_RADIUS_KM) return 0;
   const band = distanceKm < 1 ? 0 : distanceKm <= 2 ? 1 : distanceKm <= 4 ? 2 : 3;
@@ -419,7 +456,8 @@ document.addEventListener('deliverylocationchange', () => {
       const subtotalEl = document.getElementById('items-subtotal');
       const deliveryEl = document.getElementById('delivery-fee');
       if (subtotalEl) subtotalEl.textContent = money(subtotal);
-      if (deliveryEl) deliveryEl.textContent = cachedRoadDistanceKm == null ? 'Calculating road distance…' : money(deliveryFee);
+      if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : money(deliveryFee);
+      else if (deliveryEl && !getDeliveryCoordinates()) deliveryEl.textContent = 'Choose location';
        const handlingEl = document.getElementById('handling-fee');
        if (handlingEl) handlingEl.textContent = money(handlingFee);
       const totalInput = document.getElementById('input-total-bill');
@@ -438,7 +476,7 @@ document.addEventListener('deliverylocationchange', () => {
           </article>`).join('') : '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
       }
       const submit = document.getElementById('submit-order-btn');
-      if (submit) submit.disabled = !items.length || orderSubmitting;
+      if (submit) submit.disabled = !items.length || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
     document.addEventListener('click', event => {
