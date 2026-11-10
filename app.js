@@ -659,9 +659,6 @@ document.addEventListener('deliverylocationchange', () => {
       const orderRef = generateMemorableOrderId();
       const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
 
-      const customerName = document.getElementById('customer-name').value;
-      const customerPhone = document.getElementById('customer-phone').value;
-      
       const savedAccountAddress = window.getSelectedNeerBekuAddress?.();
       if (savedAccountAddress) {
         document.getElementById('customer-address').value = savedAccountAddress.address;
@@ -673,6 +670,19 @@ document.addEventListener('deliverylocationchange', () => {
         document.getElementById('landmark-notes').value = savedAccountAddress.landmark || '';
       } else if (window.syncDeliveryAddress) {
         window.syncDeliveryAddress();
+      }
+
+      const customerName = document.getElementById('customer-name').value.trim();
+      const customerPhone = document.getElementById('customer-phone').value.trim();
+      if (!customerName) {
+        alert('Please enter your name to place the order.');
+        document.getElementById('customer-name').focus();
+        return;
+      }
+      if (!customerPhone) {
+        alert('Please enter your mobile number to place the order.');
+        document.getElementById('customer-phone').focus();
+        return;
       }
 
       const customerAddress = document.getElementById('customer-address').value.trim();
