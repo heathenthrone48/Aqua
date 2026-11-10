@@ -175,3 +175,18 @@
       font-size: 0.85rem;
       display: none;
     }
+
+
+/* Product price management */
+.section-help { color: #64748b; font-size: .88rem; margin-top: 6px; line-height: 1.5; }
+.price-status { color: #475569; font-size: .85rem; margin: 12px 0; }
+.price-table-wrap { width: 100%; overflow-x: auto; }
+.price-table { min-width: 620px; }
+.price-input { width: 112px; max-width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
+.price-save-btn { white-space: nowrap; }
+.price-save-btn:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 600px) {
+  body { padding: 12px; }
+  .price-input { width: 94px; }
+  th, td { padding: 10px 8px; }
+}
