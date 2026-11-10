@@ -1097,12 +1097,12 @@
     height: 230px;
   }
 }
-/* Product card MRP and selling-price presentation */
+/* Product card MRP and selling-price presentation — retain Aqua's existing blue palette */
 .water-price-block { margin: 8px 0 0; }
 .water-price-top { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:18px; margin-bottom:5px; }
 .water-mrp { color:var(--text-muted); font-size:.78rem; font-weight:600; text-decoration:line-through; text-decoration-thickness:1px; }
-.water-savings { color:#059669; background:rgba(16,185,129,.10); border-radius:999px; padding:3px 7px; font-size:.68rem; font-weight:700; white-space:nowrap; }
-.water-price-block .water-price { color:#059669; font-size:1.35rem; font-weight:800; line-height:1.2; }
+.water-savings { color:#0369a1; background:rgba(2,132,199,.10); border-radius:999px; padding:3px 7px; font-size:.68rem; font-weight:700; white-space:nowrap; }
+.water-price-block .water-price { color:#0369a1; font-size:1.35rem; font-weight:800; line-height:1.2; }
 .water-case-meta { display:block; margin-top:4px; color:var(--text-muted); font-size:.72rem; font-weight:600; }
 @media (max-width:620px) {
   .water-price-block { margin:5px 2px 0; min-width:0; }
