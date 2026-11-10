@@ -385,12 +385,18 @@ document.addEventListener('deliverylocationchange', () => {
       catch { return {}; }
     }
     let cart = readCart();
-    const CART_NOTICE_PENDING_KEY = 'neerbeku_cart_notice_pending_v1';
+    const CART_NOTICE_CHANGE_KEY = 'neerbeku_cart_notice_change_v1';
+    const CART_NOTICE_LAST_SHOWN_KEY = 'neerbeku_cart_notice_last_shown_v1';
     const CART_NOTICE_COUNT_KEY = 'neerbeku_cart_notice_count_v1';
 
     function markCartChangedForNotice() {
-      try { sessionStorage.setItem(CART_NOTICE_PENDING_KEY, '1'); }
-      catch (error) { console.warn('Could not save cart notice state for this session.', error); }
+      try {
+        // localStorage survives the navigation from the storefront to cart.html
+        // and also works when the cart is opened in another same-origin tab.
+        localStorage.setItem(CART_NOTICE_CHANGE_KEY, String(Date.now()) + ':' + String(Math.random()));
+      } catch (error) {
+        console.warn('Could not save cart notice state.', error);
+      }
     }
 
     function maybeShowCartRequirementsNotice() {
@@ -399,15 +405,14 @@ document.addEventListener('deliverylocationchange', () => {
 
       try {
         const hasItems = Object.keys(readCart()).length > 0;
-        const pending = sessionStorage.getItem(CART_NOTICE_PENDING_KEY) === '1';
+        const changeToken = localStorage.getItem(CART_NOTICE_CHANGE_KEY);
+        const lastShownToken = sessionStorage.getItem(CART_NOTICE_LAST_SHOWN_KEY);
         const shownCount = Number(sessionStorage.getItem(CART_NOTICE_COUNT_KEY) || '0');
 
-        if (!hasItems || !pending || shownCount >= 2) {
-          if (!hasItems || shownCount >= 2) sessionStorage.removeItem(CART_NOTICE_PENDING_KEY);
-          return;
-        }
+        // Only show for a cart change that has not already triggered a notice.
+        if (!hasItems || !changeToken || changeToken === lastShownToken || shownCount >= 2) return;
 
-        sessionStorage.removeItem(CART_NOTICE_PENDING_KEY);
+        sessionStorage.setItem(CART_NOTICE_LAST_SHOWN_KEY, changeToken);
         sessionStorage.setItem(CART_NOTICE_COUNT_KEY, String(shownCount + 1));
         notice.hidden = false;
         document.body.classList.add('cart-notice-open');
