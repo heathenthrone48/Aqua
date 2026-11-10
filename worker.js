@@ -137,78 +137,74 @@ export default {
       }
 
       if (url.pathname === "/api/delivery/route" && request.method === "POST") {
-  if (!env.ORS_API_KEY) {
-    return json({ error: "Road distance service is not configured yet." }, 503);
-  }
+        if (!env.ORS_API_KEY) {
+          return json({ error: "Road distance service is not configured yet." }, 503);
+        }
 
-  let data;
-  try {
-    data = await request.json();
-  } catch {
-    return json({ error: "Invalid request" }, 400);
-  }
+        let data;
+        try {
+          data = await request.json();
+        } catch {
+          return json({ error: "Invalid request" }, 400);
+        }
 
-  const latitude = Number(data.latitude);
-  const longitude = Number(data.longitude);
+        if (data.latitude === undefined || data.latitude === null || data.latitude === "" ||
+            data.longitude === undefined || data.longitude === null || data.longitude === "") {
+          return json({ error: "Choose a valid GPS or map location." }, 400);
+        }
 
-  if (
-    !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-    !Number.isFinite(longitude) || longitude < -180 || longitude > 180
-  ) {
-    return json({ error: "Choose a valid GPS or map location." }, 400);
-  }
+        const latitude = Number(data.latitude);
+        const longitude = Number(data.longitude);
+        if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+            !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+          return json({ error: "Choose a valid GPS or map location." }, 400);
+        }
 
-  const routeResponse = await fetch(
-    "https://api.openrouteservice.org/v2/directions/driving-car",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": env.ORS_API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        coordinates: [
-          [77.691037, 12.815047],
-          [longitude, latitude]
-        ],
-        instructions: false
-      })
-    }
-  );
+        let routeResponse;
+        try {
+          routeResponse = await fetch("https://api.openrouteservice.org/v2/directions/driving-car/geojson", {
+            method: "POST",
+            headers: {
+              "Authorization": env.ORS_API_KEY,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              coordinates: [[77.691037, 12.815047], [longitude, latitude]],
+              instructions: false
+            })
+          });
+        } catch {
+          return json({ error: "The road distance service is temporarily unavailable. Please try again." }, 502);
+        }
 
-  let routeData;
-  try {
-    routeData = await routeResponse.json();
-  } catch {
-    return json({ error: "Invalid response from road distance service." }, 502);
-  }
+        let routeData;
+        try {
+          routeData = await routeResponse.json();
+        } catch {
+          return json({ error: "Invalid response from road distance service." }, 502);
+        }
 
-  const summary = routeData.features?.[0]?.properties?.summary;
+        const feature = routeData.features?.[0];
+        const summary = feature?.properties?.summary;
+        const geometry = feature?.geometry;
+        if (!routeResponse.ok || !Number.isFinite(summary?.distance) ||
+            summary.distance <= 0 || geometry?.type !== "LineString" ||
+            !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
+          return json({
+            error: "Could not calculate a road route for this location. Please adjust the map pin and try again."
+          }, 422);
+        }
 
-  if (
-    !routeResponse.ok ||
-    !Number.isFinite(summary?.distance) ||
-    summary.distance <= 0
-  ) {
-    return json({
-      error: "Could not calculate a road route for this location. Please adjust the map pin and try again."
-    }, 422);
-  }
-
-  const distanceMeters = summary.distance;
-  const distanceKm = distanceMeters / 1000;
-
-  return json({
-    distanceKm: Number(distanceKm.toFixed(3)),
-    distanceMeters,
-    duration: Number.isFinite(summary.duration)
-      ? `${Math.round(summary.duration)}s`
-      : null,
-    withinServiceArea: distanceKm <= 5.5
-  }, {
-    headers: { "Cache-Control": "no-store" }
-  });
-}
+        const distanceMeters = summary.distance;
+        const distanceKm = distanceMeters / 1000;
+        return json({
+          distanceKm: Number(distanceKm.toFixed(3)),
+          distanceMeters,
+          durationSeconds: Number.isFinite(summary.duration) ? summary.duration : null,
+          geometry: geometry.coordinates,
+          withinServiceArea: distanceKm <= 5.5
+        });
+      }
 
       if (url.pathname === "/api/auth/google" && request.method === "POST") {
         let data;
