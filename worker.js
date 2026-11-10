@@ -1,5 +1,22 @@
 const MAINTENANCE_HTML = "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"robots\" content=\"noindex\"><title>NeerBeku — Opening Soon</title><style>\n*{box-sizing:border-box}body{margin:0;min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:24px;background:#edf7fc;color:#12364d;font-family:Arial,sans-serif}main{max-width:560px;width:100%;text-align:center;background:#fff;padding:56px 28px;border-radius:24px;box-shadow:0 16px 60px #12364d12}.brand{font-size:30px;font-weight:800;color:#087eaf;margin:0 0 40px}.tag{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#087eaf}h1{font-size:clamp(30px,7vw,44px);margin:16px 0 24px;line-height:1.1}p{font-size:17px;line-height:1.7;color:#506b7b;margin:12px 0}.thanks{font-size:14px;margin-top:32px}\n</style></head><body><main><div class=\"brand\">NeerBeku</div><div class=\"tag\">Opening soon</div><h1>We’re getting ready<br>to begin deliveries.</h1><p>We’re temporarily not accepting orders.</p><p>Please check back later for updates.</p><p class=\"thanks\">Thank you for your patience.</p></main></body></html>";
 
+const DEFAULT_PRODUCT_PRICES = {
+  "Bisleri 20L Can": { sellingPrice: 99, mrp: 100 },
+  "Bisleri 10L Can": { sellingPrice: 130, mrp: 130 },
+  "Bisleri 5L Bottle": { sellingPrice: 80, mrp: 80 },
+  "Bisleri 2L Case": { sellingPrice: 250, mrp: 270 },
+  "Bisleri 1L Case": { sellingPrice: 180, mrp: 240 },
+  "Bisleri 500ml Case": { sellingPrice: 200, mrp: 240 },
+  "Bailey 10L Can": { sellingPrice: 120, mrp: 120 },
+  "Bailey 5L Can": { sellingPrice: 70, mrp: 70 },
+  "Bailey 2L Case": { sellingPrice: 240, mrp: 315 },
+  "Bailey 1L Case": { sellingPrice: 230, mrp: 230 },
+  "Kinley 2L Case": { sellingPrice: 240, mrp: 315 },
+  "Kinley 1L Case": { sellingPrice: 230, mrp: 300 },
+  "Manual Water Dispenser Hand Pump": { sellingPrice: 150, mrp: 200 },
+  "Automatic Electric Water Dispenser Pump": { sellingPrice: 250, mrp: 400 }
+};
+
 const PRODUCT_IDS = new Set([
   "Bisleri 20L Can",
   "Bisleri 10L Can",
@@ -344,6 +361,48 @@ export default {
         return await validPassword(request, env)
           ? json({ success: true })
           : json({ error: "Incorrect password" }, 401);
+      }
+
+      if (url.pathname === "/api/prices" && request.method === "GET") {
+        const { results } = await env.DB.prepare(
+          "SELECT product_id, selling_price, mrp FROM product_prices"
+        ).all();
+        const prices = Object.fromEntries(
+          Object.entries(DEFAULT_PRODUCT_PRICES).map(([id, value]) => [id, { ...value }])
+        );
+        for (const row of results) {
+          if (PRODUCT_IDS.has(row.product_id)) {
+            prices[row.product_id] = {
+              sellingPrice: Number(row.selling_price),
+              mrp: Number(row.mrp)
+            };
+          }
+        }
+        return json({ prices });
+      }
+
+      if (url.pathname === "/api/prices" && request.method === "PUT") {
+        if (!(await validPassword(request, env))) {
+          return json({ error: "Please log in again" }, 401);
+        }
+        let data;
+        try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
+        const id = String(data.id || "");
+        const sellingPrice = Number(data.sellingPrice);
+        const mrp = Number(data.mrp);
+        if (!PRODUCT_IDS.has(id) || !Number.isFinite(sellingPrice) || !Number.isFinite(mrp) ||
+            sellingPrice < 0 || mrp < 0 || sellingPrice > 1000000 || mrp > 1000000) {
+          return json({ error: "Enter a valid product, selling price and MRP" }, 400);
+        }
+        await env.DB.prepare(`
+          INSERT INTO product_prices (product_id, selling_price, mrp, updated_at)
+          VALUES (?, ?, ?, ?)
+          ON CONFLICT(product_id) DO UPDATE SET
+            selling_price = excluded.selling_price,
+            mrp = excluded.mrp,
+            updated_at = excluded.updated_at
+        `).bind(id, Math.round(sellingPrice * 100) / 100, Math.round(mrp * 100) / 100, Math.floor(Date.now() / 1000)).run();
+        return json({ success: true });
       }
 
       if (
