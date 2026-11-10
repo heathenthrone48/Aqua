@@ -93,6 +93,7 @@
     }).addTo(map);
     shopMarker = L.marker([12.815047, 77.691037]).addTo(map)
       .bindPopup("NeerBeku shop — delivery route starts here");
+    map.fitBounds(serviceBoundary.getBounds(), { padding: [18, 18] });
 
     map.on("click", event => {
       selectCoordinates(
