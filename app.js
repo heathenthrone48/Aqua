@@ -369,6 +369,50 @@ document.addEventListener('deliverylocationchange', () => {
 
     const CART_STORAGE_KEY = 'neerbeku_cart_v1';
     const catalog = window.NEER_CATALOG;
+    async function refreshLivePrices() {
+      try {
+        const response = await fetch('/api/prices', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!data.prices) return;
+        for (const [name, value] of Object.entries(data.prices)) {
+          if (!Object.hasOwn(catalog, name) || !Number.isFinite(Number(value.sellingPrice)) || !Number.isFinite(Number(value.mrp))) continue;
+          catalog[name].price = Number(value.sellingPrice);
+          catalog[name].mrp = Number(value.mrp);
+        }
+        document.querySelectorAll('.water-card').forEach(card => {
+          const item = catalog[card.dataset.name];
+          if (!item) return;
+          card.dataset.price = String(item.price);
+          card.dataset.mrp = String(item.mrp);
+          const block = card.querySelector('.water-price-block');
+          if (!block) return;
+          const top = block.querySelector('.water-price-top');
+          const mrpEl = top?.querySelector('.water-mrp');
+          const savingsEl = top?.querySelector('.water-savings');
+          const discounted = item.mrp > item.price;
+          if (top) top.hidden = !discounted;
+          if (mrpEl) mrpEl.textContent = '₹' + item.mrp.toFixed(2);
+          if (savingsEl) {
+            savingsEl.hidden = !discounted;
+            savingsEl.textContent = 'Save ₹' + (item.mrp - item.price).toFixed(2);
+          }
+          const mainPrice = block.querySelector('.water-price');
+          if (mainPrice) {
+            const suffix = mainPrice.querySelector('span');
+            mainPrice.firstChild.textContent = '₹' + item.price.toFixed(2) + ' ';
+            if (suffix) mainPrice.append(suffix);
+          }
+          const caseMeta = block.querySelector('.water-case-meta');
+          if (caseMeta && item.caseQty) caseMeta.textContent = 'Case of ' + item.caseQty + ' · ₹' + (item.price / item.caseQty).toFixed(2) + ' per bottle';
+        });
+        cart = normalizeCart(cart);
+        renderCart(false);
+      } catch (error) {
+        console.warn('Live product prices could not be refreshed:', error);
+      }
+    }
+
     function normalizeCart(value) {
       const clean = {};
       if (!value || typeof value !== 'object') return clean;
@@ -461,9 +505,10 @@ document.addEventListener('deliverylocationchange', () => {
       markCartChangedForNotice();
 
       if (cart[name]) {
+        cart[name].price = price;
         cart[name].qty = Math.min(99, cart[name].qty + qty);
       } else {
-        cart[name] = { ...catalog[name], qty };
+        cart[name] = { ...catalog[name], price, qty };
       }
 
       button.classList.add('added');
@@ -618,6 +663,7 @@ document.addEventListener('deliverylocationchange', () => {
 
     if (document.getElementById('heroCarousel')) initHeroCarousel();
     initProductCarousels();
+    refreshLivePrices();
 
     // Match the rendered media height to its actual width on narrow screens.
     function syncMobileImageSquares() {
