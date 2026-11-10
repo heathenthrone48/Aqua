@@ -23,6 +23,9 @@
 
   let map;
   let marker;
+  let routeLine;
+  let serviceBoundary;
+  let shopMarker;
   let searchTimer;
   let searchController;
   let reverseController;
@@ -79,6 +82,18 @@
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
+    // The circle is a visual guide only; eligibility is based on actual road distance.
+    serviceBoundary = L.circle([12.815047, 77.691037], {
+      radius: 5500,
+      color: "#087eaf",
+      weight: 2,
+      fillColor: "#38a9d6",
+      fillOpacity: 0.07,
+      dashArray: "7 7"
+    }).addTo(map);
+    shopMarker = L.marker([12.815047, 77.691037]).addTo(map)
+      .bindPopup("NeerBeku shop — delivery route starts here");
+
     map.on("click", event => {
       selectCoordinates(
         event.latlng.lat,
@@ -106,6 +121,44 @@
     }
 
     map.setView(point, 17);
+    drawRoadRoute(lat, lon);
+  }
+
+  async function drawRoadRoute(lat, lon) {
+    if (!map) return;
+    if (routeLine) {
+      map.removeLayer(routeLine);
+      routeLine = null;
+    }
+    setStatus("Calculating driving route from the NeerBeku shop…");
+    try {
+      const response = await fetch("/api/delivery/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ latitude: lat, longitude: lon }),
+        cache: "no-store"
+      });
+      const result = await response.json();
+      if (!response.ok || !Array.isArray(result.geometry)) {
+        throw new Error(result.error || "Could not calculate the road route.");
+      }
+      routeLine = L.polyline(result.geometry.map(([lng, latitude]) => [latitude, lng]), {
+        color: result.withinServiceArea ? "#087eaf" : "#dc3545",
+        weight: 5,
+        opacity: 0.85
+      }).addTo(map);
+      const km = Number(result.distanceKm).toFixed(2);
+      setStatus(result.withinServiceArea
+        ? `Driving route: ${km} km from the shop. This location is within the 5.5 km service limit.`
+        : `Driving route: ${km} km from the shop. This location is outside the 5.5 km service limit.`);
+      if (routeLine.getBounds().isValid()) {
+        map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        setStatus(error.message || "Road route unavailable. Please try another pin.");
+      }
+    }
   }
 
   async function requestJSON(url, controller) {
