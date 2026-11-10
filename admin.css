@@ -190,3 +190,5 @@
   .price-input { width: 94px; }
   th, td { padding: 10px 8px; }
 }
+
+.water-price-top[hidden] { display: none !important; }
