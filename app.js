@@ -385,6 +385,45 @@ document.addEventListener('deliverylocationchange', () => {
       catch { return {}; }
     }
     let cart = readCart();
+    const CART_NOTICE_PENDING_KEY = 'neerbeku_cart_notice_pending_v1';
+    const CART_NOTICE_COUNT_KEY = 'neerbeku_cart_notice_count_v1';
+
+    function markCartChangedForNotice() {
+      try { sessionStorage.setItem(CART_NOTICE_PENDING_KEY, '1'); }
+      catch (error) { console.warn('Could not save cart notice state for this session.', error); }
+    }
+
+    function maybeShowCartRequirementsNotice() {
+      const notice = document.getElementById('cart-requirements-notice');
+      if (!notice) return;
+
+      try {
+        const hasItems = Object.keys(readCart()).length > 0;
+        const pending = sessionStorage.getItem(CART_NOTICE_PENDING_KEY) === '1';
+        const shownCount = Number(sessionStorage.getItem(CART_NOTICE_COUNT_KEY) || '0');
+
+        if (!hasItems || !pending || shownCount >= 2) {
+          if (!hasItems || shownCount >= 2) sessionStorage.removeItem(CART_NOTICE_PENDING_KEY);
+          return;
+        }
+
+        sessionStorage.removeItem(CART_NOTICE_PENDING_KEY);
+        sessionStorage.setItem(CART_NOTICE_COUNT_KEY, String(shownCount + 1));
+        notice.hidden = false;
+        document.body.classList.add('cart-notice-open');
+      } catch (error) {
+        console.warn('Could not read cart notice session state.', error);
+      }
+    }
+
+    function closeCartRequirementsNotice() {
+      const notice = document.getElementById('cart-requirements-notice');
+      if (notice) notice.hidden = true;
+      document.body.classList.remove('cart-notice-open');
+    }
+
+    window.closeCartRequirementsNotice = closeCartRequirementsNotice;
+    maybeShowCartRequirementsNotice();
     function persistCart() {
       try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
       catch { alert('Your browser could not save the cart. Please enable site storage before opening checkout.'); }
@@ -413,6 +452,8 @@ document.addEventListener('deliverylocationchange', () => {
       }
       const price = parseFloat(card.dataset.price);
       const qty = parseInt(card.querySelector('.card-qty-value').textContent, 10) || 1;
+
+      markCartChangedForNotice();
 
       if (cart[name]) {
         cart[name].qty = Math.min(99, cart[name].qty + qty);
@@ -561,6 +602,7 @@ document.addEventListener('deliverylocationchange', () => {
             }
           });
 
+          markCartChangedForNotice();
           renderCart();
           window.location.href = 'cart.html';
         }
