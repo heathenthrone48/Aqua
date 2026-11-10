@@ -299,11 +299,11 @@ body.cart-page { padding-bottom: 0 !important; }
 
 
 /* Clearly identify the four mandatory manual delivery-address fields. */
-.cart-page #delivery-address-fields .form-group > label.required-address-label {
+.cart-page .required-address-label {
   color: #c62828 !important;
   font-weight: 800 !important;
 }
-.cart-page #delivery-address-fields .form-group > label.required-address-label span[aria-hidden="true"] {
+.cart-page .required-address-label span[aria-hidden="true"] {
   color: #c62828 !important;
   font-weight: 900 !important;
 }
