@@ -372,6 +372,19 @@
     "address-city", "address-postcode"
   ].forEach(id => $(id).addEventListener("input", updateAddress));
 
+  // Restore a previously saved account location without requesting GPS again.
+  window.restoreDeliveryLocation = (lat, lon) => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) ||
+        lat < -90 || lat > 90 || lon < -180 || lon > 180) return;
+    el["delivery-latitude"].value = lat.toFixed(7);
+    el["delivery-longitude"].value = lon.toFixed(7);
+    el["delivery-address-source"].value = "saved-account";
+    locationChosen = true;
+    initMap();
+    moveMarker(lat, lon);
+    setStatus("Saved delivery location restored. Confirm the pin and address.");
+  };
+
   // Expose helpers for the existing checkout integration.
   window.syncDeliveryAddress = updateAddress;
   window.switchAddressMode = switchMode;
