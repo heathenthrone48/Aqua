@@ -83,11 +83,28 @@ function getHandlingFee(subtotal) {
   if (subtotal <= 1000) return 8;
   return 10;
 }
+const BISLERI_20L_NAME = 'Bisleri 20L Can';
+const BISLERI_CONTAINER_DEPOSIT = 150;
+const BISLERI_RETURN_STORAGE_KEY = 'neerbeku_bisleri_container_return_v1';
+function getBisleriReturnState() {
+  const canQty = Number(cart?.[BISLERI_20L_NAME]?.qty || 0);
+  try {
+    const saved = JSON.parse(localStorage.getItem(BISLERI_RETURN_STORAGE_KEY) || 'null');
+    if (!saved || Number(saved.cartQty) !== canQty) return { canQty, returnedContainers: 0, hasAnswer: false };
+    return { canQty, returnedContainers: Math.max(0, Math.min(canQty, Number(saved.returnedContainers) || 0)), hasAnswer: true };
+  } catch { return { canQty, returnedContainers: 0, hasAnswer: false }; }
+}
 function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const productSubtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const bisleriQty = items.find(item => item.name === BISLERI_20L_NAME)?.qty || 0;
+  const returnState = getBisleriReturnState();
+  const returnedContainers = bisleriQty ? Math.min(bisleriQty, returnState.returnedContainers) : 0;
+  const containerDeposit = bisleriQty * BISLERI_CONTAINER_DEPOSIT;
+  const returnCredit = returnedContainers * BISLERI_CONTAINER_DEPOSIT;
+  const subtotal = productSubtotal + containerDeposit - returnCredit;
   const handlingFee = items.length ? getHandlingFee(subtotal) : 0;
   const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, subtotal) : 0;
-  return { subtotal, deliveryFee, handlingFee, distanceKm, total: subtotal + deliveryFee + handlingFee };
+  return { productSubtotal, containerDeposit, returnedContainers, returnCredit, subtotal, deliveryFee, handlingFee, distanceKm, total: subtotal + deliveryFee + handlingFee };
 }
 document.addEventListener('deliverylocationchange', () => {
   if (typeof renderCart === 'function') renderCart(false);
@@ -476,19 +493,70 @@ document.addEventListener('deliverylocationchange', () => {
       }
     }
 
+    function showBisleriContainerQuestion() {
+      const modal = document.getElementById('bisleri-container-notice');
+      if (!modal) return;
+      const state = getBisleriReturnState();
+      if (!state.canQty || state.hasAnswer) return;
+      document.getElementById('bisleri-return-question').hidden = false;
+      document.getElementById('bisleri-return-count-step').hidden = true;
+      const countInput = document.getElementById('bisleri-return-count');
+      countInput.min = '0';
+      countInput.max = String(state.canQty);
+      countInput.value = '0';
+      document.getElementById('bisleri-return-max').textContent = String(state.canQty);
+      modal.hidden = false;
+      document.body.classList.add('cart-notice-open');
+    }
+    function saveBisleriReturnAnswer(returnedContainers) {
+      const state = getBisleriReturnState();
+      const returned = Math.max(0, Math.min(state.canQty, Math.floor(Number(returnedContainers) || 0)));
+      localStorage.setItem(BISLERI_RETURN_STORAGE_KEY, JSON.stringify({
+        cartQty: state.canQty, returnedContainers: returned, hasContainer: returned > 0
+      }));
+      const modal = document.getElementById('bisleri-container-notice');
+      if (modal) modal.hidden = true;
+      document.body.classList.remove('cart-notice-open');
+      renderCart(false);
+      maybeShowCartRequirementsNotice();
+    }
+    function answerBisleriContainerQuestion(hasContainer) {
+      if (hasContainer) {
+        document.getElementById('bisleri-return-question').hidden = true;
+        document.getElementById('bisleri-return-count-step').hidden = false;
+        document.getElementById('bisleri-return-count').focus();
+      } else {
+        saveBisleriReturnAnswer(0);
+      }
+    }
+    function confirmBisleriReturnCount() {
+      const input = document.getElementById('bisleri-return-count');
+      const state = getBisleriReturnState();
+      const value = Number(input.value);
+      if (!Number.isInteger(value) || value < 0 || value > state.canQty) {
+        input.setCustomValidity('Enter a number from 0 to ' + state.canQty + '.');
+        input.reportValidity();
+        return;
+      }
+      input.setCustomValidity('');
+      saveBisleriReturnAnswer(value);
+    }
+    window.answerBisleriContainerQuestion = answerBisleriContainerQuestion;
+    window.confirmBisleriReturnCount = confirmBisleriReturnCount;
     function maybeShowCartRequirementsNotice() {
       const notice = document.getElementById('cart-requirements-notice');
       if (!notice) return;
-
       try {
         const hasItems = Object.keys(readCart()).length > 0;
         const changeToken = localStorage.getItem(CART_NOTICE_CHANGE_KEY);
         const lastShownToken = sessionStorage.getItem(CART_NOTICE_LAST_SHOWN_KEY);
         const shownCount = Number(sessionStorage.getItem(CART_NOTICE_COUNT_KEY) || '0');
-
-        // Only show for a cart change that has not already triggered a notice.
         if (!hasItems || !changeToken || changeToken === lastShownToken || shownCount >= 2) return;
-
+        const returnState = getBisleriReturnState();
+        if (returnState.canQty > 0 && !returnState.hasAnswer) {
+          showBisleriContainerQuestion();
+          return;
+        }
         sessionStorage.setItem(CART_NOTICE_LAST_SHOWN_KEY, changeToken);
         sessionStorage.setItem(CART_NOTICE_COUNT_KEY, String(shownCount + 1));
         notice.hidden = false;
@@ -593,6 +661,13 @@ document.addEventListener('deliverylocationchange', () => {
       const subtotalEl = document.getElementById('items-subtotal');
       const deliveryEl = document.getElementById('delivery-fee');
       if (subtotalEl) subtotalEl.textContent = money(subtotal);
+      const totals = calculateOrderTotals(items, cachedRoadDistanceKm);
+      const depositEl = document.getElementById('bisleri-container-deposit');
+      const creditEl = document.getElementById('bisleri-return-credit');
+      if (depositEl) depositEl.textContent = money(totals.containerDeposit);
+      if (creditEl) creditEl.textContent = '−' + money(totals.returnCredit);
+      const returnedEl = document.getElementById('bisleri-return-count-summary');
+      if (returnedEl) returnedEl.textContent = totals.returnedContainers + ' returned';
       if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : money(deliveryFee);
       else if (deliveryEl && !getDeliveryCoordinates()) deliveryEl.textContent = 'Choose location';
        const handlingEl = document.getElementById('handling-fee');
@@ -859,6 +934,12 @@ document.addEventListener('deliverylocationchange', () => {
         throw new Error('We could not save your delivery details. Please check them and try again.');
       }
 
+      const returnState = getBisleriReturnState();
+      if (returnState.canQty > 0 && !returnState.hasAnswer) {
+        showBisleriContainerQuestion();
+        alert('Please answer the Bisleri container return question before placing your order.');
+        return;
+      }
       const orderTotals = calculateOrderTotals(Object.values(cart), deliveryDistanceKm);
       const totalBill = '₹' + orderTotals.total.toFixed(2);
 
@@ -867,7 +948,12 @@ document.addEventListener('deliverylocationchange', () => {
         name: customerName,
         phone: customerPhone,
         address: customerAddress,
-        notes: `${landmarkNotes} | Items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}; Handling fee: ₹${orderTotals.handlingFee.toFixed(2)}`,
+        notes: `${landmarkNotes} | Product subtotal: ₹${orderTotals.productSubtotal.toFixed(2)}; Bisleri 20L container deposit: ₹${orderTotals.containerDeposit.toFixed(2)}; Returned Bisleri containers: ${orderTotals.returnedContainers}; Return credit: ₹${orderTotals.returnCredit.toFixed(2)}; Payable items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}; Handling fee: ₹${orderTotals.handlingFee.toFixed(2)}`,
+        productSubtotal: orderTotals.productSubtotal,
+        bisleri20LQuantity: Object.values(cart).find(item => item.name === BISLERI_20L_NAME)?.qty || 0,
+        bisleriContainerDeposit: orderTotals.containerDeposit,
+        bisleriReturnedContainers: orderTotals.returnedContainers,
+        bisleriReturnCredit: orderTotals.returnCredit,
         cart: document.getElementById('cart-items-input').value,
         qty: document.getElementById('cart-count').textContent,
         bill: totalBill,
