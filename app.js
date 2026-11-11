@@ -1134,10 +1134,19 @@ if (document.getElementById('preferred-time')) {
     field('customer-name').value = address.name || accountUser?.name || '';
     field('customer-phone').value = address.phone || '';
     field('customer-address').value = address.address || '';
-    field('delivery-latitude').value = address.latitude || '';
-    field('delivery-longitude').value = address.longitude || '';
+    field('address-house').value = address.house || '';
+    field('address-street').value = address.street || '';
+    field('address-area').value = address.area || '';
+    field('address-city').value = address.city || '';
+    field('address-postcode').value = address.postcode || '';
+    field('delivery-latitude').value = address.latitude ?? '';
+    field('delivery-longitude').value = address.longitude ?? '';
     field('delivery-address-source').value = 'saved-account';
     field('landmark-notes').value = address.landmark || '';
+    field('account-address-label').value = address.label || 'Home';
+    if (address.latitude != null && address.longitude != null) {
+      window.restoreDeliveryLocation?.(Number(address.latitude), Number(address.longitude));
+    }
   }
 
   function renderAddressChoices() {
@@ -1243,8 +1252,15 @@ if (document.getElementById('preferred-time')) {
     const phone = field('customer-phone').value.trim();
     const address = field('customer-address').value.trim();
     const label = field('account-address-label').value.trim() || 'Delivery address';
-    if (!name || !phone || !address) {
-      setText(saveMessage, 'Enter your name, mobile number, and a complete delivery address first.');
+    const house = field('address-house').value.trim();
+    const street = field('address-street').value.trim();
+    const area = field('address-area').value.trim();
+    const city = field('address-city').value.trim();
+    const postcode = field('address-postcode').value.trim();
+    const latitude = field('delivery-latitude').value;
+    const longitude = field('delivery-longitude').value;
+    if (!name || !phone || !house || !street || !area || !city || !address || !latitude || !longitude) {
+      setText(saveMessage, 'Complete your name, mobile number, house, street, area, city, and select your map location before saving.');
       return;
     }
     saveButton.disabled = true;
@@ -1255,9 +1271,9 @@ if (document.getElementById('preferred-time')) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           label, name, phone, address,
+          house, street, area, city, postcode,
           landmark: field('landmark-notes').value.trim(),
-          latitude: field('delivery-latitude').value || null,
-          longitude: field('delivery-longitude').value || null,
+          latitude, longitude,
           isDefault: true
         })
       });
