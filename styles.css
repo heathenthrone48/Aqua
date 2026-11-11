@@ -1122,3 +1122,29 @@
 .confirm-exchange{margin:16px 0;padding:15px 0;border-top:1px solid #e8eef3;border-bottom:1px solid #e8eef3}.confirm-exchange h4{margin-bottom:12px}.confirm-breakdown-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:7px 0;color:#607184;font-size:12px;line-height:1.45}.confirm-breakdown-row strong{color:#182f43;font-size:13px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}.confirm-breakdown-row .confirm-return-value{color:#16a05a}.confirm-exchange-note{margin:8px 0 0;color:#68798a;font-size:11px;line-height:1.5}
 .confirm-delivery-charges{margin:16px 0}.confirm-delivery-charges h4{margin-bottom:8px}.confirm-price-card{margin-top:16px;padding:14px 15px;border-radius:13px;background:#eef7ff;color:#1b4568}.confirm-price-card .confirm-breakdown-row{color:#244d70}.confirm-price-card .confirm-breakdown-row strong{color:#244d70}.confirm-price-card .confirm-total{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:9px;padding:14px 0 4px;border-top:1px solid #cbddeb;border-bottom:0;color:#152b3d;font-size:13px;font-weight:800}.confirm-price-card .confirm-total strong{color:#0086c9;font-size:22px;font-weight:900;white-space:nowrap}.confirm-price-card>small{display:block;color:#718398;font-size:10px}
 @media(max-width:480px){.confirmation .confirm-summary-card{padding:15px 13px}.confirm-summary-top h3{font-size:16px}.confirm-price-card .confirm-total strong{font-size:20px}}
+
+
+/* Consistent NEERBEKU storefront product-card typography */
+.shop-page .water-card .badge-type{
+  display:block;margin:0 0 7px;color:#71869a;font-size:10.5px;
+  line-height:1.35;letter-spacing:.75px;font-weight:700;text-transform:uppercase;
+}
+.shop-page .water-card .water-title{
+  margin:0 0 7px;color:#102f50;font-size:18px;line-height:1.35;font-weight:700;
+}
+.shop-page .water-card .water-desc{
+  margin:0 0 15px;color:#667789;font-size:13.5px;line-height:1.5;font-weight:400;
+}
+.shop-page .water-card .water-price{
+  color:#087fc2;font-size:23px;line-height:1.25;font-weight:800;
+}
+.shop-page .water-card .water-case-meta{
+  display:block;margin-top:5px;color:#718293;font-size:12px;line-height:1.4;
+}
+.shop-page .water-card .product-clickable-area{display:flex;flex-direction:column;align-items:stretch}
+.shop-page .water-card .product-image-carousel{flex:none}
+@media(max-width:560px){
+  .shop-page .water-card .water-title{font-size:17px}
+  .shop-page .water-card .water-desc{font-size:13px}
+  .shop-page .water-card .water-price{font-size:22px}
+}
