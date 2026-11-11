@@ -141,10 +141,43 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('productModalBackdrop').classList.remove('active');
     }
 
+    function showQuantityLimitNotice(anchor) {
+      if (!anchor || !document.body) return;
+      document.querySelectorAll('.quantity-limit-notice').forEach(node => node.remove());
+      const notice = document.createElement('div');
+      notice.className = 'quantity-limit-notice';
+      notice.textContent = 'Maximum 5 quantity per order';
+      notice.setAttribute('role', 'alert');
+      Object.assign(notice.style, {
+        position: 'fixed', zIndex: '10000', maxWidth: '230px',
+        padding: '8px 12px', borderRadius: '8px',
+        background: '#fff1f2', border: '1px solid #fecdd3',
+        color: '#b91c1c', fontSize: '12px', fontWeight: '800',
+        lineHeight: '1.35', textAlign: 'center',
+        boxShadow: '0 4px 14px rgba(0,0,0,.14)',
+        pointerEvents: 'none'
+      });
+      document.body.appendChild(notice);
+      const rect = anchor.getBoundingClientRect();
+      const left = Math.max(8, Math.min(window.innerWidth - notice.offsetWidth - 8,
+        rect.left + rect.width / 2 - notice.offsetWidth / 2));
+      let top = rect.bottom + 7;
+      if (top + notice.offsetHeight > window.innerHeight - 8) {
+        top = Math.max(8, rect.top - notice.offsetHeight - 7);
+      }
+      notice.style.left = left + 'px';
+      notice.style.top = top + 'px';
+      window.setTimeout(() => notice.remove(), 2200);
+    }
+
     function changeModalQty(change) {
       const qtyEl = document.getElementById('modalQtyVal');
       const current = parseInt(qtyEl.innerText, 10) || 1;
-      const updated = Math.min(99, Math.max(1, current + change));
+      if (change > 0 && current >= 5) {
+        showQuantityLimitNotice(qtyEl.closest('.card-qty-controls') || qtyEl);
+        return;
+      }
+      const updated = Math.min(5, Math.max(1, current + change));
       qtyEl.innerText = updated;
 
       if (activeModalCardRef) {
@@ -477,12 +510,12 @@ document.addEventListener('deliverylocationchange', () => {
       try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
       catch { alert('Your browser could not save the cart. Please enable site storage before opening checkout.'); }
     }
-    function changeCartQty(name, change) {
+    function changeCartQty(name, change, button) {
       if (!cart[name] || orderSubmitting) return;
       const qty = cart[name].qty + change;
       if (qty <= 0) { removeFromCart(name); return; }
       if (qty > 5) {
-        alert('Maximum 5 units allowed per product per order.');
+        showQuantityLimitNotice(button || document.querySelector('[data-product="' + CSS.escape(name) + '"]'));
         return;
       }
       cart[name].qty = qty;
@@ -493,6 +526,10 @@ document.addEventListener('deliverylocationchange', () => {
       const controls = button.closest('.card-qty-controls');
       const valueEl = controls.querySelector('.card-qty-value');
       const current = parseInt(valueEl.textContent, 10) || 1;
+      if (change > 0 && current >= 5) {
+        showQuantityLimitNotice(button);
+        return;
+      }
       valueEl.textContent = Math.min(5, Math.max(1, current + change));
     }
 
@@ -510,7 +547,7 @@ document.addEventListener('deliverylocationchange', () => {
 
       const existingQty = cart[name]?.qty || 0;
       if (existingQty + qty > 5) {
-        alert('Maximum 5 units allowed per product per order. You already have ' + existingQty + ' in your cart.');
+        showQuantityLimitNotice(button);
         return;
       }
       if (cart[name]) {
@@ -570,7 +607,7 @@ document.addEventListener('deliverylocationchange', () => {
           <article class="checkout-item">
             <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
             <div class="checkout-item-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} each</p>
-            <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity" ${item.qty >= 5 ? 'disabled' : ''}>+</button></div>
+            <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button></div>
             <button type="button" class="checkout-remove" data-cart-action="remove" data-product="${escapeHtml(item.name)}">Remove</button>
             </div><strong class="checkout-line-total">${money(item.price * item.qty)}</strong>
           </article>`).join('') : '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
@@ -584,7 +621,7 @@ document.addEventListener('deliverylocationchange', () => {
       if (!button || orderSubmitting) return;
       const name = button.dataset.product;
       if (button.dataset.cartAction === 'remove') removeFromCart(name);
-      else changeCartQty(name, button.dataset.cartAction === 'plus' ? 1 : -1);
+      else changeCartQty(name, button.dataset.cartAction === 'plus' ? 1 : -1, button);
     });
     window.addEventListener('storage', event => {
       if (event.key === CART_STORAGE_KEY && !orderSubmitting) { cart = readCart(); renderCart(false); }
