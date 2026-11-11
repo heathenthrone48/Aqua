@@ -90,9 +90,15 @@ function getBisleriReturnState() {
   const canQty = Number(cart?.[BISLERI_20L_NAME]?.qty || 0);
   try {
     const saved = JSON.parse(localStorage.getItem(BISLERI_RETURN_STORAGE_KEY) || 'null');
-    if (!saved || Number(saved.cartQty) !== canQty) return { canQty, returnedContainers: 0, hasAnswer: false };
+    if (!saved || Number(saved.cartQty) !== canQty) return { canQty, returnedContainers: 0, hasAnswer: true };
     return { canQty, returnedContainers: Math.max(0, Math.min(canQty, Number(saved.returnedContainers) || 0)), hasAnswer: true };
-  } catch { return { canQty, returnedContainers: 0, hasAnswer: false }; }
+  } catch { return { canQty, returnedContainers: 0, hasAnswer: true }; }
+}
+function setBisleriReturnCount(value) {
+  const state = getBisleriReturnState();
+  const returned = Math.max(0, Math.min(state.canQty, Math.floor(Number(value) || 0)));
+  localStorage.setItem(BISLERI_RETURN_STORAGE_KEY, JSON.stringify({ cartQty: state.canQty, returnedContainers: returned, hasContainer: returned > 0 }));
+  renderCart(false);
 }
 function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
   const productSubtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -493,56 +499,6 @@ document.addEventListener('deliverylocationchange', () => {
       }
     }
 
-    function showBisleriContainerQuestion() {
-      const modal = document.getElementById('bisleri-container-notice');
-      if (!modal) return;
-      const state = getBisleriReturnState();
-      if (!state.canQty || state.hasAnswer) return;
-      document.getElementById('bisleri-return-question').hidden = false;
-      document.getElementById('bisleri-return-count-step').hidden = true;
-      const countInput = document.getElementById('bisleri-return-count');
-      countInput.min = '0';
-      countInput.max = String(state.canQty);
-      countInput.value = '0';
-      document.getElementById('bisleri-return-max').textContent = String(state.canQty);
-      modal.hidden = false;
-      document.body.classList.add('cart-notice-open');
-    }
-    function saveBisleriReturnAnswer(returnedContainers) {
-      const state = getBisleriReturnState();
-      const returned = Math.max(0, Math.min(state.canQty, Math.floor(Number(returnedContainers) || 0)));
-      localStorage.setItem(BISLERI_RETURN_STORAGE_KEY, JSON.stringify({
-        cartQty: state.canQty, returnedContainers: returned, hasContainer: returned > 0
-      }));
-      const modal = document.getElementById('bisleri-container-notice');
-      if (modal) modal.hidden = true;
-      document.body.classList.remove('cart-notice-open');
-      renderCart(false);
-      maybeShowCartRequirementsNotice();
-    }
-    function answerBisleriContainerQuestion(hasContainer) {
-      if (hasContainer) {
-        document.getElementById('bisleri-return-question').hidden = true;
-        document.getElementById('bisleri-return-count-step').hidden = false;
-        document.getElementById('bisleri-return-count').focus();
-      } else {
-        saveBisleriReturnAnswer(0);
-      }
-    }
-    function confirmBisleriReturnCount() {
-      const input = document.getElementById('bisleri-return-count');
-      const state = getBisleriReturnState();
-      const value = Number(input.value);
-      if (!Number.isInteger(value) || value < 0 || value > state.canQty) {
-        input.setCustomValidity('Enter a number from 0 to ' + state.canQty + '.');
-        input.reportValidity();
-        return;
-      }
-      input.setCustomValidity('');
-      saveBisleriReturnAnswer(value);
-    }
-    window.answerBisleriContainerQuestion = answerBisleriContainerQuestion;
-    window.confirmBisleriReturnCount = confirmBisleriReturnCount;
     function maybeShowCartRequirementsNotice() {
       const notice = document.getElementById('cart-requirements-notice');
       if (!notice) return;
@@ -552,12 +508,6 @@ document.addEventListener('deliverylocationchange', () => {
 
         // The Bisleri 20L return question must not depend on whether the
         // separate cart-requirements notice was already shown this session.
-        const returnState = getBisleriReturnState();
-        if (returnState.canQty > 0 && !returnState.hasAnswer) {
-          showBisleriContainerQuestion();
-          return;
-        }
-
         const changeToken = localStorage.getItem(CART_NOTICE_CHANGE_KEY);
         const lastShownToken = sessionStorage.getItem(CART_NOTICE_LAST_SHOWN_KEY);
         const shownCount = Number(sessionStorage.getItem(CART_NOTICE_COUNT_KEY) || '0');
@@ -688,6 +638,23 @@ document.addEventListener('deliverylocationchange', () => {
             <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
             <div class="checkout-item-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} each</p>
             <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button></div>
+            ${item.name === BISLERI_20L_NAME ? (() => {
+              const state = getBisleriReturnState();
+              const options = Array.from({ length: item.qty }, (_, index) => index + 1)
+                .map(quantity => `<option value="${quantity}" ${state.returnedContainers === quantity ? 'selected' : ''}>${quantity} empty jar${quantity === 1 ? '' : 's'}</option>`).join('');
+              return `<div class="bisleri-exchange-inline">
+                <label for="bisleri-return-choice">Empty jar exchange</label>
+                <select id="bisleri-return-choice" data-bisleri-return-choice>
+                  <option value="0" ${state.returnedContainers === 0 ? 'selected' : ''}>No, I need new jars</option>
+                  <option value="1" ${state.returnedContainers > 0 ? 'selected' : ''}>Yes, I have empty jars to return</option>
+                </select>
+                <div class="bisleri-return-quantity" ${state.returnedContainers > 0 ? '' : 'hidden'}>
+                  <label for="bisleri-return-count-inline">How many empty jars will you return?</label>
+                  <select id="bisleri-return-count-inline" data-bisleri-return-count>${options}</select>
+                  <small>₹150 credit for each accepted Bisleri 20L jar</small>
+                </div>
+              </div>`;
+            })() : ''}
             <button type="button" class="checkout-remove" data-cart-action="remove" data-product="${escapeHtml(item.name)}">Remove</button>
             </div><strong class="checkout-line-total">${money(item.price * item.qty)}</strong>
           </article>`).join('') : '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
@@ -702,6 +669,13 @@ document.addEventListener('deliverylocationchange', () => {
       const name = button.dataset.product;
       if (button.dataset.cartAction === 'remove') removeFromCart(name);
       else changeCartQty(name, button.dataset.cartAction === 'plus' ? 1 : -1, button);
+    });
+    document.addEventListener('change', event => {
+      if (event.target.matches('[data-bisleri-return-choice]')) {
+        setBisleriReturnCount(Number(event.target.value) > 0 ? 1 : 0);
+      } else if (event.target.matches('[data-bisleri-return-count]')) {
+        setBisleriReturnCount(event.target.value);
+      }
     });
     window.addEventListener('storage', event => {
       if (event.key === CART_STORAGE_KEY && !orderSubmitting) { cart = readCart(); renderCart(false); }
@@ -945,12 +919,6 @@ document.addEventListener('deliverylocationchange', () => {
         throw new Error('We could not save your delivery details. Please check them and try again.');
       }
 
-      const returnState = getBisleriReturnState();
-      if (returnState.canQty > 0 && !returnState.hasAnswer) {
-        showBisleriContainerQuestion();
-        alert('Please answer the Bisleri container return question before placing your order.');
-        return;
-      }
       const orderTotals = calculateOrderTotals(Object.values(cart), deliveryDistanceKm);
       const totalBill = '₹' + orderTotals.total.toFixed(2);
 
