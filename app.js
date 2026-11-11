@@ -810,15 +810,21 @@ document.addEventListener('deliverylocationchange', () => {
       });
       document.getElementById('confirm-items').replaceChildren(...rows);
       const breakdown = calculateOrderTotals(order.items, order.distanceKm);
+      const bisleriQty = order.items.find(item => item.name === BISLERI_20L_NAME)?.qty || 0;
+      const returnedContainers = Math.min(bisleriQty, Number(order.bisleriReturnedContainers ?? breakdown.returnedContainers) || 0);
+      const additionalJarDeposit = Math.max(0, breakdown.containerDeposit - returnedContainers * BISLERI_CONTAINER_DEPOSIT);
+      const additionalCharges = additionalJarDeposit + breakdown.deliveryFee + breakdown.handlingFee;
       document.getElementById('confirm-subtotal').textContent = '₹' + breakdown.productSubtotal.toFixed(2);
-      const confirmDeposit = document.getElementById('confirm-bisleri-deposit');
-      const confirmCredit = document.getElementById('confirm-bisleri-credit');
-      const confirmReturns = document.getElementById('confirm-bisleri-returns');
-      if (confirmDeposit) confirmDeposit.textContent = '₹' + breakdown.containerDeposit.toFixed(2);
-      if (confirmCredit) confirmCredit.textContent = '−₹' + breakdown.returnCredit.toFixed(2);
-      if (confirmReturns) confirmReturns.textContent = breakdown.returnedContainers + ' returned';
+      document.getElementById('confirm-new-cans').textContent = String(bisleriQty);
+      document.getElementById('confirm-bisleri-returns').textContent = returnedContainers + (returnedContainers === 1 ? ' jar' : ' jars');
+      document.getElementById('confirm-additional-deposit').textContent = '₹' + additionalJarDeposit.toFixed(2);
+      document.getElementById('confirm-exchange-section').hidden = bisleriQty === 0;
+      document.getElementById('confirm-exchange-note').textContent = returnedContainers > 0
+        ? 'Please hand over your empty Bisleri 20L jars to our delivery partner during delivery.'
+        : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
       document.getElementById('confirm-delivery-fee').textContent = '₹' + breakdown.deliveryFee.toFixed(2);
-       document.getElementById('confirm-handling-fee').textContent = '₹' + breakdown.handlingFee.toFixed(2);
+      document.getElementById('confirm-handling-fee').textContent = '₹' + breakdown.handlingFee.toFixed(2);
+      document.getElementById('confirm-additional-charges').textContent = '₹' + additionalCharges.toFixed(2);
       document.getElementById('confirm-total').textContent = order.total;
       document.getElementById('confirm-time').textContent = order.time;
       document.getElementById('confirm-address').textContent = order.address;
