@@ -908,8 +908,8 @@ document.addEventListener('deliverylocationchange', () => {
         document.getElementById('delivery-latitude').value = savedAccountAddress.latitude || '';
         document.getElementById('delivery-longitude').value = savedAccountAddress.longitude || '';
         document.getElementById('delivery-address-source').value = 'saved-account';
-        document.getElementById('customer-name').value = savedAccountAddress.name;
-        document.getElementById('customer-phone').value = savedAccountAddress.phone;
+        // Keep the editable checkout contact fields as entered by the customer.
+        // The saved address supplies delivery details, not an enforced phone number.
         document.getElementById('landmark-notes').value = savedAccountAddress.landmark || '';
       } else if (window.syncDeliveryAddress) {
         window.syncDeliveryAddress();
@@ -1248,7 +1248,10 @@ if (document.getElementById('preferred-time')) {
     // until the customer chooses to add or change an address.
     entryPanel.hidden = false;
     entryPanel.querySelectorAll('input, select, textarea, button').forEach(control => {
-      if (control.id === 'delivery-date' || control.id === 'scheduled-slot') return;
+      // Contact details must remain editable even when a saved address is selected.
+      // Only lock the address-entry controls until the customer chooses to edit an address.
+      if (['customer-name', 'customer-phone', 'customer-alt-phone',
+           'delivery-date', 'scheduled-slot'].includes(control.id)) return;
       control.disabled = !visible;
     });
   }
