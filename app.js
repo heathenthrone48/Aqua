@@ -854,6 +854,11 @@ document.addEventListener('deliverylocationchange', () => {
         alert('Sorry, this address is outside our 5.5 km delivery area. You can browse products, but checkout is not available at this location.');
         return;
       }
+      // Persist the first checkout's complete details to the signed-in account.
+      if (window.saveCurrentNeerBekuAddress && !(await window.saveCurrentNeerBekuAddress())) {
+        throw new Error('We could not save your delivery details. Please check them and try again.');
+      }
+
       const orderTotals = calculateOrderTotals(Object.values(cart), deliveryDistanceKm);
       const totalBill = '₹' + orderTotals.total.toFixed(2);
 
@@ -1100,7 +1105,9 @@ if (document.getElementById('preferred-time')) {
 
   function setEntryVisible(visible) {
     if (!entryPanel) return;
-    entryPanel.hidden = !visible;
+    // Keep the saved fields and map visible during faster checkout; lock fields
+    // until the customer chooses to add or change an address.
+    entryPanel.hidden = false;
     entryPanel.querySelectorAll('input, select, textarea, button').forEach(control => {
       if (control.id === 'delivery-date' || control.id === 'scheduled-slot') return;
       control.disabled = !visible;
@@ -1285,10 +1292,17 @@ if (document.getElementById('preferred-time')) {
       showAccountAddress(saved || null);
       renderAddressChoices();
       setText(addressMessage, 'Address saved. It will be available the next time you sign in.');
+      return true;
     } catch (error) {
       setText(saveMessage, error.message || 'Could not save this address.');
+      return false;
     } finally { saveButton.disabled = false; }
   }
+
+  window.saveCurrentNeerBekuAddress = async () => {
+    if (!accountUser || selectedAddress) return true;
+    return await saveAddress();
+  };
 
   function handleSignedIn(user) {
     accountUser = user;
