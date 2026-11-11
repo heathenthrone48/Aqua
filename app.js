@@ -867,7 +867,7 @@ document.addEventListener('deliverylocationchange', () => {
       const input = document.getElementById(id);
       if (!input) return;
       input.addEventListener('input', () => {
-        const digits = input.value.replace(/\\D/g, '').slice(0, 10);
+        const digits = input.value.replace(/\D/g, '').slice(0, 10);
         if (input.value !== digits) input.value = digits;
       });
     });
@@ -929,7 +929,12 @@ document.addEventListener('deliverylocationchange', () => {
         document.getElementById('customer-name').focus();
         return;
       }
-      if (!/^\\d{10}$/.test(customerPhone)) {\n        alert('Please enter a valid 10-digit mobile number.');\n        document.getElementById('customer-phone').focus();\n        return;\n      }\n      if (!customerPhone) {
+      if (!/^\d{10}$/.test(customerPhone)) {
+        alert('Please enter a valid 10-digit mobile number.');
+        document.getElementById('customer-phone').focus();
+        return;
+      }
+      if (!customerPhone) {
         alert('Please enter your mobile number to place the order.');
         document.getElementById('customer-phone').focus();
         return;
@@ -1422,7 +1427,7 @@ if (document.getElementById('preferred-time')) {
     const postcode = field('address-postcode').value.trim();
     const latitude = field('delivery-latitude').value;
     const longitude = field('delivery-longitude').value;
-    if (!name || !/^\\d{10}$/.test(phone) || !house || !street || !area || !city || !address || !latitude || !longitude) {
+    if (!name || !/^\d{10}$/.test(phone) || !house || !street || !area || !city || !address || !latitude || !longitude) {
       setText(saveMessage, 'Complete your name, mobile number, house, street, area, city, and select your map location before saving.');
       return;
     }
