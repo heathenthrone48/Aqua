@@ -242,6 +242,36 @@
           </div>
         </div>
 
+        <div class="water-card" data-category="water" data-name="Bailey 1L Case" data-price="230">
+          <div class="product-clickable-area" onclick="openProductModal(this)">
+            <div class="product-image-carousel" data-images='["images/bailey-1l-2.png"]'>
+              <div class="product-image-track"></div>
+              <button type="button" class="product-carousel-arrow prev" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+              <button type="button" class="product-carousel-arrow next" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+              <div class="product-carousel-dots"></div>
+              <div class="product-image-count"></div>
+            </div>
+
+            <span class="badge-type">BAILEY • WATER CASE</span>
+            <div class="water-title">Bailey 1L Case</div>
+            <div class="water-desc">A convenient case of one-litre Bailey packaged drinking water bottles, suitable for families, offices and everyday hydration.</div>
+          </div>
+
+          <div class="water-price">₹230 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div>
+
+          <div class="card-bottom">
+            <div class="card-qty-row">
+              <span class="card-qty-label">Quantity</span>
+              <div class="card-qty-controls">
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, -1)">−</button>
+                <span class="card-qty-value">1</span>
+                <button type="button" class="card-qty-btn" onclick="changeCardQty(this, 1)">+</button>
+              </div>
+            </div>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+          </div>
+        </div>
+
         <div class="water-card" data-category="water" data-name="Kinley 2L Case" data-price="240" data-mrp="315" data-case-qty="9">
           <div class="product-clickable-area" onclick="openProductModal(this)">
             <div class="product-image-carousel" data-images='["images/kinley-2l-1.webp","images/kinley-2l-2.png"]'>
