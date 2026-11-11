@@ -45,7 +45,8 @@
     </div>
   </header>
 
-<div class="container" id="order-screen"><a class="continue-shopping" href="index.html">← Continue shopping</a><h1 class="cart-page-title">Your checkout</h1><p class="checkout-intro">Review your items, exchange empty cans and confirm delivery.</p><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm"><div class="cart-panel">
+<div class="container" id="order-screen"><a class="continue-shopping" href="index.html">← Continue shopping</a><h1 class="cart-page-title">Your checkout</h1><p class="checkout-intro">Review your items, exchange empty cans and confirm delivery.</p><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm">
+<div class="cart-panel">
 <div class="cart-header">
 <h3>1. Selected items</h3>
 <span class="cart-count" id="cart-count">0</span>
@@ -60,8 +61,8 @@
 </div>
 <input id="cart-items-input" name="Cart_Items" type="hidden" value=""/>
 <input id="input-total-bill" name="Total_Estimated_Bill" type="hidden" value="₹0.00"/>
-<div class="section-label account-section-label" id="account-section-label">2. Customer details</div>
-<div class="panel google-signin-panel">
+
+<section class="reference-checkout-card reference-customer-card"><h2>2. Customer details</h2><div class="panel google-signin-panel">
   <div class="account-card-heading">
     <span class="account-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
     <div><h2 id="account-card-title">Faster checkout next time</h2><p>Sign in to save your delivery details and addresses to your NeerBeku account. Google verifies your identity; NeerBeku stores your saved details.</p></div>
@@ -109,7 +110,8 @@
 </div>
 <hr/>
 <!-- Delivery address selector -->
-<div class="panel checkout-details-panel">
+</div></section>
+<section class="reference-checkout-card reference-delivery-card"><h2>3. Delivery details</h2><div class="panel checkout-details-panel">
 <h3 class="checkout-step-title">Delivery window</h3>
 <div class="form-group">
 <label for="preferred-time">Delivery Window</label>
@@ -127,22 +129,6 @@
 <label for="delivery-date">Delivery date</label><input type="date" id="delivery-date" disabled>
 <label for="scheduled-slot">Delivery window</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning (8 AM–11 AM)</option><option value="Midday (11 AM–2 PM)">Midday (11 AM–2 PM)</option><option value="Afternoon (2 PM–5 PM)">Afternoon (2 PM–5 PM)</option><option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option></select>
 </div><p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
-</div>
-<section class="checkout-order-summary" aria-live="polite">
-<div class="checkout-summary-heading"><h2>4. Order summary</h2><span class="checkout-payment-badge">Ready to order</span></div>
-<p class="checkout-payment-note">Payment method: Cash on delivery</p>
-<h3 class="checkout-summary-section-title">Items</h3><div class="checkout-summary-items" id="checkout-summary-items"></div>
-<div class="checkout-summary-row"><span>Items subtotal</span><strong id="items-subtotal">₹0.00</strong></div>
-
-
-<section class="checkout-delivery-charges"><h3>Delivery charges</h3>
-<div class="checkout-summary-row"><span>Delivery fee</span><strong id="delivery-fee">Choose location</strong></div>
-<div class="checkout-summary-row"><span>Handling fee</span><strong id="handling-fee">₹0.00</strong></div></section>
-<div class="checkout-summary-row" id="checkout-deposit-summary-row" hidden><span>Refundable 20L can deposit</span><strong id="checkout-deposit-value">₹0.00</strong></div>
-<div class="checkout-summary-total-card">
-
-<div class="checkout-grand-total"><span>Total amount due</span><strong id="total-display">₹0.00</strong></div><small>Inclusive of applicable charges</small></div></section>
-<button class="submit-btn" id="submit-order-btn" type="submit">PLACE ORDER (PAY ON DELIVERY)</button>
 </div>
 <section class="location-section">
 <h3 class="checkout-step-title">3. Delivery details</h3>
@@ -221,6 +207,113 @@
 <!-- Keep your existing delivery time, cart total and order button below -->
 
 </form>
+</div>
+<!-- PRODUCT DETAIL POPUP MODAL VIEW -->
+
+<!-- Thank You Screen -->
+<!-- Order Confirmation Screen -->
+<div class="container hidden" id="thankyou-screen">
+<div aria-live="polite" class="panel confirmation" role="status">
+<div aria-hidden="true" class="confirm-icon">
+<svg fill="none" height="28" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" viewbox="0 0 24 24" width="28"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+</div>
+<h2>Order Confirmed</h2>
+<p class="confirm-lead">Thank you for your order. We have received it and will contact you shortly to confirm delivery.</p>
+<div class="confirm-ref">
+<span class="confirm-ref-label">Order Reference</span>
+<strong class="confirm-ref-code" id="order-ref-code">NEER-AQUA-0000</strong>
+<span class="confirm-ref-note">Please quote this reference when contacting us about your order.</span>
+</div>
+<div class="confirm-summary confirm-summary-card">
+<div class="confirm-summary-top"><h3>Order summary</h3><span class="confirm-ready">Ready to order</span></div>
+<p class="confirm-payment-method">Payment method: Cash on delivery</p>
+<h4 class="confirm-section-title">Items</h4><div id="confirm-items"></div>
+<section class="confirm-exchange" id="confirm-exchange-section"><h4>↻ &nbsp;20L Jar Exchange</h4>
+<div class="confirm-breakdown-row"><span>New cans delivered</span><strong id="confirm-new-cans">0</strong></div>
+<div class="confirm-breakdown-row"><span>Empty jars exchanged</span><strong class="confirm-return-value" id="confirm-bisleri-returns">0 jars</strong></div>
+<div class="confirm-breakdown-row"><span>Additional jar deposit</span><strong id="confirm-additional-deposit">₹0.00</strong></div>
+<p class="confirm-exchange-note" id="confirm-exchange-note">Please hand over your empty jars to our delivery partner during delivery.</p></section>
+<section class="confirm-delivery-charges"><h4>Delivery charges</h4>
+<div class="confirm-breakdown-row"><span>Delivery fee</span><strong id="confirm-delivery-fee">₹0.00</strong></div>
+<div class="confirm-breakdown-row"><span>Handling fee</span><strong id="confirm-handling-fee">₹0.00</strong></div></section>
+<div class="confirm-price-card"><div class="confirm-breakdown-row"><span>Items subtotal</span><strong id="confirm-subtotal">₹0.00</strong></div>
+<div class="confirm-breakdown-row"><span>Additional charges</span><strong id="confirm-additional-charges">₹0.00</strong></div>
+<div class="confirm-total"><span>Total amount due</span><strong id="confirm-total">₹0.00</strong></div>
+<small>Inclusive of applicable charges</small></div></div>
+<dl class="confirm-details">
+<div><dt>Payment</dt><dd>Pay on delivery</dd></div>
+<div><dt>Delivery Window</dt><dd id="confirm-time">—</dd></div>
+<div><dt>Deliver To</dt><dd id="confirm-address">—</dd></div>
+<div><dt>Contact</dt><dd id="confirm-contact">—</dd></div>
+</dl>
+<p class="confirm-help">Questions about your order? Call us on <a href="tel:+916361370223">+91 63613 70223</a>.</p>
+<button class="submit-btn confirm-btn" onclick="window.location.href='index.html'" type="button">Place Another Order</button>
+</div>
+</div>
+<div class="cart-notice-backdrop" id="cart-requirements-notice" role="dialog" aria-modal="true" aria-labelledby="cart-notice-title" aria-describedby="cart-notice-description" hidden>
+  <div class="cart-notice-card">
+    <button class="cart-notice-close" type="button" aria-label="Close" onclick="closeCartRequirementsNotice()">×</button>
+    <div class="cart-notice-icon" aria-hidden="true">!</div>
+    <h2 id="cart-notice-title">Before you place your order</h2>
+    <p id="cart-notice-description">Please make sure you provide all the required details to complete your order:</p>
+    <ul>
+      <li>Customer Name</li>
+      <li>Mobile Number</li>
+      <li>House / Flat / Building</li>
+      <li>Street Address</li>
+      <li>Area / Locality</li>
+      <li>City</li>
+      <li>Delivery location selected using GPS or the map</li>
+    </ul>
+    <button class="cart-notice-confirm" type="button" onclick="closeCartRequirementsNotice()">Got it</button>
+  </div>
+</div>
+
+<footer class="nb-footer">
+<div class="nb-footer-grid">
+<section class="nb-footer-brand"><a href="index.html"><img src="images/logo.png" alt="NeerBeku" width="220" height="70"></a><h2>Your local drinking water delivery partner</h2><p>A water delivery service by <strong>Amrutha Store.</strong> Order packaged drinking water, water cans and dispenser accessories online for delivery in serviceable areas around Bommasandra.</p></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3C10 23 1 14 3 3Z"/></svg>Contact Us</h2><ul class="nb-contact-list">
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3C10 23 1 14 3 3Z"/></svg><a href="tel:+916361370223">+91 63613 70223</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8l-5 2 2-5A9 9 0 1 1 21 11Z"/><path d="M8 9h8M8 13h5"/></svg><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Chat on WhatsApp ↗</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><a href="mailto:infoneerbeku@gmail.com">infoneerbeku@gmail.com</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span>Mon–Sun: 8:00 AM–9:00 PM<small>Order and delivery hours</small></span></li></ul></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Our Service Area</h2><p><strong>Bommasandra, Bengaluru</strong></p><p>Selected nearby locations, subject to serviceability.</p><div class="nb-area-tags"><span>Bommasandra</span><span>Nearby areas</span></div><a class="nb-map-link" href="https://maps.app.goo.gl/9mWcH5nPK5VWgZbH7" target="_blank" rel="noopener noreferrer">View our location on Google Maps ↗</a></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 14 4-4M9 16l-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 10a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-2 2"/></svg>Quick Links</h2><nav class="nb-policy-links" aria-label="Store policies">
+<a href="policies.html#delivery">Delivery Policy <span>›</span></a><a href="policies.html#availability">Service Availability <span>›</span></a><a href="policies.html#hours">Operating Hours <span>›</span></a><a href="policies.html#jar">Jar Returns &amp; Refunds <span>›</span></a><a href="policies.html#inspection">Jar Inspection <span>›</span></a><a href="policies.html#contact">Contact Support <span>›</span></a></nav></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="m8 12 3 3 5-6"/></svg>Business Info</h2><ul class="nb-contact-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 5 3h14l2 6M3 9h18v3H3ZM5 12v9h14v-9M9 21v-6h6v6"/></svg><span>Operated by: <strong>Amrutha Store</strong></span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Bommasandra, Bengaluru</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span>Daily: 8:00 AM–9:00 PM</span></li></ul><a class="nb-store-access" href="admin.html">Store access →</a></section>
+</div>
+<div class="nb-footer-features">
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span><strong>Local Delivery</strong><small>Subject to location and availability</small></span></div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 7 9-5 9 5v10l-9 5-9-5Zm0 0 9 5 9-5M12 12v10"/></svg><span><strong>Packaged Drinking Water</strong><small>Water bottles, jars and accessories</small></span></div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="m8 12 3 3 5-6"/></svg><span><strong>Easy Online Ordering</strong><small>Choose your preferred delivery window</small></span></div>
+<div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8l-5 2 2-5A9 9 0 1 1 21 11Z"/><path d="M8 9h8M8 13h5"/></svg><span><strong>Local Customer Support</strong><small>Call or message our store</small></span></div>
+</div>
+<div class="nb-footer-bottom"><p>© 2026 Amrutha Store. All rights reserved. <strong>NeerBeku</strong></p><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Contact us on WhatsApp ↗</a><span>Payment: Pay on delivery</span></div>
+</footer>
+<script src="https://accounts.google.com/gsi/client"></script>
+<script src="catalog.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="location-picker.js"></script>
+<script src="app.js"></script>
+<!-- Testing Staging Deployement env -->
+</body>
+</html>
+</section>
+<section class="reference-checkout-card reference-summary-card"><section class="checkout-order-summary" aria-live="polite">
+<div class="checkout-summary-heading"><h2>4. Order summary</h2><span class="checkout-payment-badge">Ready to order</span></div>
+<p class="checkout-payment-note">Payment method: Cash on delivery</p>
+<h3 class="checkout-summary-section-title">Items</h3><div class="checkout-summary-items" id="checkout-summary-items"></div>
+<div class="checkout-summary-row"><span>Items subtotal</span><strong id="items-subtotal">₹0.00</strong></div>
+
+
+<section class="checkout-delivery-charges"><h3>Delivery charges</h3>
+<div class="checkout-summary-row"><span>Delivery fee</span><strong id="delivery-fee">Choose location</strong></div>
+<div class="checkout-summary-row"><span>Handling fee</span><strong id="handling-fee">₹0.00</strong></div></section>
+<div class="checkout-summary-row" id="checkout-deposit-summary-row" hidden><span>Refundable 20L can deposit</span><strong id="checkout-deposit-value">₹0.00</strong></div>
+<div class="checkout-summary-total-card">
+
+<div class="checkout-grand-total"><span>Total amount due</span><strong id="total-display">₹0.00</strong></div><small>Inclusive of applicable charges</small></div></section>
+<button class="submit-btn" id="submit-order-btn" type="submit">PLACE ORDER (PAY ON DELIVERY)</button></section></form>
 </div>
 <!-- PRODUCT DETAIL POPUP MODAL VIEW -->
 
