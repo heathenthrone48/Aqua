@@ -286,7 +286,7 @@ export default {
           const landmark = String(data.landmark || "").trim().slice(0, 250);
           const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
           const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
-          if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\\-\\s]{6,32}$/.test(phone) ||
+          if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
               !address || address.length > 500 || !house || !street || !area || !city ||
               latitude === null || longitude === null || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
               !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
@@ -338,7 +338,7 @@ export default {
             const landmark = String(data.landmark || "").trim().slice(0, 250);
             const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
             const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
-            if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\\-\\s]{6,32}$/.test(phone) ||
+            if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
                 !address || address.length > 500 || !house || !street || !area || !city ||
                 latitude === null || longitude === null || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
                 !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
