@@ -548,15 +548,20 @@ document.addEventListener('deliverylocationchange', () => {
       if (!notice) return;
       try {
         const hasItems = Object.keys(readCart()).length > 0;
-        const changeToken = localStorage.getItem(CART_NOTICE_CHANGE_KEY);
-        const lastShownToken = sessionStorage.getItem(CART_NOTICE_LAST_SHOWN_KEY);
-        const shownCount = Number(sessionStorage.getItem(CART_NOTICE_COUNT_KEY) || '0');
-        if (!hasItems || !changeToken || changeToken === lastShownToken || shownCount >= 2) return;
+        if (!hasItems) return;
+
+        // The Bisleri 20L return question must not depend on whether the
+        // separate cart-requirements notice was already shown this session.
         const returnState = getBisleriReturnState();
         if (returnState.canQty > 0 && !returnState.hasAnswer) {
           showBisleriContainerQuestion();
           return;
         }
+
+        const changeToken = localStorage.getItem(CART_NOTICE_CHANGE_KEY);
+        const lastShownToken = sessionStorage.getItem(CART_NOTICE_LAST_SHOWN_KEY);
+        const shownCount = Number(sessionStorage.getItem(CART_NOTICE_COUNT_KEY) || '0');
+        if (!changeToken || changeToken === lastShownToken || shownCount >= 2) return;
         sessionStorage.setItem(CART_NOTICE_LAST_SHOWN_KEY, changeToken);
         sessionStorage.setItem(CART_NOTICE_COUNT_KEY, String(shownCount + 1));
         notice.hidden = false;
