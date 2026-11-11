@@ -101,11 +101,11 @@
 </div>
 <div class="form-group">
 <label class="required-address-label" for="customer-phone">Mobile Number <span aria-hidden="true">*</span></label>
-<div class="phone-input-row"><span class="phone-country-code" aria-hidden="true">+91</span><input autocomplete="tel" id="customer-phone" name="customer-phone" placeholder="Enter your mobile number" required="" type="tel"/></div>
+<div class="phone-input-row"><span class="phone-country-code" aria-hidden="true">+91</span><input autocomplete="tel" id="customer-phone" name="customer-phone" placeholder="Enter 10-digit mobile number" required="" type="tel" inputmode="numeric" maxlength="10" minlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits"/></div>
 </div>
 <div class="form-group">
 <label for="customer-alt-phone">Alternate Mobile Number (Optional)</label>
-<input autocomplete="tel" id="customer-alt-phone" name="customer-alt-phone" inputmode="numeric" maxlength="10" placeholder="Alternate contact number" type="tel"/>
+<input autocomplete="tel" id="customer-alt-phone" name="customer-alt-phone" inputmode="numeric" maxlength="10" minlength="10" pattern="[0-9]{10}" placeholder="10-digit alternate contact number" type="tel" title="Enter exactly 10 digits"/>
 <small>Optional number for delivery coordination.</small>
 </div>
 <hr/>
