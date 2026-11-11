@@ -405,3 +405,56 @@ body.cart-notice-open { overflow: hidden; }
 
 
 .checkout-order-summary{margin-top:26px;padding:22px 20px;border:1px solid #dce9f3;border-radius:18px;background:#fff;color:#17324a}.checkout-summary-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.checkout-summary-heading h2{margin:0;color:#142f49;font-size:21px;font-weight:800;letter-spacing:-.02em;text-transform:none}.checkout-payment-badge{padding:5px 9px;border-radius:999px;background:#e8f8ee;color:#17804b;font-size:10px;font-weight:800}.checkout-payment-note{margin:8px 0 18px;color:#687e92;font-size:12px}.checkout-summary-section-title,.checkout-jar-exchange h3,.checkout-delivery-charges h3{margin:0 0 10px;color:#173b58;font-size:14px;font-weight:800}.checkout-summary-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:8px 0;color:#607184;font-size:13px;line-height:1.45}.checkout-summary-row strong{color:#182f43;font-size:13px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}.checkout-summary-items{padding-bottom:8px;border-bottom:1px solid #e8eef3}.checkout-summary-empty{color:#718398;font-size:13px}.checkout-jar-exchange{margin:16px 0;padding:15px 0;border-top:1px solid #e8eef3;border-bottom:1px solid #e8eef3}.checkout-jar-exchange h3{margin-bottom:10px}.checkout-summary-row .checkout-return-count{color:#16a05a}.checkout-jar-note{margin:7px 0 0;color:#68798a;font-size:11px;line-height:1.5}.checkout-delivery-charges{margin:16px 0}.checkout-delivery-charges h3{margin-bottom:5px}.checkout-summary-total-card{margin-top:16px;padding:14px 15px;border-radius:13px;background:#eef7ff;color:#1b4568}.checkout-summary-total-card .checkout-summary-row{color:#244d70}.checkout-summary-total-card .checkout-summary-row strong{color:#244d70}.checkout-grand-total{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:9px;padding:14px 0 4px;border-top:1px solid #cbddeb;color:#152b3d;font-size:14px;font-weight:800}.checkout-grand-total strong{color:#0086c9;font-size:25px;font-weight:900;white-space:nowrap}.checkout-summary-total-card>small{display:block;color:#718398;font-size:10px}@media(max-width:480px){.checkout-order-summary{padding:16px 13px}.checkout-summary-heading h2{font-size:19px}.checkout-grand-total strong{font-size:22px}}
+
+
+/* Checkout layout aligned with the supplied NEERBEKU checkout reference.
+   Existing live cart, account, map, jar-return and order logic remains in app.js. */
+body.cart-page{background:#f2f8fc;color:#20384d}
+.cart-page .container{max-width:900px;padding-left:16px;padding-right:16px}
+.cart-page .cart-page-title{color:#12365b;font-size:28px;letter-spacing:-.6px}
+.cart-page .panel,.cart-page .cart-panel,.cart-page .checkout-order-summary{
+  background:#fff;border:1px solid #dce7ee;border-radius:22px;
+  box-shadow:0 8px 24px rgba(31,76,108,.045);padding:22px;margin:16px 0
+}
+.cart-page .cart-header h3,.cart-page .checkout-summary-heading h2{color:#12365b}
+.cart-page .checkout-item{grid-template-columns:76px minmax(0,1fr) auto;gap:14px;padding:18px 0;border-color:#e8eef2}
+.cart-page .checkout-item>img{width:76px;height:76px;object-fit:contain;border-radius:15px;background:#f0f7fb;padding:6px}
+.cart-page .checkout-item-info h3{color:#12365b;font-size:15px}
+.cart-page .checkout-item-info p{margin:3px 0 10px;color:#718293}
+.cart-page .checkout-qty{border-radius:12px;background:#f4f9fc}
+.cart-page .checkout-qty button{width:38px;height:34px;color:#087bc1;font-weight:800}
+.cart-page .checkout-line-total{font-size:16px;color:#20384d}
+.cart-page .checkout-step-title{margin:0 0 16px;color:#12365b;font-size:20px;font-weight:800;letter-spacing:-.2px}
+.cart-page .account-section-label,.cart-page .delivery-section-label{color:#12365b;font-size:20px;font-weight:800;letter-spacing:0;margin:24px 0 12px}
+.cart-page .google-signin-panel{border:1px solid #dce7ee;border-radius:22px;background:#fff;box-shadow:0 8px 24px rgba(31,76,108,.045);padding:22px;min-height:0;grid-template-columns:minmax(0,1fr) minmax(220px,330px);gap:18px}
+.cart-page .google-signin-panel::before{display:none}
+.cart-page .account-card-icon{width:48px;height:48px;flex-basis:48px;border-radius:14px}
+.cart-page .account-card-heading{gap:14px}
+.cart-page .account-card-heading h2{font-size:18px;color:#12365b}
+.cart-page .account-card-heading p{font-size:13px;line-height:1.5}
+.cart-page .account-card-controls{gap:8px}
+.cart-page .google-account-status{text-align:left}
+.cart-page #google-signin-button{justify-content:flex-start}
+.cart-page .account-address-panel{background:#fff;border:1px solid #dce7ee}
+.cart-page .location-section{margin-top:18px;padding:16px;border:1px solid #dce7ee;border-radius:17px;background:#f8fbfd}
+.cart-page .location-section>h3:not(.checkout-step-title){color:#12365b}
+.cart-page .location-help,.cart-page .delivery-help{color:#718293}
+.cart-page .address-mode-btn{border-radius:13px}
+.cart-page #delivery-map{border-radius:14px;overflow:hidden}
+.cart-page input:not([type=checkbox]):not([type=hidden]),.cart-page select{border:1px solid #cfdae3;border-radius:11px;background:#fff;color:#20384d;padding:13px 14px;min-height:46px}
+.cart-page .checkout-order-summary{background:#fff}
+.cart-page .checkout-payment-note{color:#718293}
+.cart-page .checkout-summary-total-card{background:#eff7fd;border-radius:16px}
+.cart-page .checkout-grand-total strong{color:#087bc1}
+.cart-page .submit-btn{width:100%;min-height:54px;border-radius:14px;background:linear-gradient(100deg,#087bc1,#0b91bd);font-size:16px;font-weight:850;box-shadow:0 7px 16px #087bc133}
+.cart-page .submit-btn:disabled{opacity:.45}
+@media(max-width:700px){
+ .cart-page .panel,.cart-page .cart-panel,.cart-page .checkout-order-summary{padding:17px;border-radius:18px}
+ .cart-page .google-signin-panel{grid-template-columns:1fr;padding:18px}
+ .cart-page .account-card-controls{padding-left:0}
+}
+@media(max-width:480px){
+ .cart-page .checkout-item{grid-template-columns:62px minmax(0,1fr) auto;gap:10px;padding:15px 0}
+ .cart-page .checkout-item>img{width:62px;height:66px}
+ .cart-page .checkout-line-total{font-size:14px}
+}
