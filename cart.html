@@ -237,24 +237,6 @@
 <button class="submit-btn confirm-btn" onclick="window.location.href='index.html'" type="button">Place Another Order</button>
 </div>
 </div>
-<div class="cart-notice-backdrop" id="bisleri-container-notice" role="dialog" aria-modal="true" aria-labelledby="bisleri-return-title" hidden>
-  <div class="cart-notice-card">
-    <div class="cart-notice-icon" aria-hidden="true">?</div>
-    <div id="bisleri-return-question">
-      <h2 id="bisleri-return-title">Bisleri 20L container return</h2>
-      <p>Do you have our container or a clean Bisleri container to return?</p>
-      <button class="cart-notice-confirm" type="button" onclick="answerBisleriContainerQuestion(true)">Yes</button>
-      <button class="cart-notice-confirm" style="margin-top:10px;background:#64748b" type="button" onclick="answerBisleriContainerQuestion(false)">No</button>
-    </div>
-    <div id="bisleri-return-count-step" hidden>
-      <h2>How many containers do you have?</h2>
-      <p>You can return up to <strong id="bisleri-return-max">0</strong> container(s) for this order. Each accepted return deducts ₹150.</p>
-      <label for="bisleri-return-count">Number of containers to return</label>
-      <input id="bisleri-return-count" type="number" min="0" step="1" value="0" inputmode="numeric" style="width:100%;box-sizing:border-box;padding:12px;margin:10px 0 16px;border:1px solid #cbd5e1;border-radius:10px;font:inherit">
-      <button class="cart-notice-confirm" type="button" onclick="confirmBisleriReturnCount()">Continue</button>
-    </div>
-  </div>
-</div>
 <div class="cart-notice-backdrop" id="cart-requirements-notice" role="dialog" aria-modal="true" aria-labelledby="cart-notice-title" aria-describedby="cart-notice-description" hidden>
   <div class="cart-notice-card">
     <button class="cart-notice-close" type="button" aria-label="Close" onclick="closeCartRequirementsNotice()">×</button>
