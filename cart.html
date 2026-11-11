@@ -60,7 +60,7 @@
 </div>
 <input id="cart-items-input" name="Cart_Items" type="hidden" value=""/>
 <input id="input-total-bill" name="Total_Estimated_Bill" type="hidden" value="₹0.00"/>
-<div class="section-label account-section-label" id="account-section-label">Your account</div>
+<div class="section-label account-section-label" id="account-section-label">2. Customer details</div>
 <div class="panel google-signin-panel">
   <div class="account-card-heading">
     <span class="account-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
@@ -92,6 +92,7 @@
   <p class="account-address-message" id="account-address-message" aria-live="polite" role="status"></p>
 </section>
 <div class="panel" id="delivery-entry-panel">
+<h3 class="checkout-step-title">Customer contact</h3>
 <!-- Customer details: keep these visible in both modes -->
 <div class="form-group">
 <label class="required-address-label" for="customer-name">Customer Name <span aria-hidden="true">*</span></label>
@@ -104,6 +105,7 @@
 <hr/>
 <!-- Delivery address selector -->
 <section class="location-section">
+<h3 class="checkout-step-title">3. Delivery details</h3>
 <h3>📍 Delivery Address</h3>
 <div class="form-group account-address-label-field">
 <label for="account-address-label">Save this address as</label>
@@ -178,6 +180,7 @@
 <div class="section-label delivery-section-label" id="delivery-details-section">Delivery details</div>
 <!-- Keep your existing delivery time, cart total and order button below -->
 <div class="panel checkout-details-panel">
+<h3 class="checkout-step-title">Delivery window</h3>
 <div class="form-group">
 <label for="preferred-time">Delivery Window</label>
 <select id="preferred-time" name="Preferred_Time"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
