@@ -909,7 +909,7 @@ document.addEventListener('deliverylocationchange', () => {
       const customerName = document.getElementById('customer-name').value.trim();
       const customerPhone = document.getElementById('customer-phone').value.trim();
       const alternatePhone = document.getElementById('customer-alt-phone')?.value.trim() || '';
-      const normalizedAlternatePhone = alternatePhone.replace(/\\D/g, '');
+      const normalizedAlternatePhone = alternatePhone.replace(/\D/g, '');
       if (alternatePhone && normalizedAlternatePhone.length !== 10) {
         alert('Please enter a valid 10-digit alternate mobile number.');
         document.getElementById('customer-alt-phone').focus();
