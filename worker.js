@@ -274,7 +274,7 @@ export default {
         if (request.method === "POST") {
           let data;
           try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
-          const label = String(data.label || "Delivery address").trim().slice(0, 40);
+          const label = String(data.label || "").trim();
           const name = String(data.name || "").trim();
           const phone = String(data.phone || "").trim();
           const address = String(data.address || "").trim();
@@ -286,35 +286,35 @@ export default {
           const landmark = String(data.landmark || "").trim().slice(0, 250);
           const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
           const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
-          if (!name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
+          if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\\-\\s]{6,32}$/.test(phone) ||
               !address || address.length > 500 || !house || !street || !area || !city ||
-              latitude === null || longitude === null ||
-              !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+              latitude === null || longitude === null || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
               !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-            return json({ error: "Enter your name, valid mobile number, complete address, and select a map location" }, 400);
+            return json({ error: "Choose Home or Work and enter your complete details and map location" }, 400);
           }
+          const existing = await env.DB.prepare("SELECT id FROM customer_addresses WHERE google_sub = ? AND label = ? LIMIT 1")
+            .bind(user.google_sub, label).first();
           const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM customer_addresses WHERE google_sub = ?")
             .bind(user.google_sub).first();
-          if (count.count >= 10) return json({ error: "You can save up to 10 delivery addresses" }, 400);
-
-          const id = crypto.randomUUID();
+          if (!existing && count.count >= 2) return json({ error: "You can save only Home and Work. Edit an existing address to change it." }, 400);
+          const id = existing?.id || crypto.randomUUID();
           const now = Math.floor(Date.now() / 1000);
-          await env.DB.batch([
-            env.DB.prepare("UPDATE customer_addresses SET is_default = 0 WHERE google_sub = ?").bind(user.google_sub),
-            env.DB.prepare(`INSERT INTO customer_addresses
+          if (existing) {
+            await env.DB.prepare(`UPDATE customer_addresses SET name = ?, phone = ?, address = ?, house = ?, street = ?, area = ?, city = ?, postcode = ?, landmark = ?, latitude = ?, longitude = ?, updated_at = ? WHERE id = ? AND google_sub = ?`)
+              .bind(name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, now, id, user.google_sub).run();
+          } else {
+            await env.DB.prepare(`INSERT INTO customer_addresses
               (id, google_sub, label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, is_default, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
-              .bind(id, user.google_sub, label || "Delivery address", name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, now, now)
-          ]);
-          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark,
-            latitude, longitude, is_default FROM customer_addresses
-            WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`)
+              .bind(id, user.google_sub, label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, now, now).run();
+          }
+          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, is_default
+            FROM customer_addresses WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           return json({ success: true, id, addresses: refreshed.results.map(row => ({
-            id: row.id, label: row.label, name: row.name, phone: row.phone,
-            address: row.address, house: row.house || "", street: row.street || "",
-            area: row.area || "", city: row.city || "", postcode: row.postcode || "",
-            landmark: row.landmark || "", latitude: row.latitude, longitude: row.longitude,
-            is_default: row.is_default === 1
+            id: row.id, label: row.label, name: row.name, phone: row.phone, address: row.address,
+            house: row.house || "", street: row.street || "", area: row.area || "", city: row.city || "",
+            postcode: row.postcode || "", landmark: row.landmark || "", latitude: row.latitude,
+            longitude: row.longitude, is_default: row.is_default === 1
           })) });
         }
 
@@ -325,6 +325,32 @@ export default {
           const owned = await env.DB.prepare("SELECT id FROM customer_addresses WHERE id = ? AND google_sub = ?")
             .bind(id, user.google_sub).first();
           if (!owned) return json({ error: "Saved address not found" }, 404);
+          if (data.action === "edit") {
+            const label = String(data.label || "").trim();
+            const name = String(data.name || "").trim();
+            const phone = String(data.phone || "").trim();
+            const address = String(data.address || "").trim();
+            const house = String(data.house || "").trim().slice(0, 160);
+            const street = String(data.street || "").trim().slice(0, 200);
+            const area = String(data.area || "").trim().slice(0, 160);
+            const city = String(data.city || "").trim().slice(0, 120);
+            const postcode = String(data.postcode || "").trim().slice(0, 20);
+            const landmark = String(data.landmark || "").trim().slice(0, 250);
+            const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
+            const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
+            if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\\-\\s]{6,32}$/.test(phone) ||
+                !address || address.length > 500 || !house || !street || !area || !city ||
+                latitude === null || longitude === null || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+                !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+              return json({ error: "Choose Home or Work and enter your complete details and map location" }, 400);
+            }
+            const duplicate = await env.DB.prepare("SELECT id FROM customer_addresses WHERE google_sub = ? AND label = ? AND id != ? LIMIT 1")
+              .bind(user.google_sub, label, id).first();
+            if (duplicate) return json({ error: "You already have an address saved with that label. Edit that one instead." }, 409);
+            await env.DB.prepare(`UPDATE customer_addresses SET label = ?, name = ?, phone = ?, address = ?, house = ?, street = ?, area = ?, city = ?, postcode = ?, landmark = ?, latitude = ?, longitude = ?, updated_at = ? WHERE id = ? AND google_sub = ?`)
+              .bind(label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, Math.floor(Date.now() / 1000), id, user.google_sub).run();
+            return json({ success: true });
+          }
           await env.DB.batch([
             env.DB.prepare("UPDATE customer_addresses SET is_default = 0 WHERE google_sub = ?").bind(user.google_sub),
             env.DB.prepare("UPDATE customer_addresses SET is_default = 1, updated_at = ? WHERE id = ? AND google_sub = ?")
