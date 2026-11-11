@@ -689,7 +689,7 @@ document.addEventListener('deliverylocationchange', () => {
         }
       }
       const submit = document.getElementById('submit-order-btn');
-      if (submit) submit.disabled = !items.length || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
+      if (submit) submit.disabled = true;
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
         document.addEventListener('click', event => {
@@ -873,7 +873,7 @@ document.addEventListener('deliverylocationchange', () => {
     });
     form?.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (orderSubmitting) return;
+      if (orderSubmitting || form.querySelector('#submit-order-btn')?.disabled) return;
       orderSubmitting = true;
       const checkingButton = form.querySelector('.submit-btn');
       checkingButton.disabled = true;
