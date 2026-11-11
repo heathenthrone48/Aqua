@@ -641,7 +641,7 @@ document.addEventListener('deliverylocationchange', () => {
       const summaryItems = document.getElementById('checkout-summary-items');
       if (summaryItems) summaryItems.innerHTML = items.length ? items.map(item => `<div class="checkout-summary-row"><span>${escapeHtml(item.name)} × ${item.qty}</span><strong>${money(item.price * item.qty)}</strong></div>`).join('') : '<p class="checkout-summary-empty">Your cart is empty.</p>';
       const totalInput = document.getElementById('input-total-bill');
-      if (totalInput) totalInput.value = money(total);
+      if (totalInput) totalInput.value = money(totals.total);
       const itemsInput = document.getElementById('cart-items-input');
       if (itemsInput) itemsInput.value = items.map(i => `${i.name} x ${i.qty} (${money(i.price * i.qty)})`).join(' | ');
       const list = document.getElementById('cart-items');
