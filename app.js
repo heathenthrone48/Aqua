@@ -660,8 +660,8 @@ document.addEventListener('deliverylocationchange', () => {
       document.querySelectorAll('[data-cart-total], #cart-total, #total-display').forEach(el => el.textContent = money(total));
       const subtotalEl = document.getElementById('items-subtotal');
       const deliveryEl = document.getElementById('delivery-fee');
-      if (subtotalEl) subtotalEl.textContent = money(subtotal);
       const totals = calculateOrderTotals(items, cachedRoadDistanceKm);
+      if (subtotalEl) subtotalEl.textContent = money(totals.productSubtotal);
       const depositEl = document.getElementById('bisleri-container-deposit');
       const creditEl = document.getElementById('bisleri-return-credit');
       if (depositEl) depositEl.textContent = money(totals.containerDeposit);
@@ -831,7 +831,13 @@ document.addEventListener('deliverylocationchange', () => {
       });
       document.getElementById('confirm-items').replaceChildren(...rows);
       const breakdown = calculateOrderTotals(order.items, order.distanceKm);
-      document.getElementById('confirm-subtotal').textContent = '₹' + breakdown.subtotal.toFixed(2);
+      document.getElementById('confirm-subtotal').textContent = '₹' + breakdown.productSubtotal.toFixed(2);
+      const confirmDeposit = document.getElementById('confirm-bisleri-deposit');
+      const confirmCredit = document.getElementById('confirm-bisleri-credit');
+      const confirmReturns = document.getElementById('confirm-bisleri-returns');
+      if (confirmDeposit) confirmDeposit.textContent = '₹' + breakdown.containerDeposit.toFixed(2);
+      if (confirmCredit) confirmCredit.textContent = '−₹' + breakdown.returnCredit.toFixed(2);
+      if (confirmReturns) confirmReturns.textContent = breakdown.returnedContainers + ' returned';
       document.getElementById('confirm-delivery-fee').textContent = '₹' + breakdown.deliveryFee.toFixed(2);
        document.getElementById('confirm-handling-fee').textContent = '₹' + breakdown.handlingFee.toFixed(2);
       document.getElementById('confirm-total').textContent = order.total;
