@@ -512,3 +512,99 @@ body.cart-page{background:#f2f8fc;color:#20384d}
  .cart-page .checkout-line-total{font-size:14px}
  .cart-page .checkout-exchange-card{margin:12px 0 4px;padding:14px}
 }
+
+/* Customer and delivery cards: match the supplied checkout reference. */
+.cart-page .reference-checkout-card{
+  box-sizing:border-box;background:#fff;border:1px solid #dce7ee;border-radius:24px;
+  box-shadow:0 5px 18px rgba(31,76,108,.035);padding:24px;margin:16px 0;
+}
+.cart-page .reference-checkout-card>h2{
+  margin:0 0 18px;color:#12365b;font-size:21px;line-height:1.3;font-weight:800;letter-spacing:-.25px;
+}
+.cart-page .reference-customer-card>.google-signin-panel{
+  display:block;min-height:0;margin:0 0 16px;padding:15px;border:1px solid #cce9dc;
+  border-radius:16px;background:#f0faf5;box-shadow:none;
+}
+.cart-page .reference-customer-card .google-signin-panel::before{display:none}
+.cart-page .reference-customer-card .account-card-heading{display:none}
+.cart-page .reference-customer-card .account-card-controls{display:block}
+.cart-page .reference-customer-card #google-signin-button:empty{display:none}
+.cart-page .reference-customer-card .account-connected-badge{
+  min-height:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
+  display:flex;align-items:center;gap:12px;
+}
+.cart-page .reference-customer-card .account-connected-badge:after{
+  content:"SYNCED ✓";margin-left:auto;color:#07845f;font-size:12px;font-weight:900;white-space:nowrap;
+}
+.cart-page .reference-customer-card .account-connected-badge strong{font-size:16px;color:#087b58}
+.cart-page .reference-customer-card .account-connected-badge small{font-size:13px;color:#607c91}
+.cart-page .reference-customer-card .google-brand-mark{width:30px;height:30px;flex-basis:30px}
+.cart-page .reference-customer-card .google-account-status{margin-top:10px;color:#607c91;text-align:left;font-size:13px;font-weight:400}
+.cart-page .reference-customer-card .panel,
+.cart-page .reference-customer-card #delivery-entry-panel,
+.cart-page .reference-delivery-card>.checkout-details-panel{
+  margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
+}
+.cart-page .reference-customer-card .checkout-step-title{display:none}
+.cart-page .reference-customer-card .form-group,
+.cart-page .reference-delivery-card .form-group{margin:0 0 14px}
+.cart-page .reference-checkout-card label{
+  display:block;margin:0 0 8px;color:#12365b;font-size:13px;font-weight:800;text-transform:uppercase;
+}
+.cart-page .reference-checkout-card input:not([type=checkbox]):not([type=hidden]),
+.cart-page .reference-checkout-card select{
+  box-sizing:border-box;width:100%;min-height:56px;padding:14px 16px;border:1px solid #cbdbe8;
+  border-radius:13px;background:#fff;color:#20384d;font-size:16px;
+}
+.cart-page .reference-checkout-card input::placeholder{color:#8798a8;opacity:1}
+.cart-page .reference-customer-card .form-group small{display:block;margin-top:7px;color:#718293;font-size:13px}
+.cart-page .phone-input-row{display:grid;grid-template-columns:67px minmax(0,1fr);gap:9px}
+.cart-page .phone-country-code{
+  display:flex;align-items:center;justify-content:center;min-height:56px;border:1px solid #cbdbe8;
+  border-radius:13px;background:#f7fafc;color:#12365b;font-weight:800;
+}
+.cart-page .phone-input-row input{min-width:0}
+.cart-page .reference-customer-card #delivery-entry-panel hr{display:none}
+.cart-page .reference-customer-card .account-address-panel{margin:0 0 15px;padding:15px;border-radius:14px}
+.cart-page .reference-delivery-card .checkout-step-title{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0}
+.cart-page .reference-delivery-card .delivery-help{margin:7px 0 16px;color:#718293;font-size:13px}
+.cart-page .reference-delivery-card .location-section{
+  margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
+}
+.cart-page .reference-delivery-card .location-section>.checkout-step-title,
+.cart-page .reference-delivery-card .location-section>h3{display:none}
+.cart-page .reference-delivery-card .location-help{margin:8px 0 14px;color:#718293;font-size:13px}
+.cart-page .reference-delivery-card .address-mode{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 8px}
+.cart-page .reference-delivery-card .address-mode-btn{
+  min-height:52px;border:1px solid #d7e4ed;border-radius:14px;background:#f7fafc;
+  color:#12365b;font:inherit;font-size:14px;font-weight:800;
+}
+.cart-page .reference-delivery-card .address-mode-btn.active{
+  border-color:#0788d1;background:#eaf6ff;color:#0781c4;
+}
+.cart-page .reference-delivery-card #location-status{
+  margin:12px 0 16px;padding:17px 15px;border:1px solid #cce9dc;border-radius:15px;
+  background:#f0faf5;color:#087b58;font-size:14px;line-height:1.5;
+}
+.cart-page .reference-delivery-card #delivery-address-fields{
+  display:grid;grid-template-columns:1fr 1fr;column-gap:13px;align-items:start;
+}
+.cart-page .reference-delivery-card #address-form-heading{display:none}
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group:first-of-type,
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group:last-of-type{grid-column:1/-1}
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group{min-width:0}
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(2){grid-column:1}
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(3){grid-column:2}
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(4){grid-column:1}
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(5){grid-column:2}
+.cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(6){grid-column:1/-1}
+.cart-page .reference-summary-card{padding:0;border:0;background:transparent;box-shadow:none}
+.cart-page .reference-summary-card>.checkout-order-summary{margin:16px 0;padding:22px;border:1px solid #dce7ee;border-radius:24px;box-shadow:0 5px 18px rgba(31,76,108,.035)}
+@media(max-width:600px){
+ .cart-page .reference-checkout-card{padding:18px;border-radius:19px}
+ .cart-page .reference-delivery-card #delivery-address-fields{grid-template-columns:1fr}
+ .cart-page .reference-delivery-card #delivery-address-fields>.form-group{grid-column:1/-1!important}
+ .cart-page .reference-delivery-card .address-mode{grid-template-columns:1fr}
+ .cart-page .reference-customer-card .account-connected-badge{flex-wrap:wrap}
+ .cart-page .reference-customer-card .account-connected-badge:after{margin-left:auto}
+}
