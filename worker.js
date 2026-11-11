@@ -259,13 +259,14 @@ export default {
         if (!user) return json({ error: "Sign in to access saved addresses" }, 401);
 
         if (request.method === "GET") {
-          const { results } = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
+          const { results } = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark,
             latitude, longitude, is_default FROM customer_addresses
             WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           return json({ addresses: results.map(row => ({
             id: row.id, label: row.label, name: row.name, phone: row.phone,
-            address: row.address, landmark: row.landmark || "",
-            latitude: row.latitude, longitude: row.longitude,
+            address: row.address, house: row.house || "", street: row.street || "",
+            area: row.area || "", city: row.city || "", postcode: row.postcode || "",
+            landmark: row.landmark || "", latitude: row.latitude, longitude: row.longitude,
             is_default: row.is_default === 1
           })) });
         }
@@ -277,14 +278,20 @@ export default {
           const name = String(data.name || "").trim();
           const phone = String(data.phone || "").trim();
           const address = String(data.address || "").trim();
+          const house = String(data.house || "").trim().slice(0, 160);
+          const street = String(data.street || "").trim().slice(0, 200);
+          const area = String(data.area || "").trim().slice(0, 160);
+          const city = String(data.city || "").trim().slice(0, 120);
+          const postcode = String(data.postcode || "").trim().slice(0, 20);
           const landmark = String(data.landmark || "").trim().slice(0, 250);
           const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
           const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
           if (!name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
-              !address || address.length > 500 ||
-              (latitude !== null && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) ||
-              (longitude !== null && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180))) {
-            return json({ error: "Enter a valid name, mobile number, and delivery address" }, 400);
+              !address || address.length > 500 || !house || !street || !area || !city ||
+              latitude === null || longitude === null ||
+              !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+              !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+            return json({ error: "Enter your name, valid mobile number, complete address, and select a map location" }, 400);
           }
           const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM customer_addresses WHERE google_sub = ?")
             .bind(user.google_sub).first();
@@ -295,17 +302,18 @@ export default {
           await env.DB.batch([
             env.DB.prepare("UPDATE customer_addresses SET is_default = 0 WHERE google_sub = ?").bind(user.google_sub),
             env.DB.prepare(`INSERT INTO customer_addresses
-              (id, google_sub, label, name, phone, address, landmark, latitude, longitude, is_default, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
-              .bind(id, user.google_sub, label || "Delivery address", name, phone, address, landmark, latitude, longitude, now, now)
+              (id, google_sub, label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, is_default, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
+              .bind(id, user.google_sub, label || "Delivery address", name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, now, now)
           ]);
-          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
+          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark,
             latitude, longitude, is_default FROM customer_addresses
             WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           return json({ success: true, id, addresses: refreshed.results.map(row => ({
             id: row.id, label: row.label, name: row.name, phone: row.phone,
-            address: row.address, landmark: row.landmark || "",
-            latitude: row.latitude, longitude: row.longitude,
+            address: row.address, house: row.house || "", street: row.street || "",
+            area: row.area || "", city: row.city || "", postcode: row.postcode || "",
+            landmark: row.landmark || "", latitude: row.latitude, longitude: row.longitude,
             is_default: row.is_default === 1
           })) });
         }
@@ -336,13 +344,14 @@ export default {
             await env.DB.prepare("UPDATE customer_addresses SET is_default = 1 WHERE id = ? AND google_sub = ?")
               .bind(results[0].id, user.google_sub).run();
           }
-          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
+          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark,
             latitude, longitude, is_default FROM customer_addresses
             WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           return json({ success: true, addresses: refreshed.results.map(row => ({
             id: row.id, label: row.label, name: row.name, phone: row.phone,
-            address: row.address, landmark: row.landmark || "",
-            latitude: row.latitude, longitude: row.longitude,
+            address: row.address, house: row.house || "", street: row.street || "",
+            area: row.area || "", city: row.city || "", postcode: row.postcode || "",
+            landmark: row.landmark || "", latitude: row.latitude, longitude: row.longitude,
             is_default: row.is_default === 1
           })) });
         }
