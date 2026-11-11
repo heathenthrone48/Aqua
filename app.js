@@ -609,15 +609,14 @@ document.addEventListener('deliverylocationchange', () => {
       if (save) persistCart();
       const items = Object.values(cart);
       const count = items.reduce((n, item) => n + item.qty, 0);
-      const money = value => '₹' + value.toFixed(2);
+      const money = value => '₹' + Number(value || 0).toFixed(2);
       const totals = calculateOrderTotals(items, cachedRoadDistanceKm);
       const bisleriQty = items.find(item => item.name === BISLERI_20L_NAME)?.qty || 0;
       const additionalJarDeposit = Math.max(0, totals.containerDeposit - totals.returnCredit);
-      const additionalCharges = additionalJarDeposit + totals.deliveryFee + totals.handlingFee;
       document.querySelectorAll('[data-cart-count], #cart-count').forEach(el => el.textContent = count);
       document.querySelectorAll('[data-cart-total], #cart-total').forEach(el => el.textContent = money(totals.total));
+
       const subtotalEl = document.getElementById('items-subtotal');
-      const deliveryEl = document.getElementById('delivery-fee');
       if (subtotalEl) subtotalEl.textContent = money(totals.productSubtotal);
       const returnedEl = document.getElementById('bisleri-return-count-summary');
       if (returnedEl) returnedEl.textContent = totals.returnedContainers + (totals.returnedContainers === 1 ? ' jar' : ' jars');
@@ -627,56 +626,73 @@ document.addEventListener('deliverylocationchange', () => {
       if (newCansEl) newCansEl.textContent = String(bisleriQty);
       const depositEl = document.getElementById('bisleri-additional-deposit');
       if (depositEl) depositEl.textContent = money(additionalJarDeposit);
+      const depositRow = document.getElementById('checkout-deposit-summary-row');
+      if (depositRow) depositRow.hidden = bisleriQty === 0;
+      const depositValue = document.getElementById('checkout-deposit-value');
+      if (depositValue) depositValue.textContent = money(additionalJarDeposit);
       const jarNote = document.getElementById('checkout-jar-note');
       if (jarNote) jarNote.textContent = totals.returnedContainers > 0
         ? 'Please hand over your empty Bisleri 20L jars to our delivery partner during delivery.'
         : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
+
+      const deliveryEl = document.getElementById('delivery-fee');
       if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : money(totals.deliveryFee);
       else if (deliveryEl && !getDeliveryCoordinates()) deliveryEl.textContent = 'Choose location';
       const handlingEl = document.getElementById('handling-fee');
       if (handlingEl) handlingEl.textContent = money(totals.handlingFee);
-      const additionalEl = document.getElementById('checkout-additional-charges');
-      if (additionalEl) additionalEl.textContent = money(additionalCharges);
-      document.getElementById('total-display').textContent = money(totals.total);
+      const totalDisplay = document.getElementById('total-display');
+      if (totalDisplay) totalDisplay.textContent = money(totals.total);
+
       const summaryItems = document.getElementById('checkout-summary-items');
-      if (summaryItems) summaryItems.innerHTML = items.length ? items.map(item => `<div class="checkout-summary-row"><span>${escapeHtml(item.name)} × ${item.qty}</span><strong>${money(item.price * item.qty)}</strong></div>`).join('') : '<p class="checkout-summary-empty">Your cart is empty.</p>';
+      if (summaryItems) summaryItems.innerHTML = items.length
+        ? items.map(item => '<div class="checkout-summary-row"><span>' + escapeHtml(item.name) + ' × ' + item.qty + '</span><strong>' + money(item.price * item.qty) + '</strong></div>').join('')
+        : '<p class="checkout-summary-empty">Your cart is empty.</p>';
+
       const totalInput = document.getElementById('input-total-bill');
       if (totalInput) totalInput.value = money(totals.total);
       const itemsInput = document.getElementById('cart-items-input');
-      if (itemsInput) itemsInput.value = items.map(i => `${i.name} x ${i.qty} (${money(i.price * i.qty)})`).join(' | ');
+      if (itemsInput) itemsInput.value = items.map(item => item.name + ' x ' + item.qty + ' (' + money(item.price * item.qty) + ')').join(' | ');
+
       const list = document.getElementById('cart-items');
       if (list) {
-        list.innerHTML = items.length ? items.map(item => `
-          <article class="checkout-item">
-            <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
-            <div class="checkout-item-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} each</p>
-            <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button></div>
-            ${item.name === BISLERI_20L_NAME ? (() => {
-              const state = getBisleriReturnState();
-              const options = Array.from({ length: item.qty }, (_, index) => index + 1)
-                .map(quantity => `<option value="${quantity}" ${state.returnedContainers === quantity ? 'selected' : ''}>${quantity} empty jar${quantity === 1 ? '' : 's'}</option>`).join('');
-              return `<div class="bisleri-exchange-inline">
-                <label for="bisleri-return-choice">Empty jar exchange</label>
-                <select id="bisleri-return-choice" data-bisleri-return-choice>
-                  <option value="0" ${state.returnedContainers === 0 ? 'selected' : ''}>No, I need new jars</option>
-                  <option value="1" ${state.returnedContainers > 0 ? 'selected' : ''}>Yes, I have empty jars to return</option>
-                </select>
-                <div class="bisleri-return-quantity" ${state.returnedContainers > 0 ? '' : 'hidden'}>
-                  <label for="bisleri-return-count-inline">How many empty jars will you return?</label>
-                  <select id="bisleri-return-count-inline" data-bisleri-return-count>${options}</select>
-                  <small>₹150 credit for each accepted Bisleri 20L jar</small>
-                </div>
-              </div>`;
-            })() : ''}
-            <button type="button" class="checkout-remove" data-cart-action="remove" data-product="${escapeHtml(item.name)}">Remove</button>
-            </div><strong class="checkout-line-total">${money(item.price * item.qty)}</strong>
-          </article>`).join('') : '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
+        const jarState = getBisleriReturnState();
+        const jarOptions = Array.from({ length: bisleriQty }, (_, index) => index + 1)
+          .map(quantity => '<option value="' + quantity + '"' + (jarState.returnedContainers === quantity ? ' selected' : '') + '>' + quantity + ' empty jar' + (quantity === 1 ? '' : 's') + '</option>').join('');
+        const jarExchange = bisleriQty ? (
+          '<section class="checkout-exchange-card">' +
+            '<div class="checkout-exchange-title">↻ &nbsp;20L CAN EXCHANGE</div>' +
+            '<label for="bisleri-return-choice">Do you have empty Bisleri 20L cans to return?</label>' +
+            '<select id="bisleri-return-choice" data-bisleri-return-choice>' +
+              '<option value="0"' + (jarState.returnedContainers === 0 ? ' selected' : '') + '>No, I don\'t have empty cans</option>' +
+              '<option value="1"' + (jarState.returnedContainers > 0 ? ' selected' : '') + '>Yes, I have empty cans to return</option>' +
+            '</select>' +
+            '<div class="checkout-exchange-quantity"' + (jarState.returnedContainers > 0 ? '' : ' hidden') + '>' +
+              '<label for="bisleri-return-count-inline">How many empty cans will you return?</label>' +
+              '<select id="bisleri-return-count-inline" data-bisleri-return-count>' + jarOptions + '</select>' +
+            '</div>' +
+            '<small>₹150 refundable deposit is charged for each new can without an accepted empty-can return.</small>' +
+            '<div class="checkout-exchange-credit"><span>Refundable deposit</span><strong>' + money(additionalJarDeposit) + '</strong></div>' +
+          '</section>'
+        ) : '';
+        if (!items.length) {
+          list.innerHTML = '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
+        } else {
+          list.innerHTML = items.map(item =>
+            '<article class="checkout-item">' +
+              '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '">' +
+              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + money(item.price) + ' per unit</p>' +
+                '<div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="' + escapeHtml(item.name) + '" aria-label="Decrease ' + escapeHtml(item.name) + ' quantity">−</button><span>' + item.qty + '</span><button type="button" data-cart-action="plus" data-product="' + escapeHtml(item.name) + '" aria-label="Increase ' + escapeHtml(item.name) + ' quantity">+</button></div>' +
+                '<button type="button" class="checkout-remove" data-cart-action="remove" data-product="' + escapeHtml(item.name) + '">Remove</button>' +
+              '</div><strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
+            '</article>' + (item.name === BISLERI_20L_NAME ? jarExchange : '')
+          ).join('');
+        }
       }
       const submit = document.getElementById('submit-order-btn');
       if (submit) submit.disabled = !items.length || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
-    document.addEventListener('click', event => {
+        document.addEventListener('click', event => {
       const button = event.target.closest('[data-cart-action]');
       if (!button || orderSubmitting) return;
       const name = button.dataset.product;
@@ -892,6 +908,13 @@ document.addEventListener('deliverylocationchange', () => {
 
       const customerName = document.getElementById('customer-name').value.trim();
       const customerPhone = document.getElementById('customer-phone').value.trim();
+      const alternatePhone = document.getElementById('customer-alt-phone')?.value.trim() || '';
+      const normalizedAlternatePhone = alternatePhone.replace(/\\D/g, '');
+      if (alternatePhone && normalizedAlternatePhone.length !== 10) {
+        alert('Please enter a valid 10-digit alternate mobile number.');
+        document.getElementById('customer-alt-phone').focus();
+        return;
+      }
       if (!customerName) {
         alert('Please enter your name to place the order.');
         document.getElementById('customer-name').focus();
@@ -946,7 +969,7 @@ document.addEventListener('deliverylocationchange', () => {
         name: customerName,
         phone: customerPhone,
         address: customerAddress,
-        notes: `${landmarkNotes} | Product subtotal: ₹${orderTotals.productSubtotal.toFixed(2)}; Bisleri 20L container deposit: ₹${orderTotals.containerDeposit.toFixed(2)}; Returned Bisleri containers: ${orderTotals.returnedContainers}; Return credit: ₹${orderTotals.returnCredit.toFixed(2)}; Payable items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}; Handling fee: ₹${orderTotals.handlingFee.toFixed(2)}`,
+        notes: `${landmarkNotes}${alternatePhone ? ' | Alternate mobile: ' + alternatePhone : ''} | Product subtotal: ₹${orderTotals.productSubtotal.toFixed(2)}; Bisleri 20L container deposit: ₹${orderTotals.containerDeposit.toFixed(2)}; Returned Bisleri containers: ${orderTotals.returnedContainers}; Return credit: ₹${orderTotals.returnCredit.toFixed(2)}; Payable items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}; Handling fee: ₹${orderTotals.handlingFee.toFixed(2)}`,
         productSubtotal: orderTotals.productSubtotal,
         bisleri20LQuantity: Object.values(cart).find(item => item.name === BISLERI_20L_NAME)?.qty || 0,
         bisleriContainerDeposit: orderTotals.containerDeposit,
