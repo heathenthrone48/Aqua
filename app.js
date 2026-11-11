@@ -420,7 +420,7 @@ document.addEventListener('deliverylocationchange', () => {
         if (!Object.hasOwn(catalog, name) || !item) continue;
         const qty = Number(item.qty);
         if (!Number.isInteger(qty) || qty < 1) continue;
-        clean[name] = { ...catalog[name], qty: Math.min(99, qty) };
+        clean[name] = { ...catalog[name], qty: Math.min(5, qty) };
       }
       return clean;
     }
@@ -481,7 +481,11 @@ document.addEventListener('deliverylocationchange', () => {
       if (!cart[name] || orderSubmitting) return;
       const qty = cart[name].qty + change;
       if (qty <= 0) { removeFromCart(name); return; }
-      cart[name].qty = Math.min(99, qty);
+      if (qty > 5) {
+        alert('Maximum 5 units allowed per product per order.');
+        return;
+      }
+      cart[name].qty = qty;
       renderCart();
     }
 
@@ -489,7 +493,7 @@ document.addEventListener('deliverylocationchange', () => {
       const controls = button.closest('.card-qty-controls');
       const valueEl = controls.querySelector('.card-qty-value');
       const current = parseInt(valueEl.textContent, 10) || 1;
-      valueEl.textContent = Math.min(99, Math.max(1, current + change));
+      valueEl.textContent = Math.min(5, Math.max(1, current + change));
     }
 
     function addToCart(button) {
@@ -504,9 +508,14 @@ document.addEventListener('deliverylocationchange', () => {
 
       markCartChangedForNotice();
 
+      const existingQty = cart[name]?.qty || 0;
+      if (existingQty + qty > 5) {
+        alert('Maximum 5 units allowed per product per order. You already have ' + existingQty + ' in your cart.');
+        return;
+      }
       if (cart[name]) {
         cart[name].price = price;
-        cart[name].qty = Math.min(99, cart[name].qty + qty);
+        cart[name].qty = existingQty + qty;
       } else {
         cart[name] = { ...catalog[name], price, qty };
       }
@@ -561,7 +570,7 @@ document.addEventListener('deliverylocationchange', () => {
           <article class="checkout-item">
             <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
             <div class="checkout-item-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} each</p>
-            <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button></div>
+            <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity" ${item.qty >= 5 ? 'disabled' : ''}>+</button></div>
             <button type="button" class="checkout-remove" data-cart-action="remove" data-product="${escapeHtml(item.name)}">Remove</button>
             </div><strong class="checkout-line-total">${money(item.price * item.qty)}</strong>
           </article>`).join('') : '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
