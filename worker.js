@@ -398,6 +398,32 @@ export default {
           : json({ error: "Incorrect password" }, 401);
       }
 
+      if (url.pathname === "/api/catalog" && request.method === "GET") {
+        const {results}=await env.DB.prepare("SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty FROM custom_products ORDER BY sort_order,created_at").all();
+        return json({products:results.map(r=>({id:r.id,name:r.name,brand:r.brand,description:r.description,category:r.category,unitLabel:r.unit_label,price:Number(r.selling_price),mrp:Number(r.mrp),caseQty:r.case_qty==null?null:Number(r.case_qty)}))});
+      }
+      if(url.pathname.startsWith("/api/product-image/")&&request.method==="GET"){
+        const id=decodeURIComponent(url.pathname.slice("/api/product-image/".length));
+        const row=await env.DB.prepare("SELECT image_mime,image_data FROM custom_products WHERE id=?").bind(id).first();
+        if(!row)return new Response("Not found",{status:404});
+        return new Response(Uint8Array.from(atob(row.image_data),c=>c.charCodeAt(0)),{headers:{"Content-Type":row.image_mime,"Cache-Control":"public,max-age=3600","X-Content-Type-Options":"nosniff"}});
+      }
+      if(url.pathname==="/api/admin/products"&&request.method==="GET"){
+        if(!(await validPassword(request,env)))return json({error:"Please log in again"},401);
+        const {results}=await env.DB.prepare("SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty,available FROM custom_products ORDER BY sort_order,created_at").all();
+        return json({products:results.map(r=>({id:r.id,name:r.name,brand:r.brand,description:r.description,category:r.category,unitLabel:r.unit_label,price:Number(r.selling_price),mrp:Number(r.mrp),caseQty:r.case_qty==null?null:Number(r.case_qty),available:r.available===1}))});
+      }
+      if(url.pathname==="/api/admin/products"&&request.method==="POST"){
+        if(!(await validPassword(request,env)))return json({error:"Please log in again"},401);
+        let d;try{d=await request.json();}catch{return json({error:"Invalid request"},400);}
+        const name=String(d.name||"").trim(),brand=String(d.brand||"").trim(),description=String(d.description||"").trim(),category=String(d.category||""),unit=String(d.unitLabel||"").trim();
+        const price=Number(d.sellingPrice),mrp=Number(d.mrp),caseQty=d.caseQty==null||d.caseQty===""?null:Number(d.caseQty),mime=String(d.imageMime||""),image=String(d.imageData||"");
+        if(!name||name.length>100||!brand||brand.length>80||!description||description.length>1000||!["water","accessories"].includes(category)||!unit||unit.length>30||!Number.isFinite(price)||!Number.isFinite(mrp)||price<0||mrp<0||price>1e6||mrp>1e6||(caseQty!==null&&(!Number.isInteger(caseQty)||caseQty<1||caseQty>500))||!["image/png","image/jpeg","image/webp"].includes(mime)||!/^[A-Za-z0-9+/]+={0,2}$/.test(image)||image.length>1400000)return json({error:"Complete all fields and upload a PNG, JPG or WebP image up to 1 MB."},400);
+        const id="custom-"+crypto.randomUUID();
+        try{await env.DB.prepare("INSERT INTO custom_products(id,name,brand,description,category,unit_label,selling_price,mrp,case_qty,image_mime,image_data,sort_order,available,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,1000,1,?)").bind(id,name,brand,description,category,unit,Math.round(price*100)/100,Math.round(mrp*100)/100,caseQty,mime,image,Math.floor(Date.now()/1000)).run();}
+        catch(e){if(String(e).includes("UNIQUE"))return json({error:"A product with this name already exists."},409);throw e;}
+        return json({success:true,id});
+      }
       if (url.pathname === "/api/prices" && request.method === "GET") {
         const { results } = await env.DB.prepare(
           "SELECT product_id, selling_price, mrp FROM product_prices"
@@ -413,6 +439,8 @@ export default {
             };
           }
         }
+        const custom=await env.DB.prepare("SELECT id,selling_price,mrp FROM custom_products").all();
+        for(const r of custom.results)prices[r.id]={sellingPrice:Number(r.selling_price),mrp:Number(r.mrp)};
         // Bisleri 20L water price is fixed at ₹100; the separate ₹150 container deposit is calculated at checkout.
         prices["Bisleri 20L Can"] = { sellingPrice: 100, mrp: 100 };
         return json({ prices });
@@ -427,10 +455,9 @@ export default {
         const id = String(data.id || "");
         const sellingPrice = Number(data.sellingPrice);
         const mrp = Number(data.mrp);
-        if (!PRODUCT_IDS.has(id) || !Number.isFinite(sellingPrice) || !Number.isFinite(mrp) ||
-            sellingPrice < 0 || mrp < 0 || sellingPrice > 1000000 || mrp > 1000000) {
-          return json({ error: "Enter a valid product, selling price and MRP" }, 400);
-        }
+        const custom=await env.DB.prepare("SELECT id FROM custom_products WHERE id=?").bind(id).first();
+        if((!PRODUCT_IDS.has(id)&&!custom)||!Number.isFinite(sellingPrice)||!Number.isFinite(mrp)||sellingPrice<0||mrp<0||sellingPrice>1e6||mrp>1e6)return json({error:"Enter a valid product, selling price and MRP"},400);
+        if(custom){await env.DB.prepare("UPDATE custom_products SET selling_price=?,mrp=? WHERE id=?").bind(Math.round(sellingPrice*100)/100,Math.round(mrp*100)/100,id).run();return json({success:true});}
         await env.DB.prepare(`
           INSERT INTO product_prices (product_id, selling_price, mrp, updated_at)
           VALUES (?, ?, ?, ?)
@@ -454,13 +481,10 @@ export default {
           [...PRODUCT_IDS].map(id => [id, true])
         );
 
-        for (const row of results) {
-          if (PRODUCT_IDS.has(row.product_id)) {
-            stock[row.product_id] = row.available === 1;
-          }
-        }
-
-        return json({ stock });
+        for(const r of results)if(PRODUCT_IDS.has(r.product_id))stock[r.product_id]=r.available===1;
+        const custom=await env.DB.prepare("SELECT id,available FROM custom_products").all();
+        for(const r of custom.results)stock[r.id]=r.available===1;
+        return json({stock});
       }
 
       if (
@@ -479,12 +503,9 @@ export default {
           return json({ error: "Invalid request" }, 400);
         }
 
-        if (
-          !PRODUCT_IDS.has(data.id) ||
-          typeof data.available !== "boolean"
-        ) {
-          return json({ error: "Invalid product or stock status" }, 400);
-        }
+        const custom=await env.DB.prepare("SELECT id FROM custom_products WHERE id=?").bind(String(data.id||"")).first();
+        if((!PRODUCT_IDS.has(data.id)&&!custom)||typeof data.available!=="boolean")return json({error:"Invalid product or stock status"},400);
+        if(custom){await env.DB.prepare("UPDATE custom_products SET available=? WHERE id=?").bind(data.available?1:0,data.id).run();return json({success:true});}
 
         await env.DB.prepare(`
           INSERT INTO product_stock (product_id, available)
