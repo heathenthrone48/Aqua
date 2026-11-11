@@ -1,18 +1,18 @@
-    const PRODUCTS = [
-  { id: "Bisleri 20L Can", name: "Bisleri 20L Can" },
-  { id: "Bisleri 10L Can", name: "Bisleri 10L Can" },
-  { id: "Bisleri 5L Bottle", name: "Bisleri 5L Bottle" },
-  { id: "Bisleri 2L Case", name: "Bisleri 2L Case" },
-  { id: "Bisleri 1L Case", name: "Bisleri 1L Case" },
-  { id: "Bisleri 500ml Case", name: "Bisleri 500ml Case" },
-  { id: "Bailey 10L Can", name: "Bailey 10L Can" },
-  { id: "Bailey 5L Can", name: "Bailey 5L Can" },
-  { id: "Bailey 2L Case", name: "Bailey 2L Case" },
-  { id: "Bailey 1L Case", name: "Bailey 1L Case" },
-  { id: "Kinley 2L Case", name: "Kinley 2L Case" },
-  { id: "Kinley 1L Case", name: "Kinley 1L Case" },
-  { id: "Manual Water Dispenser Hand Pump", name: "Manual Water Dispenser Hand Pump" },
-  { id: "Automatic Electric Water Dispenser Pump", name: "Automatic Electric Water Dispenser Pump" }
+const PRODUCTS = [
+{id:"Bisleri 20L Can",name:"Bisleri 20L Can"},
+{id:"Bisleri 1L Case",name:"Bisleri 1L Case"},
+{id:"Bailey 1L Case",name:"Bailey 1L Case"},
+{id:"Kinley 1L Case",name:"Kinley 1L Case"},
+{id:"Bisleri 2L Case",name:"Bisleri 2L Case"},
+{id:"Bailey 2L Case",name:"Bailey 2L Case"},
+{id:"Kinley 2L Case",name:"Kinley 2L Case"},
+{id:"Bisleri 500ml Case",name:"Bisleri 500ml Case"},
+{id:"Bisleri 10L Can",name:"Bisleri 10L Can"},
+{id:"Bailey 10L Can",name:"Bailey 10L Can"},
+{id:"Bisleri 5L Bottle",name:"Bisleri 5L Bottle"},
+{id:"Bailey 5L Can",name:"Bailey 5L Can"},
+{id:"Manual Water Dispenser Hand Pump",name:"Manual Water Dispenser Hand Pump"},
+{id:"Automatic Electric Water Dispenser Pump",name:"Automatic Electric Water Dispenser Pump"}
 ];
 
 // Availability is shared through Cloudflare D1. The password stays in memory only.
@@ -86,6 +86,7 @@ async function showDashboard() {
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('adminDashboard').style.display = 'block';
   loadLogs();
+  try { await refreshAdminCatalog(); } catch (e) { document.getElementById('priceStatus').textContent = e.message; }
   await Promise.all([refreshAdminStock(), refreshAdminPrices()]);
 }
 
@@ -96,12 +97,16 @@ function hideDashboard() {
 }
 
 
+async function refreshAdminCatalog() {
+ const data = await stockApi('/api/admin/products');
+ (data.products || []).forEach(p => { if (!PRODUCTS.some(x => x.id === p.id)) PRODUCTS.push({id:p.id,name:p.name}); });
+}
 async function refreshAdminPrices() {
   const status = document.getElementById('priceStatus');
   const body = document.getElementById('priceTableBody');
   try {
     const data = await stockApi('/api/prices');
-    if (!data.prices || PRODUCTS.some(product => !data.prices[product.id])) {
+    if (!data.prices) {
       throw new Error('Unexpected price response. Check the Worker and D1 migration.');
     }
     priceState = data.prices;
@@ -186,7 +191,7 @@ async function refreshAdminStock() {
   loadingStock = true;
   try {
     const data = await stockApi('/api/stock');
-    if (!data.stock || PRODUCTS.some(p => typeof data.stock[p.id] !== 'boolean')) {
+    if (!data.stock) {
       throw new Error('Unexpected stock response. Check worker.js.');
     }
     stockState = data.stock;
@@ -286,3 +291,28 @@ window.addEventListener('focus', refreshAdminStock);
     function escapeHtml(text) {
       return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
+
+document.addEventListener('DOMContentLoaded', () => {
+ const form=document.getElementById('addProductForm'); if(!form)return;
+ form.addEventListener('submit',event=>{
+  event.preventDefault(); if(!adminPassword)return;
+  const status=document.getElementById('addProductStatus'),button=document.getElementById('addProductSubmit'),file=document.getElementById('newProductImage').files[0];
+  if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>1024*1024){status.textContent='Choose a PNG, JPG or WebP image no larger than 1 MB.';return;}
+  const reader=new FileReader();reader.onerror=()=>status.textContent='Could not read image.';
+  reader.onload=async()=>{
+   button.disabled=true;button.textContent='Saving…';status.textContent='Adding product…';
+   try{
+    await stockApi('/api/admin/products','POST',{
+     name:document.getElementById('newProductName').value.trim(),brand:document.getElementById('newProductBrand').value.trim(),
+     description:document.getElementById('newProductDescription').value.trim(),category:document.getElementById('newProductCategory').value,
+     unitLabel:document.getElementById('newProductUnit').value.trim(),sellingPrice:Number(document.getElementById('newProductPrice').value),
+     mrp:Number(document.getElementById('newProductMrp').value),caseQty:document.getElementById('newProductCaseQty').value?Number(document.getElementById('newProductCaseQty').value):null,
+     imageMime:file.type,imageData:String(reader.result).split(',')[1]||''
+    });
+    status.textContent='Product added. Refresh the storefront to see it.';form.reset();
+    await refreshAdminCatalog();await Promise.all([refreshAdminStock(),refreshAdminPrices()]);
+   }catch(e){status.textContent='Could not add product. '+e.message;}
+   finally{button.disabled=false;button.textContent='Add product';}
+  };reader.readAsDataURL(file);
+ });
+});
