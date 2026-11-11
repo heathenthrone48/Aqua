@@ -37,7 +37,7 @@ function stockMessage(text) {
 
 async function stockApi(path, method = 'GET', data) {
   const headers = {};
-  if (method !== 'GET') headers.Authorization = `Bearer ${adminPassword}`;
+  if (method !== 'GET' || path.startsWith('/api/admin/')) headers.Authorization = `Bearer ${adminPassword}`;
   if (data) headers['Content-Type'] = 'application/json';
   const response = await fetch(path, {
     method, headers, cache: 'no-store',
