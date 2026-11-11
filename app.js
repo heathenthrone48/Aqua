@@ -1096,6 +1096,7 @@ if (document.getElementById('preferred-time')) {
   let selectedAddress = null;
   let accountUser = null;
   let showingAddressList = false;
+  let editingAddressId = null;
 
   const field = id => document.getElementById(id);
   const setText = (element, value) => { if (element) element.textContent = value || ''; };
@@ -1166,9 +1167,27 @@ if (document.getElementById('preferred-time')) {
         <div><strong>${escape(address.label || 'Delivery address')}</strong><p>${escape(address.address)}</p><small>${escape(address.name)} · ${escape(address.phone)}</small></div>
         <div class="saved-address-option-actions">
           <button type="button" data-use-address="${escape(address.id)}">${selectedAddress?.id === address.id ? 'Selected' : 'Use this'}</button>
+          <button type="button" data-edit-address="${escape(address.id)}">Edit</button>
           <button type="button" class="saved-address-delete" data-delete-address="${escape(address.id)}" aria-label="Delete ${escape(address.label || 'address')}">Delete</button>
         </div>
       </article>`).join('');
+    addressListEl.querySelectorAll('[data-edit-address]').forEach(button => button.addEventListener('click', () => {
+      const address = addresses.find(item => item.id === button.dataset.editAddress);
+      if (!address) return;
+      editingAddressId = address.id;
+      selectedAddress = null;
+      populateCheckoutFields(address);
+      setEntryVisible(true);
+      saveRow.hidden = false;
+      cancelButton.hidden = false;
+      field('account-address-label').value = address.label;
+      saveButton.textContent = 'Update saved address';
+      addressListEl.hidden = true;
+      showingAddressList = false;
+      window.switchAddressMode?.('manual');
+      entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setText(saveMessage, 'Edit the details below and save your changes.');
+    }));
     addressListEl.querySelectorAll('[data-use-address]').forEach(button => button.addEventListener('click', () => {
       const choose = async () => {
         const chosen = addresses.find(item => item.id === button.dataset.useAddress);
@@ -1229,6 +1248,8 @@ if (document.getElementById('preferred-time')) {
   }
 
   function openAddressEntry() {
+    editingAddressId = null;
+    saveButton.textContent = 'Save address to my account';
     showAccountAddress(null);
     selectedAddress = null;
     setEntryVisible(true);
@@ -1248,7 +1269,8 @@ if (document.getElementById('preferred-time')) {
     field('customer-address').value = '';
     field('delivery-latitude').value = '';
     field('delivery-longitude').value = '';
-    field('account-address-label').value = addresses.length ? '' : 'Home';
+    const savedLabels = addresses.map(item => item.label);
+    field('account-address-label').value = !savedLabels.includes('Home') ? 'Home' : 'Work';
     window.switchAddressMode?.('manual');
     entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1258,7 +1280,7 @@ if (document.getElementById('preferred-time')) {
     const name = field('customer-name').value.trim();
     const phone = field('customer-phone').value.trim();
     const address = field('customer-address').value.trim();
-    const label = field('account-address-label').value.trim() || 'Delivery address';
+    const label = field('account-address-label').value.trim();
     const house = field('address-house').value.trim();
     const street = field('address-street').value.trim();
     const area = field('address-area').value.trim();
@@ -1274,9 +1296,10 @@ if (document.getElementById('preferred-time')) {
     setText(saveMessage, 'Saving address…');
     try {
       const response = await fetch('/api/customer/addresses', {
-        method: 'POST', credentials: 'same-origin',
+        method: editingAddressId ? 'PUT' : 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          ...(editingAddressId ? { action: 'edit', id: editingAddressId } : {}),
           label, name, phone, address,
           house, street, area, city, postcode,
           landmark: field('landmark-notes').value.trim(),
@@ -1286,8 +1309,17 @@ if (document.getElementById('preferred-time')) {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Could not save this address.');
-      addresses = result.addresses || [];
-      const saved = addresses.find(item => item.id === result.id) || addresses.find(item => item.is_default) || addresses[0];
+      if (editingAddressId) {
+        const refreshResponse = await fetch('/api/customer/addresses', { credentials: 'same-origin', cache: 'no-store' });
+        const refreshed = await refreshResponse.json();
+        if (!refreshResponse.ok) throw new Error(refreshed.error || 'Address updated, but the list could not be refreshed.');
+        addresses = refreshed.addresses || [];
+      } else {
+        addresses = result.addresses || [];
+      }
+      const saved = addresses.find(item => item.id === (editingAddressId || result.id)) || addresses.find(item => item.is_default) || addresses[0];
+      editingAddressId = null;
+      saveButton.textContent = 'Save address to my account';
       if (saved) populateCheckoutFields(saved);
       showAccountAddress(saved || null);
       renderAddressChoices();
