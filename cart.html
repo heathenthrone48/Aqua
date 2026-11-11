@@ -195,10 +195,21 @@
 <label for="scheduled-slot">Delivery window</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning (8 AM–11 AM)</option><option value="Midday (11 AM–2 PM)">Midday (11 AM–2 PM)</option><option value="Afternoon (2 PM–5 PM)">Afternoon (2 PM–5 PM)</option><option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option></select>
 </div><p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
 </div>
-<h2 class="summary-heading">Order summary</h2><p class="payment-note">Payment: Pay on delivery</p><div class="fee-breakdown" aria-live="polite"><div><span>Items subtotal</span><strong id="items-subtotal">₹0.00</strong></div><div><span>Bisleri 20L container deposit</span><strong id="bisleri-container-deposit">₹0.00</strong></div><div><span>Bisleri containers returned</span><strong id="bisleri-return-count-summary">0 returned</strong></div><div><span>Container return credit</span><strong id="bisleri-return-credit">−₹0.00</strong></div><div><span>Delivery fee</span><strong id="delivery-fee">Choose location</strong></div><div><span>Handling fee</span><strong id="handling-fee">₹0.00</strong></div></div><div class="total-banner">
-<span class="total-label">Total Amount Due</span>
-<span class="total-price" id="total-display">₹0.00</span>
-</div>
+<section class="checkout-order-summary" aria-live="polite">
+<div class="checkout-summary-heading"><h2>Order summary</h2><span class="checkout-payment-badge">Ready to order</span></div>
+<p class="checkout-payment-note">Payment method: Cash on delivery</p>
+<h3 class="checkout-summary-section-title">Items</h3><div class="checkout-summary-items" id="checkout-summary-items"></div>
+<section class="checkout-jar-exchange" id="checkout-jar-exchange" hidden><h3>↻ &nbsp;20L Jar Exchange</h3>
+<div class="checkout-summary-row"><span>New cans delivered</span><strong id="bisleri-new-cans">0</strong></div>
+<div class="checkout-summary-row"><span>Empty jars exchanged</span><strong class="checkout-return-count" id="bisleri-return-count-summary">0 jars</strong></div>
+<div class="checkout-summary-row"><span>Additional jar deposit</span><strong id="bisleri-additional-deposit">₹0.00</strong></div>
+<p class="checkout-jar-note" id="checkout-jar-note">Please hand over your empty jars to our delivery partner during delivery.</p></section>
+<section class="checkout-delivery-charges"><h3>Delivery charges</h3>
+<div class="checkout-summary-row"><span>Delivery fee</span><strong id="delivery-fee">Choose location</strong></div>
+<div class="checkout-summary-row"><span>Handling fee</span><strong id="handling-fee">₹0.00</strong></div></section>
+<div class="checkout-summary-total-card"><div class="checkout-summary-row"><span>Items subtotal</span><strong id="items-subtotal">₹0.00</strong></div>
+<div class="checkout-summary-row"><span>Additional charges</span><strong id="checkout-additional-charges">₹0.00</strong></div>
+<div class="checkout-grand-total"><span>Total amount due</span><strong id="total-display">₹0.00</strong></div><small>Inclusive of applicable charges</small></div></section>
 <button class="submit-btn" id="submit-order-btn" type="submit">PLACE ORDER (PAY ON DELIVERY)</button>
 </div>
 </form>
