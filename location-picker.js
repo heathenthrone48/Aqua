@@ -376,13 +376,26 @@
   window.restoreDeliveryLocation = (lat, lon) => {
     if (!Number.isFinite(lat) || !Number.isFinite(lon) ||
         lat < -90 || lat > 90 || lon < -180 || lon > 180) return;
+
     el["delivery-latitude"].value = lat.toFixed(7);
     el["delivery-longitude"].value = lon.toFixed(7);
     el["delivery-address-source"].value = "saved-account";
     locationChosen = true;
+
+    // Show the saved address in the search field as well as restoring its map pin.
+    const savedAddress = el["customer-address"].value.trim() ||
+      ["address-house", "address-street", "address-area", "address-city", "address-postcode"]
+        .map(id => $(id)?.value.trim())
+        .filter(Boolean)
+        .join(", ");
+    if (search && savedAddress) search.value = savedAddress;
+
     initMap();
     moveMarker(lat, lon);
     setStatus("Saved delivery location restored. Confirm the pin and address.");
+
+    // Recalculate the road distance and unlock checkout once serviceability is confirmed.
+    document.dispatchEvent(new Event("deliverylocationchange"));
   };
 
   // Expose helpers for the existing checkout integration.
