@@ -395,3 +395,10 @@ body.cart-notice-open { overflow: hidden; }
   .cart-notice-card { padding: 24px 20px 20px; border-radius: 16px; }
   .cart-notice-card h2 { font-size: 19px; }
 }
+
+/* Inline Bisleri 20L empty-jar exchange controls in the cart item. */
+.bisleri-exchange-inline{display:grid;gap:7px;margin:12px 0 8px;padding:12px;border:1px solid #d9e8f2;border-radius:12px;background:#f5faff;max-width:430px}
+.bisleri-exchange-inline>label,.bisleri-return-quantity>label{font-size:12px;font-weight:800;color:#173b58}
+.bisleri-exchange-inline select{min-height:40px;padding:9px 11px;border:1px solid #cbdbea;border-radius:9px;background:#fff;color:#173b58;font:inherit;font-size:13px}
+.bisleri-return-quantity{display:grid;gap:7px;padding-top:7px}
+.bisleri-return-quantity small{color:#18734c;font-size:11px;line-height:1.4}
