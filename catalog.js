@@ -1,6 +1,6 @@
 /* Shared product metadata. Keep prices and names in sync with index.html. */
 window.NEER_CATALOG = {
-  "Bisleri 20L Can": { "name": "Bisleri 20L Can", "price": 99.0, "image": "images/bisleri-20l.png" , "mrp": 100},
+  "Bisleri 20L Can": { "name": "Bisleri 20L Can", "price": 100.0, "image": "images/bisleri-20l.png" , "mrp": 100},
   "Bisleri 10L Can": { "name": "Bisleri 10L Can", "price": 130.0, "image": "images/bisleri-10l.png" , "mrp": 130},
   "Bisleri 5L Bottle": { "name": "Bisleri 5L Bottle", "price": 80.0, "image": "images/bisleri-5l.png" , "mrp": 80},
   "Bisleri 2L Case": { "name": "Bisleri 2L Case", "price": 250.0, "image": "images/bisleri-2l.png" , "mrp": 270, "caseQty": 9},
