@@ -1121,8 +1121,9 @@ if (document.getElementById('preferred-time')) {
     accountPanel.hidden = false;
     showingAddressList = false;
     addressListEl.hidden = true;
-    chooseAddressButton.textContent = 'Choose another address';
-    chooseAddressButton.hidden = addresses.length < 2;
+    chooseAddressButton.textContent = 'Manage saved addresses';
+    chooseAddressButton.hidden = addresses.length === 0;
+    addAddressButton.hidden = addresses.length >= 2;
     if (address) {
       activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(address.address)}</span><span>${escape(address.name)} · ${escape(address.phone)}</span>${address.landmark ? `<small>${escape(address.landmark)}</small>` : ''}`;
       setEntryVisible(false);
