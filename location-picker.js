@@ -13,9 +13,7 @@
   const el = Object.fromEntries(ids.map(id => [id, $(id)]));
 
   const locationTab = $("pick-location-tab");
-  const manualTab = $("manual-address-tab");
   const locationPanel = $("location-picker-panel");
-  const manualPanel = $("manual-address-panel");
   const addressFields = $("delivery-address-fields");
   const heading = $("address-form-heading");
   const search = $("location-search");
@@ -25,6 +23,9 @@
 
   let map;
   let marker;
+  let routeLine;
+  let serviceBoundary;
+  let shopMarker;
   let searchTimer;
   let searchController;
   let reverseController;
@@ -51,37 +52,22 @@
     addressFields.hidden = !show;
   }
 
-  function switchMode(nextMode) {
-    mode = nextMode;
-    const picking = mode === "location";
-
-    locationTab.classList.toggle("active", picking);
-    manualTab.classList.toggle("active", !picking);
-
-    locationTab.setAttribute("aria-pressed", String(picking));
-    manualTab.setAttribute("aria-pressed", String(!picking));
-
-    locationPanel.hidden = !picking;
-    manualPanel.hidden = picking;
-
-    el["delivery-address-source"].value =
-      picking ? "location" : "manual";
-
-    if (picking) {
-      showAddressForm(true);
-      heading.textContent = "Confirm your delivery address";
-      initMap();
-      setTimeout(() => map && map.invalidateSize(), 100);
-    } else {
-      el["delivery-latitude"].value = "";
-      el["delivery-longitude"].value = "";
-      showAddressForm(true);
-      heading.textContent = "Enter your delivery address";
-    }
+  function switchMode() {
+    mode = "location";
+    locationTab.classList.add("active");
+    locationTab.setAttribute("aria-pressed", "true");
+    // GPS/map selection and written delivery details are both mandatory.
+    locationPanel.hidden = false;
+    showAddressForm(true);
+    heading.textContent = "Confirm your delivery address";
+    initMap();
+    setTimeout(() => {
+      if (map) map.invalidateSize();
+      $("delivery-map").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 150);
   }
 
-  locationTab.addEventListener("click", () => switchMode("location"));
-  manualTab.addEventListener("click", () => switchMode("manual"));
+  locationTab.addEventListener("click", switchMode);
 
   function initMap() {
     if (map || !window.L) return;
@@ -95,6 +81,19 @@
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
+
+    // The circle is a visual guide only; eligibility is based on actual road distance.
+    serviceBoundary = L.circle([12.815047, 77.691037], {
+      radius: 5500,
+      color: "#087eaf",
+      weight: 2,
+      fillColor: "#38a9d6",
+      fillOpacity: 0.07,
+      dashArray: "7 7"
+    }).addTo(map);
+    shopMarker = L.marker([12.815047, 77.691037]).addTo(map)
+      .bindPopup("NeerBeku shop — delivery route starts here");
+    map.fitBounds(serviceBoundary.getBounds(), { padding: [18, 18] });
 
     map.on("click", event => {
       selectCoordinates(
@@ -123,6 +122,44 @@
     }
 
     map.setView(point, 17);
+    drawRoadRoute(lat, lon);
+  }
+
+  async function drawRoadRoute(lat, lon) {
+    if (!map) return;
+    if (routeLine) {
+      map.removeLayer(routeLine);
+      routeLine = null;
+    }
+    setStatus("Calculating driving route from the NeerBeku shop…");
+    try {
+      const response = await fetch("/api/delivery/route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ latitude: lat, longitude: lon }),
+        cache: "no-store"
+      });
+      const result = await response.json();
+      if (!response.ok || !Array.isArray(result.geometry)) {
+        throw new Error(result.error || "Could not calculate the road route.");
+      }
+      routeLine = L.polyline(result.geometry.map(([lng, latitude]) => [latitude, lng]), {
+        color: result.withinServiceArea ? "#087eaf" : "#dc3545",
+        weight: 5,
+        opacity: 0.85
+      }).addTo(map);
+      const km = Number(result.distanceKm).toFixed(2);
+      setStatus(result.withinServiceArea
+        ? `Driving route: ${km} km from the shop. This location is within the 5.5 km service limit.`
+        : `Driving route: ${km} km from the shop. This location is outside the 5.5 km service limit.`);
+      if (routeLine.getBounds().isValid()) {
+        map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        setStatus(error.message || "Road route unavailable. Please try another pin.");
+      }
+    }
   }
 
   async function requestJSON(url, controller) {
@@ -200,6 +237,7 @@
     el["delivery-latitude"].value = lat.toFixed(7);
     el["delivery-longitude"].value = lon.toFixed(7);
     el["delivery-address-source"].value = source;
+    document.dispatchEvent(new Event("deliverylocationchange"));
 
     locationChosen = true;
     showAddressForm(true);
@@ -321,8 +359,8 @@
         gpsButton.disabled = false;
 
         setStatus(error.code === 1
-          ? "Location permission denied. Search or enter your address manually."
-          : "Could not determine your location. Please try searching.");
+          ? "Location permission denied. Please select your location on the map."
+          : "Could not determine your location. Please select your location on the map.");
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
@@ -334,11 +372,38 @@
     "address-city", "address-postcode"
   ].forEach(id => $(id).addEventListener("input", updateAddress));
 
+  // Restore a previously saved account location without requesting GPS again.
+  window.restoreDeliveryLocation = (lat, lon) => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) ||
+        lat < -90 || lat > 90 || lon < -180 || lon > 180) return;
+
+    el["delivery-latitude"].value = lat.toFixed(7);
+    el["delivery-longitude"].value = lon.toFixed(7);
+    el["delivery-address-source"].value = "saved-account";
+    locationChosen = true;
+
+    // Show the saved address in the search field as well as restoring its map pin.
+    const savedAddress = el["customer-address"].value.trim() ||
+      ["address-house", "address-street", "address-area", "address-city", "address-postcode"]
+        .map(id => $(id)?.value.trim())
+        .filter(Boolean)
+        .join(", ");
+    if (search && savedAddress) search.value = savedAddress;
+
+    initMap();
+    moveMarker(lat, lon);
+    setStatus("Saved delivery location restored. Confirm the pin and address.");
+
+    // Recalculate the road distance and unlock checkout once serviceability is confirmed.
+    document.dispatchEvent(new Event("deliverylocationchange"));
+  };
+
   // Expose helpers for the existing checkout integration.
   window.syncDeliveryAddress = updateAddress;
   window.switchAddressMode = switchMode;
 
-  // Start with the picker only; no address form is displayed.
+  // Keep manual address fields visible at all times. GPS or map selection
+  // supplies coordinates only; customers can always edit their written address.
   showAddressForm(true);
-  switchMode("manual");
+  switchMode("location");
 })();

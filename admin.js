@@ -1,24 +1,18 @@
-    const PRODUCTS = [
-  // BISLERI
-  { id: "Bisleri 20L Can", name: "Bisleri 20L Can" },
-  { id: "Bisleri 10L Can", name: "Bisleri 10L Can" },
-  { id: "Bisleri 5L Bottle", name: "Bisleri 5L Bottle" },
-  { id: "Bisleri 2L Bottle", name: "Bisleri 2L Bottle" },
-  { id: "Bisleri 1L Bottle", name: "Bisleri 1L Bottle" },
-
-  // BAILLEY
-  { id: "Bailley 10L Can", name: "Bailley 10L Can" },
-  { id: "Bailley 5L Can", name: "Bailley 5L Can" },
-  { id: "Bailley 2L Bottle", name: "Bailley 2L Bottle" },
-  { id: "Bailley 1L Bottle", name: "Bailley 1L Bottle" },
-
-  // KINLEY
-  { id: "Kinley 2L Bottle", name: "Kinley 2L Bottle" },
-  { id: "Kinley 1L Bottle", name: "Kinley 1L Bottle" },
-
-  // ACCESSORIES
-  { id: "Manual Water Dispenser Hand Pump", name: "Hand Pump Dispenser" },
-  { id: "Automatic Electric Water Dispenser Pump", name: "Electric Water Pump" }
+const PRODUCTS = [
+{id:"Bisleri 20L Can",name:"Bisleri 20L Can"},
+{id:"Bisleri 1L Case",name:"Bisleri 1L Case"},
+{id:"Bailey 1L Case",name:"Bailey 1L Case"},
+{id:"Kinley 1L Case",name:"Kinley 1L Case"},
+{id:"Bisleri 2L Case",name:"Bisleri 2L Case"},
+{id:"Bailey 2L Case",name:"Bailey 2L Case"},
+{id:"Kinley 2L Case",name:"Kinley 2L Case"},
+{id:"Bisleri 500ml Case",name:"Bisleri 500ml Case"},
+{id:"Bisleri 10L Can",name:"Bisleri 10L Can"},
+{id:"Bailey 10L Can",name:"Bailey 10L Can"},
+{id:"Bisleri 5L Bottle",name:"Bisleri 5L Bottle"},
+{id:"Bailey 5L Can",name:"Bailey 5L Can"},
+{id:"Manual Water Dispenser Hand Pump",name:"Manual Water Dispenser Hand Pump"},
+{id:"Automatic Electric Water Dispenser Pump",name:"Automatic Electric Water Dispenser Pump"}
 ];
 
 // Availability is shared through Cloudflare D1. The password stays in memory only.
@@ -26,6 +20,8 @@ let adminPassword = "";
 let stockState = {};
 let savingStock = false;
 let loadingStock = false;
+let priceState = {};
+let savingPriceId = "";
 let loginPending = false;
 
 function stockMessage(text) {
@@ -41,7 +37,7 @@ function stockMessage(text) {
 
 async function stockApi(path, method = 'GET', data) {
   const headers = {};
-  if (method !== 'GET') headers.Authorization = `Bearer ${adminPassword}`;
+  if (method !== 'GET' || path.startsWith('/api/admin/')) headers.Authorization = `Bearer ${adminPassword}`;
   if (data) headers['Content-Type'] = 'application/json';
   const response = await fetch(path, {
     method, headers, cache: 'no-store',
@@ -90,7 +86,8 @@ async function showDashboard() {
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('adminDashboard').style.display = 'block';
   loadLogs();
-  await refreshAdminStock();
+  try { await refreshAdminCatalog(); } catch (e) { document.getElementById('priceStatus').textContent = e.message; }
+  await Promise.all([refreshAdminStock(), refreshAdminPrices()]);
 }
 
 function hideDashboard() {
@@ -99,12 +96,102 @@ function hideDashboard() {
   document.getElementById('authError').style.display = 'none';
 }
 
+
+async function refreshAdminCatalog() {
+ const data = await stockApi('/api/admin/products');
+ (data.products || []).forEach(p => { if (!PRODUCTS.some(x => x.id === p.id)) PRODUCTS.push({id:p.id,name:p.name}); });
+}
+async function refreshAdminPrices() {
+  const status = document.getElementById('priceStatus');
+  const body = document.getElementById('priceTableBody');
+  try {
+    const data = await stockApi('/api/prices');
+    if (!data.prices) {
+      throw new Error('Unexpected price response. Check the Worker and D1 migration.');
+    }
+    priceState = data.prices;
+    renderPriceTable();
+    status.textContent = 'Connected — prices are shared across devices.';
+  } catch (problem) {
+    body.replaceChildren();
+    status.textContent = 'Cannot load prices. Apply product-prices-schema.sql to the staging D1 database, then refresh. ' + problem.message;
+  }
+}
+
+function renderPriceTable() {
+  const body = document.getElementById('priceTableBody');
+  body.replaceChildren();
+  PRODUCTS.forEach(product => {
+    const price = priceState[product.id];
+    if (!price) return;
+    const row = document.createElement('tr');
+    const name = document.createElement('td');
+    name.textContent = product.name;
+    const sellingCell = document.createElement('td');
+    const sellingInput = document.createElement('input');
+    sellingInput.type = 'number';
+    sellingInput.min = '0';
+    sellingInput.max = '1000000';
+    sellingInput.step = '0.01';
+    sellingInput.className = 'price-input';
+    sellingInput.setAttribute('aria-label', product.name + ' selling price');
+    sellingInput.value = Number(price.sellingPrice).toFixed(2);
+    const mrpCell = document.createElement('td');
+    const mrpInput = document.createElement('input');
+    mrpInput.type = 'number';
+    mrpInput.min = '0';
+    mrpInput.max = '1000000';
+    mrpInput.step = '0.01';
+    mrpInput.className = 'price-input';
+    mrpInput.setAttribute('aria-label', product.name + ' MRP');
+    mrpInput.value = Number(price.mrp).toFixed(2);
+    sellingCell.append(sellingInput);
+    mrpCell.append(mrpInput);
+    const actionCell = document.createElement('td');
+    const save = document.createElement('button');
+    save.type = 'button';
+    save.className = 'btn price-save-btn';
+    save.textContent = 'Save';
+    save.disabled = Boolean(savingPriceId);
+    save.onclick = () => saveProductPrice(product.id, sellingInput, mrpInput, save);
+    actionCell.append(save);
+    row.append(name, sellingCell, mrpCell, actionCell);
+    body.append(row);
+  });
+}
+
+async function saveProductPrice(id, sellingInput, mrpInput, button) {
+  if (!adminPassword || savingPriceId) return;
+  const sellingPrice = Number(sellingInput.value);
+  const mrp = Number(mrpInput.value);
+  if (!sellingInput.value.trim() || !mrpInput.value.trim() ||
+      !Number.isFinite(sellingPrice) || !Number.isFinite(mrp) ||
+      sellingPrice < 0 || mrp < 0 || sellingPrice > 1000000 || mrp > 1000000) {
+    document.getElementById('priceStatus').textContent = 'Enter valid non-negative prices for both fields.';
+    return;
+  }
+  savingPriceId = id;
+  button.disabled = true;
+  button.textContent = 'Saving…';
+  document.getElementById('priceStatus').textContent = 'Saving price…';
+  try {
+    await stockApi('/api/prices', 'PUT', { id, sellingPrice, mrp });
+    priceState[id] = { sellingPrice, mrp };
+    document.getElementById('priceStatus').textContent = 'Saved. Storefront and cart will use the new prices on their next refresh.';
+  } catch (problem) {
+    document.getElementById('priceStatus').textContent = 'Could not save price. ' + problem.message;
+  } finally {
+    savingPriceId = '';
+    renderPriceTable();
+  }
+}
+
 async function refreshAdminStock() {
   if (savingStock || loadingStock || !adminPassword) return;
   loadingStock = true;
   try {
     const data = await stockApi('/api/stock');
-    if (!data.stock || PRODUCTS.some(p => typeof data.stock[p.id] !== 'boolean')) {
+    if (!data.stock) {
       throw new Error('Unexpected stock response. Check worker.js.');
     }
     stockState = data.stock;
@@ -204,3 +291,28 @@ window.addEventListener('focus', refreshAdminStock);
     function escapeHtml(text) {
       return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
+
+document.addEventListener('DOMContentLoaded', () => {
+ const form=document.getElementById('addProductForm'); if(!form)return;
+ form.addEventListener('submit',event=>{
+  event.preventDefault(); if(!adminPassword)return;
+  const status=document.getElementById('addProductStatus'),button=document.getElementById('addProductSubmit'),file=document.getElementById('newProductImage').files[0];
+  if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>1024*1024){status.textContent='Choose a PNG, JPG or WebP image no larger than 1 MB.';return;}
+  const reader=new FileReader();reader.onerror=()=>status.textContent='Could not read image.';
+  reader.onload=async()=>{
+   button.disabled=true;button.textContent='Saving…';status.textContent='Adding product…';
+   try{
+    await stockApi('/api/admin/products','POST',{
+     name:document.getElementById('newProductName').value.trim(),brand:document.getElementById('newProductBrand').value.trim(),
+     description:document.getElementById('newProductDescription').value.trim(),category:document.getElementById('newProductCategory').value,
+     unitLabel:document.getElementById('newProductUnit').value.trim(),sellingPrice:Number(document.getElementById('newProductPrice').value),
+     mrp:Number(document.getElementById('newProductMrp').value),caseQty:document.getElementById('newProductCaseQty').value?Number(document.getElementById('newProductCaseQty').value):null,
+     imageMime:file.type,imageData:String(reader.result).split(',')[1]||''
+    });
+    status.textContent='Product added. Refresh the storefront to see it.';form.reset();
+    await refreshAdminCatalog();await Promise.all([refreshAdminStock(),refreshAdminPrices()]);
+   }catch(e){status.textContent='Could not add product. '+e.message;}
+   finally{button.disabled=false;button.textContent='Add product';}
+  };reader.readAsDataURL(file);
+ });
+});
