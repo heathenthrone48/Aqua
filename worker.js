@@ -522,7 +522,9 @@ export default {
 
       return json({ error: "Not found" }, 404);
     } catch {
-      return json({ error: "Stock service unavailable" }, 503);
+      return json({ error: url.pathname === "/api/customer/addresses"
+        ? "Saved address service unavailable. Please try again."
+        : "Stock service unavailable" }, 503);
     }
   }
 };
