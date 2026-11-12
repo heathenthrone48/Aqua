@@ -108,8 +108,8 @@ function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
   const containerDeposit = bisleriQty * BISLERI_CONTAINER_DEPOSIT;
   const returnCredit = returnedContainers * BISLERI_CONTAINER_DEPOSIT;
   const subtotal = productSubtotal + containerDeposit - returnCredit;
-  const handlingFee = items.length ? getHandlingFee(subtotal) : 0;
-  const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, subtotal) : 0;
+  const handlingFee = items.length ? getHandlingFee(productSubtotal) : 0;
+  const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, productSubtotal) : 0;
   return { productSubtotal, containerDeposit, returnedContainers, returnCredit, subtotal, deliveryFee, handlingFee, distanceKm, total: subtotal + deliveryFee + handlingFee };
 }
 document.addEventListener('deliverylocationchange', () => {

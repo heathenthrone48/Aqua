@@ -19,11 +19,13 @@
   const search = $("location-search");
   const suggestions = $("location-suggestions");
   const status = $("location-status");
+  const routeStatus = $("delivery-route-status") || status;
   const gpsButton = $("use-current-location");
 
   let map;
   let marker;
   let routeLine;
+  let routeController;
   let serviceBoundary;
   let shopMarker;
   let searchTimer;
@@ -127,19 +129,24 @@
 
   async function drawRoadRoute(lat, lon) {
     if (!map) return;
+    if (routeController) routeController.abort();
+    const controller = new AbortController();
+    routeController = controller;
     if (routeLine) {
       map.removeLayer(routeLine);
       routeLine = null;
     }
-    setStatus("Calculating driving route from the NeerBeku shop…");
+    routeStatus.textContent = "Calculating driving route from the NeerBeku shop…";
     try {
       const response = await fetch("/api/delivery/route", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ latitude: lat, longitude: lon }),
+        signal: controller.signal,
         cache: "no-store"
       });
       const result = await response.json();
+      if (controller.signal.aborted) return;
       if (!response.ok || !Array.isArray(result.geometry)) {
         throw new Error(result.error || "Could not calculate the road route.");
       }
@@ -149,15 +156,15 @@
         opacity: 0.85
       }).addTo(map);
       const km = Number(result.distanceKm).toFixed(2);
-      setStatus(result.withinServiceArea
+      routeStatus.textContent = result.withinServiceArea
         ? `Driving route: ${km} km from the shop. This location is within the 5.5 km service limit.`
-        : `Driving route: ${km} km from the shop. This location is outside the 5.5 km service limit.`);
+        : `Driving route: ${km} km from the shop. This location is outside the 5.5 km service limit.`;
       if (routeLine.getBounds().isValid()) {
         map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
       }
     } catch (error) {
       if (error.name !== "AbortError") {
-        setStatus(error.message || "Road route unavailable. Please try another pin.");
+        routeStatus.textContent = error.message || "Road route unavailable. Please try another pin.";
       }
     }
   }
