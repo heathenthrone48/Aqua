@@ -1264,13 +1264,14 @@ if (document.getElementById('preferred-time')) {
     showingAddressList = false;
     addressListEl.hidden = true;
     chooseAddressButton.textContent = 'Manage saved addresses';
+    chooseAddressButton.setAttribute('aria-expanded', 'false');
     chooseAddressButton.hidden = addresses.length === 0;
-    addAddressButton.hidden = addresses.length >= 2;
+    addAddressButton.hidden = addresses.length >= 5;
     if (address) {
       activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(address.address)}</span><span>${escape(address.name)} · ${escape(address.phone)}</span>${address.landmark ? `<small>${escape(address.landmark)}</small>` : ''}`;
       setEntryVisible(false);
       saveRow.hidden = true;
-      setText(addressMessage, 'This address is selected for your order.');
+      setText(addressMessage, 'Selected for this order. Manage saved addresses to switch, edit or delete an address.');
     } else {
       activeAddressEl.innerHTML = '<strong>No saved delivery address yet</strong><span>Add your details once and NeerBeku can show them here next time.</span>';
       setEntryVisible(true);
@@ -1327,6 +1328,8 @@ if (document.getElementById('preferred-time')) {
       saveButton.textContent = 'Update saved address';
       addressListEl.hidden = true;
       showingAddressList = false;
+      chooseAddressButton.textContent = 'Manage saved addresses';
+      chooseAddressButton.setAttribute('aria-expanded', 'false');
       window.switchAddressMode?.('manual');
       entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setText(saveMessage, 'Edit the details below and save your changes.');
@@ -1400,6 +1403,8 @@ if (document.getElementById('preferred-time')) {
     cancelButton.hidden = addresses.length === 0;
     addressListEl.hidden = true;
     showingAddressList = false;
+    chooseAddressButton.textContent = 'Manage saved addresses';
+    chooseAddressButton.setAttribute('aria-expanded', 'false');
     setText(saveMessage, '');
     field('customer-name').value ||= accountUser?.name || '';
     field('customer-phone').value = '';
@@ -1415,7 +1420,7 @@ if (document.getElementById('preferred-time')) {
     window.clearDeliveryLocation?.();
     document.dispatchEvent(new Event('deliverylocationchange'));
     const savedLabels = addresses.map(item => item.label);
-    field('account-address-label').value = !savedLabels.includes('Home') ? 'Home' : 'Work';
+    field('account-address-label').value = ['Home', 'Work', 'Address 3', 'Address 4', 'Address 5'].find(label => !savedLabels.includes(label)) || '';
     window.switchAddressMode?.('manual');
     entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1433,6 +1438,10 @@ if (document.getElementById('preferred-time')) {
     const postcode = field('address-postcode').value.trim();
     const latitude = field('delivery-latitude').value;
     const longitude = field('delivery-longitude').value;
+    if (!label || label.length > 40) {
+      setText(saveMessage, 'Give this address a name of up to 40 characters.');
+      return;
+    }
     if (!name || !/^\d{10}$/.test(phone) || !house || !street || !area || !city || !address || !latitude || !longitude) {
       setText(saveMessage, 'Complete your name, mobile number, house, street, area, city, and select your map location before saving.');
       return;
@@ -1498,7 +1507,8 @@ if (document.getElementById('preferred-time')) {
   chooseAddressButton.addEventListener('click', () => {
     showingAddressList = !showingAddressList;
     addressListEl.hidden = !showingAddressList;
-    chooseAddressButton.textContent = showingAddressList ? 'Close address list' : 'Choose another address';
+    chooseAddressButton.textContent = showingAddressList ? 'Close address list' : 'Manage saved addresses';
+    chooseAddressButton.setAttribute('aria-expanded', String(showingAddressList));
   });
   addAddressButton.addEventListener('click', openAddressEntry);
   saveButton.addEventListener('click', saveAddress);

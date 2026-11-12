@@ -86,7 +86,7 @@
   <div class="account-address-top"><div><p class="account-eyebrow">YOUR NEERBEKU ACCOUNT</p><h3>Delivery address</h3></div><span class="account-secure-badge">Saved to your account</span></div>
   <div class="account-active-address" id="account-active-address"></div>
   <div class="account-address-actions">
-    <button class="account-action-secondary" id="choose-saved-address" type="button" hidden>Choose another address</button>
+    <button class="account-action-secondary" id="choose-saved-address" type="button" aria-expanded="false" aria-controls="saved-address-list" hidden>Manage saved addresses</button>
     <button class="account-action-primary" id="add-saved-address" type="button">Add new address</button>
   </div>
   <div class="saved-address-list" id="saved-address-list" hidden></div>
@@ -134,8 +134,9 @@
 <h3 class="checkout-step-title">3. Delivery details</h3>
 <h3>📍 Delivery Address</h3>
 <div class="form-group account-address-label-field">
-<label for="account-address-label">Save this address as</label>
-<select id="account-address-label"><option value="Home">Home</option><option value="Work">Work</option></select>
+<label for="account-address-label">Address name</label>
+<input id="account-address-label" type="text" maxlength="40" required placeholder="Home, Work, Parents…" list="address-label-suggestions"/>
+<datalist id="address-label-suggestions"><option value="Home"><option value="Work"><option value="Parents"></datalist>
 </div>
 <p class="location-help">
     Choose your location using GPS or the map, then complete your delivery address.

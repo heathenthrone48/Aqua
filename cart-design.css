@@ -598,6 +598,9 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(4){grid-column:1}
 .cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(5){grid-column:2}
 .cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(6){grid-column:1/-1}
+#choose-saved-address { background: #087eaf; color: #fff; border-color: #087eaf; font-weight: 800; box-shadow: 0 3px 10px #087eaf26; }
+#choose-saved-address:hover { background: #06658d; }
+#choose-saved-address:focus-visible { outline: 3px solid #80ccea; outline-offset: 3px; }
 .saved-address-preview .account-address-label-field,
 .saved-address-preview > .location-help,
 .saved-address-preview .address-mode,
