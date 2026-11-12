@@ -1244,9 +1244,10 @@ if (document.getElementById('preferred-time')) {
 
   function setEntryVisible(visible) {
     if (!entryPanel) return;
-    // Keep the saved fields and map visible during faster checkout; lock fields
-    // until the customer chooses to add or change an address.
+    // Keep the saved map preview, contact details and route summary visible.
     entryPanel.hidden = false;
+    field('delivery-address-entry').classList.toggle('saved-address-preview', !visible);
+    window.setDeliveryLocationEditable?.(visible);
     entryPanel.querySelectorAll('input, select, textarea, button').forEach(control => {
       // Contact details must remain editable even when a saved address is selected.
       // Only lock the address-entry controls until the customer chooses to edit an address.
@@ -1411,6 +1412,8 @@ if (document.getElementById('preferred-time')) {
     field('customer-address').value = '';
     field('delivery-latitude').value = '';
     field('delivery-longitude').value = '';
+    window.clearDeliveryLocation?.();
+    document.dispatchEvent(new Event('deliverylocationchange'));
     const savedLabels = addresses.map(item => item.label);
     field('account-address-label').value = !savedLabels.includes('Home') ? 'Home' : 'Work';
     window.switchAddressMode?.('manual');

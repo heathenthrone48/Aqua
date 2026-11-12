@@ -33,6 +33,7 @@
   let reverseController;
   let mode = "location";
   let locationChosen = false;
+  let locationEditable = true;
 
   function setStatus(message) {
     status.textContent = message;
@@ -113,7 +114,7 @@
     const point = [lat, lon];
 
     if (!marker) {
-      marker = L.marker(point, { draggable: true }).addTo(map);
+      marker = L.marker(point, { draggable: locationEditable }).addTo(map);
 
       marker.on("dragend", () => {
         const p = marker.getLatLng();
@@ -241,6 +242,7 @@
   }
 
   async function selectCoordinates(lat, lon, source) {
+    if (!locationEditable) return;
     el["delivery-latitude"].value = lat.toFixed(7);
     el["delivery-longitude"].value = lon.toFixed(7);
     el["delivery-address-source"].value = source;
@@ -406,6 +408,20 @@
   };
 
   // Expose helpers for the existing checkout integration.
+  window.clearDeliveryLocation = () => {
+    routeController?.abort();
+    reverseController?.abort();
+    locationChosen = false;
+    if (marker) map.removeLayer(marker);
+    if (routeLine) map.removeLayer(routeLine);
+    marker = routeLine = null;
+    routeStatus.textContent = '';
+    setStatus('Select a location for your new delivery address.');
+  };
+  window.setDeliveryLocationEditable = editable => {
+    locationEditable = editable;
+    if (marker) marker.dragging[editable ? 'enable' : 'disable']();
+  };
   window.syncDeliveryAddress = updateAddress;
   window.switchAddressMode = switchMode;
 
