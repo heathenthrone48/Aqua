@@ -182,7 +182,7 @@ export default {
 
         let routeResponse;
         try {
-          routeResponse = await fetch("https://api.openrouteservice.org/v2/directions/driving-car/geojson", {
+          routeResponse = await fetch("https://api.heigit.org/openrouteservice/v2/directions/driving-car/geojson", {
             method: "POST",
             headers: {
               "Authorization": env.ORS_API_KEY,

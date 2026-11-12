@@ -9,4 +9,3 @@ node_modules/
 .wrangler/
 .dev.vars*
 .env*
-.git

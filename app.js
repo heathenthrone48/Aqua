@@ -108,8 +108,8 @@ function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
   const containerDeposit = bisleriQty * BISLERI_CONTAINER_DEPOSIT;
   const returnCredit = returnedContainers * BISLERI_CONTAINER_DEPOSIT;
   const subtotal = productSubtotal + containerDeposit - returnCredit;
-  const handlingFee = items.length ? getHandlingFee(subtotal) : 0;
-  const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, subtotal) : 0;
+  const handlingFee = items.length ? getHandlingFee(productSubtotal) : 0;
+  const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, productSubtotal) : 0;
   return { productSubtotal, containerDeposit, returnedContainers, returnCredit, subtotal, deliveryFee, handlingFee, distanceKm, total: subtotal + deliveryFee + handlingFee };
 }
 document.addEventListener('deliverylocationchange', () => {
@@ -689,7 +689,7 @@ document.addEventListener('deliverylocationchange', () => {
         }
       }
       const submit = document.getElementById('submit-order-btn');
-      if (submit) submit.disabled = true;
+      if (submit) submit.disabled = !items.length || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
         document.addEventListener('click', event => {
@@ -873,7 +873,7 @@ document.addEventListener('deliverylocationchange', () => {
     });
     form?.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (orderSubmitting || form.querySelector('#submit-order-btn')?.disabled) return;
+      if (orderSubmitting) return;
       orderSubmitting = true;
       const checkingButton = form.querySelector('.submit-btn');
       checkingButton.disabled = true;
