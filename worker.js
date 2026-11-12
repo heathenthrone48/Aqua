@@ -1,35 +1,17 @@
 const MAINTENANCE_HTML = "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"robots\" content=\"noindex\"><title>NeerBeku — Opening Soon</title><style>\n*{box-sizing:border-box}body{margin:0;min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:24px;background:#edf7fc;color:#12364d;font-family:Arial,sans-serif}main{max-width:560px;width:100%;text-align:center;background:#fff;padding:56px 28px;border-radius:24px;box-shadow:0 16px 60px #12364d12}.brand{font-size:30px;font-weight:800;color:#087eaf;margin:0 0 40px}.tag{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#087eaf}h1{font-size:clamp(30px,7vw,44px);margin:16px 0 24px;line-height:1.1}p{font-size:17px;line-height:1.7;color:#506b7b;margin:12px 0}.thanks{font-size:14px;margin-top:32px}\n</style></head><body><main><div class=\"brand\">NeerBeku</div><div class=\"tag\">Opening soon</div><h1>We’re getting ready<br>to begin deliveries.</h1><p>We’re temporarily not accepting orders.</p><p>Please check back later for updates.</p><p class=\"thanks\">Thank you for your patience.</p></main></body></html>";
 
-const DEFAULT_PRODUCT_PRICES = {
-  "Bisleri 20L Can": { sellingPrice: 100, mrp: 100 },
-  "Bisleri 10L Can": { sellingPrice: 130, mrp: 130 },
-  "Bisleri 5L Bottle": { sellingPrice: 80, mrp: 80 },
-  "Bisleri 2L Case": { sellingPrice: 250, mrp: 270 },
-  "Bisleri 1L Case": { sellingPrice: 180, mrp: 240 },
-  "Bisleri 500ml Case": { sellingPrice: 200, mrp: 240 },
-  "Bailey 10L Can": { sellingPrice: 120, mrp: 120 },
-  "Bailey 5L Can": { sellingPrice: 70, mrp: 70 },
-  "Bailey 2L Case": { sellingPrice: 240, mrp: 315 },
-  "Bailey 1L Case": { sellingPrice: 230, mrp: 230 },
-  "Kinley 2L Case": { sellingPrice: 240, mrp: 315 },
-  "Kinley 1L Case": { sellingPrice: 230, mrp: 300 },
-  "Manual Water Dispenser Hand Pump": { sellingPrice: 150, mrp: 200 },
-  "Automatic Electric Water Dispenser Pump": { sellingPrice: 250, mrp: 400 }
-};
-
 const PRODUCT_IDS = new Set([
   "Bisleri 20L Can",
   "Bisleri 10L Can",
   "Bisleri 5L Bottle",
-  "Bisleri 2L Case",
-  "Bisleri 1L Case",
-  "Bisleri 500ml Case",
-  "Bailey 10L Can",
-  "Bailey 5L Can",
-  "Bailey 2L Case",
-  "Bailey 1L Case",
-  "Kinley 2L Case",
-  "Kinley 1L Case",
+  "Bisleri 2L Bottle",
+  "Bisleri 1L Bottle",
+  "Bailley 10L Can",
+  "Bailley 5L Can",
+  "Bailley 2L Bottle",
+  "Bailley 1L Bottle",
+  "Kinley 2L Bottle",
+  "Kinley 1L Bottle",
   "Manual Water Dispenser Hand Pump",
   "Automatic Electric Water Dispenser Pump"
 ]);
@@ -125,9 +107,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    const isDeliveryRouteTest = url.pathname === "/api/delivery/route" && request.method === "POST";
-
-    if (env.MAINTENANCE_MODE === "true" && !isDeliveryRouteTest) {
+    if (env.MAINTENANCE_MODE === "true") {
       const headers = {
         "Cache-Control": "no-store, max-age=0",
         "X-Robots-Tag": "noindex"
@@ -154,76 +134,6 @@ export default {
         request.headers.get("Origin") !== url.origin
       ) {
         return json({ error: "Invalid origin" }, 403);
-      }
-
-      if (url.pathname === "/api/delivery/route" && request.method === "POST") {
-        if (!env.ORS_API_KEY) {
-          return json({ error: "Road distance service is not configured yet." }, 503);
-        }
-
-        let data;
-        try {
-          data = await request.json();
-        } catch {
-          return json({ error: "Invalid request" }, 400);
-        }
-
-        if (data.latitude === undefined || data.latitude === null || data.latitude === "" ||
-            data.longitude === undefined || data.longitude === null || data.longitude === "") {
-          return json({ error: "Choose a valid GPS or map location." }, 400);
-        }
-
-        const latitude = Number(data.latitude);
-        const longitude = Number(data.longitude);
-        if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-            !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-          return json({ error: "Choose a valid GPS or map location." }, 400);
-        }
-
-        let routeResponse;
-        try {
-          routeResponse = await fetch("https://api.openrouteservice.org/v2/directions/driving-car/geojson", {
-            method: "POST",
-            headers: {
-              "Authorization": env.ORS_API_KEY,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              coordinates: [[77.691037, 12.815047], [longitude, latitude]],
-              instructions: false
-            })
-          });
-        } catch {
-          return json({ error: "The road distance service is temporarily unavailable. Please try again." }, 502);
-        }
-
-        let routeData;
-        try {
-          routeData = await routeResponse.json();
-        } catch {
-          return json({ error: "Invalid response from road distance service." }, 502);
-        }
-
-        const feature = routeData.features?.[0];
-        const summary = feature?.properties?.summary;
-        const geometry = feature?.geometry;
-        if (!routeResponse.ok || !Number.isFinite(summary?.distance) ||
-            summary.distance <= 0 || geometry?.type !== "LineString" ||
-            !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
-          return json({
-            error: "Could not calculate a road route for this location. Please adjust the map pin and try again."
-          }, 422);
-        }
-
-        const distanceMeters = summary.distance;
-        const distanceKm = distanceMeters / 1000;
-        return json({
-          distanceKm: Number(distanceKm.toFixed(3)),
-          distanceMeters,
-          durationSeconds: Number.isFinite(summary.duration) ? summary.duration : null,
-          geometry: geometry.coordinates,
-          withinServiceArea: distanceKm <= 5.5
-        });
       }
 
       if (url.pathname === "/api/auth/google" && request.method === "POST") {
@@ -259,14 +169,13 @@ export default {
         if (!user) return json({ error: "Sign in to access saved addresses" }, 401);
 
         if (request.method === "GET") {
-          const { results } = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark,
+          const { results } = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
             latitude, longitude, is_default FROM customer_addresses
             WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           return json({ addresses: results.map(row => ({
             id: row.id, label: row.label, name: row.name, phone: row.phone,
-            address: row.address, house: row.house || "", street: row.street || "",
-            area: row.area || "", city: row.city || "", postcode: row.postcode || "",
-            landmark: row.landmark || "", latitude: row.latitude, longitude: row.longitude,
+            address: row.address, landmark: row.landmark || "",
+            latitude: row.latitude, longitude: row.longitude,
             is_default: row.is_default === 1
           })) });
         }
@@ -274,47 +183,40 @@ export default {
         if (request.method === "POST") {
           let data;
           try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
-          const label = String(data.label || "").trim();
+          const label = String(data.label || "Delivery address").trim().slice(0, 40);
           const name = String(data.name || "").trim();
           const phone = String(data.phone || "").trim();
           const address = String(data.address || "").trim();
-          const house = String(data.house || "").trim().slice(0, 160);
-          const street = String(data.street || "").trim().slice(0, 200);
-          const area = String(data.area || "").trim().slice(0, 160);
-          const city = String(data.city || "").trim().slice(0, 120);
-          const postcode = String(data.postcode || "").trim().slice(0, 20);
           const landmark = String(data.landmark || "").trim().slice(0, 250);
           const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
           const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
-          if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
-              !address || address.length > 500 || !house || !street || !area || !city ||
-              latitude === null || longitude === null || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-              !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-            return json({ error: "Choose Home or Work and enter your complete details and map location" }, 400);
+          if (!name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
+              !address || address.length > 500 ||
+              (latitude !== null && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) ||
+              (longitude !== null && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180))) {
+            return json({ error: "Enter a valid name, mobile number, and delivery address" }, 400);
           }
-          const existing = await env.DB.prepare("SELECT id FROM customer_addresses WHERE google_sub = ? AND label = ? LIMIT 1")
-            .bind(user.google_sub, label).first();
           const count = await env.DB.prepare("SELECT COUNT(*) AS count FROM customer_addresses WHERE google_sub = ?")
             .bind(user.google_sub).first();
-          if (!existing && count.count >= 2) return json({ error: "You can save only Home and Work. Edit an existing address to change it." }, 400);
-          const id = existing?.id || crypto.randomUUID();
+          if (count.count >= 10) return json({ error: "You can save up to 10 delivery addresses" }, 400);
+
+          const id = crypto.randomUUID();
           const now = Math.floor(Date.now() / 1000);
-          if (existing) {
-            await env.DB.prepare(`UPDATE customer_addresses SET name = ?, phone = ?, address = ?, house = ?, street = ?, area = ?, city = ?, postcode = ?, landmark = ?, latitude = ?, longitude = ?, updated_at = ? WHERE id = ? AND google_sub = ?`)
-              .bind(name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, now, id, user.google_sub).run();
-          } else {
-            await env.DB.prepare(`INSERT INTO customer_addresses
-              (id, google_sub, label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, is_default, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`)
-              .bind(id, user.google_sub, label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, now, now).run();
-          }
-          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, is_default
-            FROM customer_addresses WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
+          await env.DB.batch([
+            env.DB.prepare("UPDATE customer_addresses SET is_default = 0 WHERE google_sub = ?").bind(user.google_sub),
+            env.DB.prepare(`INSERT INTO customer_addresses
+              (id, google_sub, label, name, phone, address, landmark, latitude, longitude, is_default, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`)
+              .bind(id, user.google_sub, label || "Delivery address", name, phone, address, landmark, latitude, longitude, now, now)
+          ]);
+          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
+            latitude, longitude, is_default FROM customer_addresses
+            WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           return json({ success: true, id, addresses: refreshed.results.map(row => ({
-            id: row.id, label: row.label, name: row.name, phone: row.phone, address: row.address,
-            house: row.house || "", street: row.street || "", area: row.area || "", city: row.city || "",
-            postcode: row.postcode || "", landmark: row.landmark || "", latitude: row.latitude,
-            longitude: row.longitude, is_default: row.is_default === 1
+            id: row.id, label: row.label, name: row.name, phone: row.phone,
+            address: row.address, landmark: row.landmark || "",
+            latitude: row.latitude, longitude: row.longitude,
+            is_default: row.is_default === 1
           })) });
         }
 
@@ -325,32 +227,6 @@ export default {
           const owned = await env.DB.prepare("SELECT id FROM customer_addresses WHERE id = ? AND google_sub = ?")
             .bind(id, user.google_sub).first();
           if (!owned) return json({ error: "Saved address not found" }, 404);
-          if (data.action === "edit") {
-            const label = String(data.label || "").trim();
-            const name = String(data.name || "").trim();
-            const phone = String(data.phone || "").trim();
-            const address = String(data.address || "").trim();
-            const house = String(data.house || "").trim().slice(0, 160);
-            const street = String(data.street || "").trim().slice(0, 200);
-            const area = String(data.area || "").trim().slice(0, 160);
-            const city = String(data.city || "").trim().slice(0, 120);
-            const postcode = String(data.postcode || "").trim().slice(0, 20);
-            const landmark = String(data.landmark || "").trim().slice(0, 250);
-            const latitude = data.latitude == null || data.latitude === "" ? null : Number(data.latitude);
-            const longitude = data.longitude == null || data.longitude === "" ? null : Number(data.longitude);
-            if (!["Home", "Work"].includes(label) || !name || name.length > 100 || !/^[+0-9().\-\s]{6,32}$/.test(phone) ||
-                !address || address.length > 500 || !house || !street || !area || !city ||
-                latitude === null || longitude === null || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-                !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-              return json({ error: "Choose Home or Work and enter your complete details and map location" }, 400);
-            }
-            const duplicate = await env.DB.prepare("SELECT id FROM customer_addresses WHERE google_sub = ? AND label = ? AND id != ? LIMIT 1")
-              .bind(user.google_sub, label, id).first();
-            if (duplicate) return json({ error: "You already have an address saved with that label. Edit that one instead." }, 409);
-            await env.DB.prepare(`UPDATE customer_addresses SET label = ?, name = ?, phone = ?, address = ?, house = ?, street = ?, area = ?, city = ?, postcode = ?, landmark = ?, latitude = ?, longitude = ?, updated_at = ? WHERE id = ? AND google_sub = ?`)
-              .bind(label, name, phone, address, house, street, area, city, postcode, landmark, latitude, longitude, Math.floor(Date.now() / 1000), id, user.google_sub).run();
-            return json({ success: true });
-          }
           await env.DB.batch([
             env.DB.prepare("UPDATE customer_addresses SET is_default = 0 WHERE google_sub = ?").bind(user.google_sub),
             env.DB.prepare("UPDATE customer_addresses SET is_default = 1, updated_at = ? WHERE id = ? AND google_sub = ?")
@@ -370,14 +246,13 @@ export default {
             await env.DB.prepare("UPDATE customer_addresses SET is_default = 1 WHERE id = ? AND google_sub = ?")
               .bind(results[0].id, user.google_sub).run();
           }
-          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, house, street, area, city, postcode, landmark,
+          const refreshed = await env.DB.prepare(`SELECT id, label, name, phone, address, landmark,
             latitude, longitude, is_default FROM customer_addresses
             WHERE google_sub = ? ORDER BY is_default DESC, updated_at DESC`).bind(user.google_sub).all();
           return json({ success: true, addresses: refreshed.results.map(row => ({
             id: row.id, label: row.label, name: row.name, phone: row.phone,
-            address: row.address, house: row.house || "", street: row.street || "",
-            area: row.area || "", city: row.city || "", postcode: row.postcode || "",
-            landmark: row.landmark || "", latitude: row.latitude, longitude: row.longitude,
+            address: row.address, landmark: row.landmark || "",
+            latitude: row.latitude, longitude: row.longitude,
             is_default: row.is_default === 1
           })) });
         }
@@ -398,77 +273,6 @@ export default {
           : json({ error: "Incorrect password" }, 401);
       }
 
-      if (url.pathname === "/api/catalog" && request.method === "GET") {
-        const {results}=await env.DB.prepare("SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty FROM custom_products ORDER BY sort_order,created_at").all();
-        return json({products:results.map(r=>({id:r.id,name:r.name,brand:r.brand,description:r.description,category:r.category,unitLabel:r.unit_label,price:Number(r.selling_price),mrp:Number(r.mrp),caseQty:r.case_qty==null?null:Number(r.case_qty)}))});
-      }
-      if(url.pathname.startsWith("/api/product-image/")&&request.method==="GET"){
-        const id=decodeURIComponent(url.pathname.slice("/api/product-image/".length));
-        const row=await env.DB.prepare("SELECT image_mime,image_data FROM custom_products WHERE id=?").bind(id).first();
-        if(!row)return new Response("Not found",{status:404});
-        return new Response(Uint8Array.from(atob(row.image_data),c=>c.charCodeAt(0)),{headers:{"Content-Type":row.image_mime,"Cache-Control":"public,max-age=3600","X-Content-Type-Options":"nosniff"}});
-      }
-      if(url.pathname==="/api/admin/products"&&request.method==="GET"){
-        if(!(await validPassword(request,env)))return json({error:"Please log in again"},401);
-        const {results}=await env.DB.prepare("SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty,available FROM custom_products ORDER BY sort_order,created_at").all();
-        return json({products:results.map(r=>({id:r.id,name:r.name,brand:r.brand,description:r.description,category:r.category,unitLabel:r.unit_label,price:Number(r.selling_price),mrp:Number(r.mrp),caseQty:r.case_qty==null?null:Number(r.case_qty),available:r.available===1}))});
-      }
-      if(url.pathname==="/api/admin/products"&&request.method==="POST"){
-        if(!(await validPassword(request,env)))return json({error:"Please log in again"},401);
-        let d;try{d=await request.json();}catch{return json({error:"Invalid request"},400);}
-        const name=String(d.name||"").trim(),brand=String(d.brand||"").trim(),description=String(d.description||"").trim(),category=String(d.category||""),unit=String(d.unitLabel||"").trim();
-        const price=Number(d.sellingPrice),mrp=Number(d.mrp),caseQty=d.caseQty==null||d.caseQty===""?null:Number(d.caseQty),mime=String(d.imageMime||""),image=String(d.imageData||"");
-        if(!name||name.length>100||!brand||brand.length>80||!description||description.length>1000||!["water","accessories"].includes(category)||!unit||unit.length>30||!Number.isFinite(price)||!Number.isFinite(mrp)||price<0||mrp<0||price>1e6||mrp>1e6||(caseQty!==null&&(!Number.isInteger(caseQty)||caseQty<1||caseQty>500))||!["image/png","image/jpeg","image/webp"].includes(mime)||!/^[A-Za-z0-9+/]+={0,2}$/.test(image)||image.length>1400000)return json({error:"Complete all fields and upload a PNG, JPG or WebP image up to 1 MB."},400);
-        const id="custom-"+crypto.randomUUID();
-        try{await env.DB.prepare("INSERT INTO custom_products(id,name,brand,description,category,unit_label,selling_price,mrp,case_qty,image_mime,image_data,sort_order,available,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,1000,1,?)").bind(id,name,brand,description,category,unit,Math.round(price*100)/100,Math.round(mrp*100)/100,caseQty,mime,image,Math.floor(Date.now()/1000)).run();}
-        catch(e){if(String(e).includes("UNIQUE"))return json({error:"A product with this name already exists."},409);throw e;}
-        return json({success:true,id});
-      }
-      if (url.pathname === "/api/prices" && request.method === "GET") {
-        const { results } = await env.DB.prepare(
-          "SELECT product_id, selling_price, mrp FROM product_prices"
-        ).all();
-        const prices = Object.fromEntries(
-          Object.entries(DEFAULT_PRODUCT_PRICES).map(([id, value]) => [id, { ...value }])
-        );
-        for (const row of results) {
-          if (PRODUCT_IDS.has(row.product_id)) {
-            prices[row.product_id] = {
-              sellingPrice: Number(row.selling_price),
-              mrp: Number(row.mrp)
-            };
-          }
-        }
-        const custom=await env.DB.prepare("SELECT id,selling_price,mrp FROM custom_products").all();
-        for(const r of custom.results)prices[r.id]={sellingPrice:Number(r.selling_price),mrp:Number(r.mrp)};
-        // Bisleri 20L water price is fixed at ₹100; the separate ₹150 container deposit is calculated at checkout.
-        prices["Bisleri 20L Can"] = { sellingPrice: 100, mrp: 100 };
-        return json({ prices });
-      }
-
-      if (url.pathname === "/api/prices" && request.method === "PUT") {
-        if (!(await validPassword(request, env))) {
-          return json({ error: "Please log in again" }, 401);
-        }
-        let data;
-        try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
-        const id = String(data.id || "");
-        const sellingPrice = Number(data.sellingPrice);
-        const mrp = Number(data.mrp);
-        const custom=await env.DB.prepare("SELECT id FROM custom_products WHERE id=?").bind(id).first();
-        if((!PRODUCT_IDS.has(id)&&!custom)||!Number.isFinite(sellingPrice)||!Number.isFinite(mrp)||sellingPrice<0||mrp<0||sellingPrice>1e6||mrp>1e6)return json({error:"Enter a valid product, selling price and MRP"},400);
-        if(custom){await env.DB.prepare("UPDATE custom_products SET selling_price=?,mrp=? WHERE id=?").bind(Math.round(sellingPrice*100)/100,Math.round(mrp*100)/100,id).run();return json({success:true});}
-        await env.DB.prepare(`
-          INSERT INTO product_prices (product_id, selling_price, mrp, updated_at)
-          VALUES (?, ?, ?, ?)
-          ON CONFLICT(product_id) DO UPDATE SET
-            selling_price = excluded.selling_price,
-            mrp = excluded.mrp,
-            updated_at = excluded.updated_at
-        `).bind(id, Math.round(sellingPrice * 100) / 100, Math.round(mrp * 100) / 100, Math.floor(Date.now() / 1000)).run();
-        return json({ success: true });
-      }
-
       if (
         url.pathname === "/api/stock" &&
         request.method === "GET"
@@ -481,10 +285,13 @@ export default {
           [...PRODUCT_IDS].map(id => [id, true])
         );
 
-        for(const r of results)if(PRODUCT_IDS.has(r.product_id))stock[r.product_id]=r.available===1;
-        const custom=await env.DB.prepare("SELECT id,available FROM custom_products").all();
-        for(const r of custom.results)stock[r.id]=r.available===1;
-        return json({stock});
+        for (const row of results) {
+          if (PRODUCT_IDS.has(row.product_id)) {
+            stock[row.product_id] = row.available === 1;
+          }
+        }
+
+        return json({ stock });
       }
 
       if (
@@ -503,9 +310,12 @@ export default {
           return json({ error: "Invalid request" }, 400);
         }
 
-        const custom=await env.DB.prepare("SELECT id FROM custom_products WHERE id=?").bind(String(data.id||"")).first();
-        if((!PRODUCT_IDS.has(data.id)&&!custom)||typeof data.available!=="boolean")return json({error:"Invalid product or stock status"},400);
-        if(custom){await env.DB.prepare("UPDATE custom_products SET available=? WHERE id=?").bind(data.available?1:0,data.id).run();return json({success:true});}
+        if (
+          !PRODUCT_IDS.has(data.id) ||
+          typeof data.available !== "boolean"
+        ) {
+          return json({ error: "Invalid product or stock status" }, 400);
+        }
 
         await env.DB.prepare(`
           INSERT INTO product_stock (product_id, available)
@@ -522,9 +332,7 @@ export default {
 
       return json({ error: "Not found" }, 404);
     } catch {
-      return json({ error: url.pathname === "/api/customer/addresses"
-        ? "Saved address service unavailable. Please try again."
-        : "Stock service unavailable" }, 503);
+      return json({ error: "Stock service unavailable" }, 503);
     }
   }
 };

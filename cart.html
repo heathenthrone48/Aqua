@@ -45,10 +45,9 @@
     </div>
   </header>
 
-<div class="container" id="order-screen"><a class="continue-shopping" href="index.html">← Continue shopping</a><h1 class="cart-page-title">Your checkout</h1><p class="checkout-intro">Review your items, exchange empty cans and confirm delivery.</p><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm">
-<div class="cart-panel">
+<div class="container" id="order-screen"><a class="continue-shopping" href="index.html">← Continue shopping</a><h1 class="cart-page-title">Your cart</h1><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm"><div class="cart-panel">
 <div class="cart-header">
-<h3>1. Selected items</h3>
+<h3>Selected items</h3>
 <span class="cart-count" id="cart-count">0</span>
 </div>
 <div id="cart-items">
@@ -61,8 +60,14 @@
 </div>
 <input id="cart-items-input" name="Cart_Items" type="hidden" value=""/>
 <input id="input-total-bill" name="Total_Estimated_Bill" type="hidden" value="₹0.00"/>
-
-<section class="reference-checkout-card reference-customer-card"><h2>2. Customer details</h2><div class="panel google-signin-panel">
+<div class="panel">
+<div class="checkbox-group">
+<input checked="" id="emptyReturn" name="Empty_Jars_To_Return" type="checkbox" value="Yes"/>
+<label for="emptyReturn">I have empty jar(s) ready to return upon delivery</label>
+</div>
+</div>
+<div class="section-label account-section-label" id="account-section-label">Your account</div>
+<div class="panel google-signin-panel">
   <div class="account-card-heading">
     <span class="account-card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
     <div><h2 id="account-card-title">Faster checkout next time</h2><p>Sign in to save your delivery details and addresses to your NeerBeku account. Google verifies your identity; NeerBeku stores your saved details.</p></div>
@@ -87,64 +92,38 @@
   <div class="account-active-address" id="account-active-address"></div>
   <div class="account-address-actions">
     <button class="account-action-secondary" id="choose-saved-address" type="button" hidden>Choose another address</button>
-    <button class="account-action-primary" id="add-saved-address" type="button">Add new address</button>
+    <button class="account-action-primary" id="add-saved-address" type="button">Add address</button>
   </div>
   <div class="saved-address-list" id="saved-address-list" hidden></div>
   <p class="account-address-message" id="account-address-message" aria-live="polite" role="status"></p>
 </section>
 <div class="panel" id="delivery-entry-panel">
-<h3 class="checkout-step-title">Customer contact</h3>
 <!-- Customer details: keep these visible in both modes -->
 <div class="form-group">
-<label class="required-address-label" for="customer-name">Customer Name <span aria-hidden="true">*</span></label>
+<label for="customer-name">Customer Name *</label>
 <input autocomplete="name" id="customer-name" name="customer-name" placeholder="Enter your full name" required="" type="text"/>
 </div>
 <div class="form-group">
-<label class="required-address-label" for="customer-phone">Mobile Number <span aria-hidden="true">*</span></label>
-<div class="phone-input-row"><span class="phone-country-code" aria-hidden="true">+91</span><input autocomplete="tel" id="customer-phone" name="customer-phone" placeholder="Enter 10-digit mobile number" required="" type="tel" inputmode="numeric" maxlength="10" minlength="10" pattern="[0-9]{10}" title="Enter exactly 10 digits"/></div>
-</div>
-<div class="form-group">
-<label for="customer-alt-phone">Alternate Mobile Number (Optional)</label>
-<input autocomplete="tel" id="customer-alt-phone" name="customer-alt-phone" inputmode="numeric" maxlength="10" minlength="10" pattern="[0-9]{10}" placeholder="10-digit alternate contact number" type="tel" title="Enter exactly 10 digits"/>
-<small>Optional number for delivery coordination.</small>
+<label for="customer-phone">Mobile Number *</label>
+<input autocomplete="tel" id="customer-phone" name="customer-phone" placeholder="Enter your mobile number" required="" type="tel"/>
 </div>
 <hr/>
 <!-- Delivery address selector -->
-</div></section>
-<section class="reference-checkout-card reference-delivery-card"><h2>3. Delivery details</h2><div class="panel checkout-details-panel">
-<h3 class="checkout-step-title">Delivery window</h3>
-<div class="form-group">
-<select id="preferred-time" name="Preferred_Time"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
-<option value="Today - Morning (8 AM–11 AM)" data-day="today" data-end="11">Today - Morning (8 AM–11 AM)</option>
-<option value="Today - Midday (11 AM–2 PM)" data-day="today" data-end="14">Today - Midday (11 AM–2 PM)</option>
-<option value="Today - Afternoon (2 PM–5 PM)" data-day="today" data-end="17">Today - Afternoon (2 PM–5 PM)</option>
-<option value="Today - Evening (5 PM–8 PM)" data-day="today" data-end="20">Today - Evening (5 PM–8 PM)</option>
-<option value="Tomorrow - Morning (8 AM–11 AM)" data-day="tomorrow" data-end="11">Tomorrow - Morning (8 AM–11 AM)</option>
-<option value="Tomorrow - Midday (11 AM–2 PM)" data-day="tomorrow" data-end="14">Tomorrow - Midday (11 AM–2 PM)</option>
-<option value="Tomorrow - Afternoon (2 PM–5 PM)" data-day="tomorrow" data-end="17">Tomorrow - Afternoon (2 PM–5 PM)</option>
-<option value="Tomorrow - Evening (5 PM–8 PM)" data-day="tomorrow" data-end="20">Tomorrow - Evening (5 PM–8 PM)</option>
-<option value="scheduled">Schedule for Another Date</option></select>
-<div id="scheduled-delivery-fields" hidden>
-<label for="delivery-date">Delivery date</label><input type="date" id="delivery-date" disabled>
-<label for="scheduled-slot">Delivery window</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning (8 AM–11 AM)</option><option value="Midday (11 AM–2 PM)">Midday (11 AM–2 PM)</option><option value="Afternoon (2 PM–5 PM)">Afternoon (2 PM–5 PM)</option><option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option></select>
-</div><p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
-</div>
-<section class="location-section" id="delivery-address-entry">
-<h3 class="checkout-step-title">3. Delivery details</h3>
+<section class="location-section">
 <h3>📍 Delivery Address</h3>
 <div class="form-group account-address-label-field">
 <label for="account-address-label">Save this address as</label>
-<select id="account-address-label"><option value="Home">Home</option><option value="Work">Work</option></select>
+<input id="account-address-label" maxlength="40" placeholder="Home, Work, etc." type="text" value="Home"/>
 </div>
 <p class="location-help">
-    Choose your location using GPS or the map, then complete your delivery address.
+    Choose how you want to provide your delivery address.
   </p>
 <div class="address-mode">
 <button aria-pressed="true" class="address-mode-btn active" id="pick-location-tab" type="button">
       📍 Pick a Location
     </button>
-<button class="address-mode-btn" id="use-current-location" type="button">
-      ◎ Use My Current Location
+<button aria-pressed="false" class="address-mode-btn" id="manual-address-tab" type="button">
+      ✍️ Enter Manually
     </button>
 </div>
 <!-- LOCATION MODE: no address form initially -->
@@ -152,31 +131,40 @@
 <label for="location-search">Search for an address</label>
 <input autocomplete="off" id="location-search" placeholder="Street, area or building" type="search"/>
 <div class="location-suggestions" id="location-suggestions"></div>
+<button class="location-action-btn" id="use-current-location" type="button">
+      ◎ Use My Current Location
+    </button>
 <p aria-live="polite" id="location-status" role="status">
       Search for an address or use your current location.
     </p>
 <div id="delivery-map"></div>
 <p class="location-help">
-      Select a pin on the map or use your current location. A location is required for every order.
+      You can also tap the map to choose your delivery point.
+    </p>
+</div>
+<!-- MANUAL MODE: address form shown immediately -->
+<div hidden="" id="manual-address-panel">
+<p class="location-help">
+      Enter your address below. You do not need to share your location.
     </p>
 </div>
 <!-- Shared fields: hidden until manual entry or location selection -->
-<div id="delivery-address-fields">
+<div hidden="" id="delivery-address-fields">
 <h4 id="address-form-heading">Confirm your delivery address</h4>
 <div class="form-group">
-<label class="required-address-label" for="address-house">House / Flat / Building <span aria-hidden="true">*</span></label>
+<label for="address-house">House / Flat / Building *</label>
 <input autocomplete="address-line2" id="address-house" placeholder="Flat number or building name" required="" type="text"/>
 </div>
 <div class="form-group">
-<label class="required-address-label" for="address-street">Street Address <span aria-hidden="true">*</span></label>
+<label for="address-street">Street Address *</label>
 <input autocomplete="address-line1" id="address-street" placeholder="Street name and number" required="" type="text"/>
 </div>
 <div class="form-group">
-<label class="required-address-label" for="address-area">Area / Locality <span aria-hidden="true">*</span></label>
-<input id="address-area" placeholder="Neighbourhood or area" required="" type="text"/>
+<label for="address-area">Area / Locality</label>
+<input id="address-area" placeholder="Neighbourhood or area" type="text"/>
 </div>
 <div class="form-group">
-<label class="required-address-label" for="address-city">City <span aria-hidden="true">*</span></label>
+<label for="address-city">City *</label>
 <input autocomplete="address-level2" id="address-city" placeholder="City or town" required="" type="text"/>
 </div>
 <div class="form-group">
@@ -202,24 +190,32 @@
 </div>
 </section>
 </div>
-
-<section class="reference-checkout-card reference-summary-card"><section class="checkout-order-summary" aria-live="polite">
-<div class="checkout-summary-heading"><h2>4. Order summary</h2><span class="checkout-payment-badge">Ready to order</span></div>
-<p class="checkout-payment-note">Payment method: Cash on delivery</p>
-<h3 class="checkout-summary-section-title">Items</h3><div class="checkout-summary-items" id="checkout-summary-items"></div>
-<div class="checkout-summary-row"><span>Items subtotal</span><strong id="items-subtotal">₹0.00</strong></div>
-
-
-<section class="checkout-delivery-charges"><h3>Delivery charges</h3>
-<div class="checkout-summary-row"><span>Delivery fee</span><strong id="delivery-fee">Choose location</strong></div>
-<div class="checkout-summary-row"><span>Handling fee</span><strong id="handling-fee">₹0.00</strong></div></section>
-<div class="checkout-summary-row" id="checkout-deposit-summary-row" hidden><span>Refundable 20L can deposit</span><strong id="checkout-deposit-value">₹0.00</strong></div>
-<div class="checkout-summary-total-card">
-
-<div class="checkout-grand-total"><span>Total amount due</span><strong id="total-display">₹0.00</strong></div><small>Inclusive of applicable charges</small></div></section>
-<p id="orders-paused-message" role="status">We are currently not accepting orders. Our website is still in development.</p>
-<button class="submit-btn" id="submit-order-btn" type="submit" disabled aria-describedby="orders-paused-message">PLACE ORDER (PAY ON DELIVERY)</button></section>
-
+<div class="section-label delivery-section-label" id="delivery-details-section">Delivery details</div>
+<!-- Keep your existing delivery time, cart total and order button below -->
+<div class="panel checkout-details-panel">
+<div class="form-group">
+<label for="preferred-time">Delivery Window</label>
+<select id="preferred-time" name="Preferred_Time"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
+<option value="Today - Morning (8 AM–11 AM)" data-day="today" data-end="11">Today - Morning (8 AM–11 AM)</option>
+<option value="Today - Midday (11 AM–2 PM)" data-day="today" data-end="14">Today - Midday (11 AM–2 PM)</option>
+<option value="Today - Afternoon (2 PM–5 PM)" data-day="today" data-end="17">Today - Afternoon (2 PM–5 PM)</option>
+<option value="Today - Evening (5 PM–8 PM)" data-day="today" data-end="20">Today - Evening (5 PM–8 PM)</option>
+<option value="Tomorrow - Morning (8 AM–11 AM)" data-day="tomorrow" data-end="11">Tomorrow - Morning (8 AM–11 AM)</option>
+<option value="Tomorrow - Midday (11 AM–2 PM)" data-day="tomorrow" data-end="14">Tomorrow - Midday (11 AM–2 PM)</option>
+<option value="Tomorrow - Afternoon (2 PM–5 PM)" data-day="tomorrow" data-end="17">Tomorrow - Afternoon (2 PM–5 PM)</option>
+<option value="Tomorrow - Evening (5 PM–8 PM)" data-day="tomorrow" data-end="20">Tomorrow - Evening (5 PM–8 PM)</option>
+<option value="scheduled">Schedule for Another Date</option></select>
+<div id="scheduled-delivery-fields" hidden>
+<label for="delivery-date">Delivery date</label><input type="date" id="delivery-date" disabled>
+<label for="scheduled-slot">Delivery window</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning (8 AM–11 AM)</option><option value="Midday (11 AM–2 PM)">Midday (11 AM–2 PM)</option><option value="Afternoon (2 PM–5 PM)">Afternoon (2 PM–5 PM)</option><option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option></select>
+</div><p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
+</div>
+<h2 class="summary-heading">Order summary</h2><p class="payment-note">Payment: Pay on delivery</p><div class="fee-breakdown" aria-live="polite"><div><span>Items subtotal</span><strong id="items-subtotal">₹0.00</strong></div><div><span>Delivery fee</span><strong id="delivery-fee">₹0.00</strong></div></div><div class="total-banner">
+<span class="total-label">Total Amount Due</span>
+<span class="total-price" id="total-display">₹0.00</span>
+</div>
+<button class="submit-btn" id="submit-order-btn" type="submit">PLACE ORDER (PAY ON DELIVERY)</button>
+</div>
 </form>
 </div>
 <!-- PRODUCT DETAIL POPUP MODAL VIEW -->
@@ -238,22 +234,14 @@
 <strong class="confirm-ref-code" id="order-ref-code">NEER-AQUA-0000</strong>
 <span class="confirm-ref-note">Please quote this reference when contacting us about your order.</span>
 </div>
-<div class="confirm-summary confirm-summary-card">
-<div class="confirm-summary-top"><h3>Order summary</h3><span class="confirm-ready">Ready to order</span></div>
-<p class="confirm-payment-method">Payment method: Cash on delivery</p>
-<h4 class="confirm-section-title">Items</h4><div id="confirm-items"></div>
-<section class="confirm-exchange" id="confirm-exchange-section"><h4>↻ &nbsp;20L Jar Exchange</h4>
-<div class="confirm-breakdown-row"><span>New cans delivered</span><strong id="confirm-new-cans">0</strong></div>
-<div class="confirm-breakdown-row"><span>Empty jars exchanged</span><strong class="confirm-return-value" id="confirm-bisleri-returns">0 jars</strong></div>
-<div class="confirm-breakdown-row"><span>Additional jar deposit</span><strong id="confirm-additional-deposit">₹0.00</strong></div>
-<p class="confirm-exchange-note" id="confirm-exchange-note">Please hand over your empty jars to our delivery partner during delivery.</p></section>
-<section class="confirm-delivery-charges"><h4>Delivery charges</h4>
-<div class="confirm-breakdown-row"><span>Delivery fee</span><strong id="confirm-delivery-fee">₹0.00</strong></div>
-<div class="confirm-breakdown-row"><span>Handling fee</span><strong id="confirm-handling-fee">₹0.00</strong></div></section>
-<div class="confirm-price-card"><div class="confirm-breakdown-row"><span>Items subtotal</span><strong id="confirm-subtotal">₹0.00</strong></div>
-<div class="confirm-breakdown-row"><span>Additional charges</span><strong id="confirm-additional-charges">₹0.00</strong></div>
-<div class="confirm-total"><span>Total amount due</span><strong id="confirm-total">₹0.00</strong></div>
-<small>Inclusive of applicable charges</small></div></div>
+<div class="confirm-summary">
+<h3>Order Summary</h3>
+<div id="confirm-items"></div>
+<div class="fee-breakdown"><div><span>Items subtotal</span><strong id="confirm-subtotal">₹0.00</strong></div><div><span>Delivery fee</span><strong id="confirm-delivery-fee">₹0.00</strong></div></div><div class="confirm-total">
+<span>Total Due on Delivery</span>
+<strong id="confirm-total">₹0.00</strong>
+</div>
+</div>
 <dl class="confirm-details">
 <div><dt>Payment</dt><dd>Pay on delivery</dd></div>
 <div><dt>Delivery Window</dt><dd id="confirm-time">—</dd></div>
@@ -264,25 +252,6 @@
 <button class="submit-btn confirm-btn" onclick="window.location.href='index.html'" type="button">Place Another Order</button>
 </div>
 </div>
-<div class="cart-notice-backdrop" id="cart-requirements-notice" role="dialog" aria-modal="true" aria-labelledby="cart-notice-title" aria-describedby="cart-notice-description" hidden>
-  <div class="cart-notice-card">
-    <button class="cart-notice-close" type="button" aria-label="Close" onclick="closeCartRequirementsNotice()">×</button>
-    <div class="cart-notice-icon" aria-hidden="true">!</div>
-    <h2 id="cart-notice-title">Before you place your order</h2>
-    <p id="cart-notice-description">Please make sure you provide all the required details to complete your order:</p>
-    <ul>
-      <li>Customer Name</li>
-      <li>Mobile Number</li>
-      <li>House / Flat / Building</li>
-      <li>Street Address</li>
-      <li>Area / Locality</li>
-      <li>City</li>
-      <li>Delivery location selected using GPS or the map</li>
-    </ul>
-    <button class="cart-notice-confirm" type="button" onclick="closeCartRequirementsNotice()">Got it</button>
-  </div>
-</div>
-
 <footer class="nb-footer">
 <div class="nb-footer-grid">
 <section class="nb-footer-brand"><a href="index.html"><img src="images/logo.png" alt="NeerBeku" width="220" height="70"></a><h2>Your local drinking water delivery partner</h2><p>A water delivery service by <strong>Amrutha Store.</strong> Order packaged drinking water, water cans and dispenser accessories online for delivery in serviceable areas around Bommasandra.</p></section>

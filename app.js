@@ -1,120 +1,9 @@
-const DELIVERY_CENTRE = { latitude: 12.815047, longitude: 77.691037 };
-const MAX_DELIVERY_RADIUS_KM = 5.5;
-let cachedRoadDistanceKm = null;
-let cachedRouteKey = "";
-let routeRequest = null;
-function getDeliveryCoordinates() {
-  const lat = document.getElementById('delivery-latitude')?.value;
-  const lon = document.getElementById('delivery-longitude')?.value;
-  if (lat === undefined || lat === null || lat === '' || lon === undefined || lon === null || lon === '') return null;
-  const latitude = Number(lat), longitude = Number(lon);
-  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-      !Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
-  return { latitude, longitude, key: latitude.toFixed(7) + ',' + longitude.toFixed(7) };
+const DELIVERY_FEE = 15;
+function calculateOrderTotals(items) {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const deliveryFee = items.length ? DELIVERY_FEE : 0;
+  return { subtotal, deliveryFee, total: subtotal + deliveryFee };
 }
-async function fetchRoadDistance(force = false) {
-  const coordinates = getDeliveryCoordinates();
-  if (!coordinates) throw new Error('Please select your delivery location using GPS or the map.');
-  if (!force && cachedRouteKey === coordinates.key && cachedRoadDistanceKm !== null) return cachedRoadDistanceKm;
-  if (routeRequest) routeRequest.abort();
-  const controller = new AbortController();
-  routeRequest = controller;
-  const response = await fetch('/api/delivery/route', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ latitude: coordinates.latitude, longitude: coordinates.longitude }),
-    signal: controller.signal,
-    cache: 'no-store'
-  });
-  const result = await response.json();
-  if (!response.ok || !Number.isFinite(Number(result.distanceKm))) {
-    throw new Error(result.error || 'Road distance could not be calculated.');
-  }
-  if (routeRequest !== controller) throw new DOMException('Route request superseded', 'AbortError');
-  cachedRouteKey = coordinates.key;
-  cachedRoadDistanceKm = Number(result.distanceKm);
-  return cachedRoadDistanceKm;
-}
-async function refreshDeliveryQuote() {
-  const feeEl = document.getElementById('delivery-fee');
-  const submit = document.getElementById('submit-order-btn');
-  const coordinates = getDeliveryCoordinates();
-  cachedRoadDistanceKm = null;
-  cachedRouteKey = '';
-  if (routeRequest) routeRequest.abort();
-  if (!coordinates) {
-    if (feeEl) feeEl.textContent = 'Choose location';
-    if (typeof renderCart === 'function') renderCart(false);
-    return;
-  }
-  if (feeEl) feeEl.textContent = 'Calculating road distance…';
-  try {
-    const distanceKm = await fetchRoadDistance();
-    if (getDeliveryCoordinates()?.key !== coordinates.key) return;
-    if (distanceKm > MAX_DELIVERY_RADIUS_KM) {
-      if (feeEl) feeEl.textContent = 'Outside 5.5 km service area';
-      if (submit) submit.disabled = true;
-    } else if (feeEl) {
-      feeEl.textContent = '₹' + getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)).toFixed(2);
-    }
-    if (typeof renderCart === 'function') renderCart(false);
-  } catch (error) {
-    if (error.name === 'AbortError') return;
-    if (feeEl) feeEl.textContent = 'Unable to calculate — retry location';
-    if (submit) submit.disabled = true;
-  }
-}
-document.addEventListener('deliverylocationchange', refreshDeliveryQuote);
-
-function getDeliveryFee(distanceKm, subtotal) {
-  if (distanceKm == null || distanceKm > MAX_DELIVERY_RADIUS_KM) return 0;
-  const band = distanceKm < 1 ? 0 : distanceKm <= 2 ? 1 : distanceKm <= 4 ? 2 : 3;
-  const tiers = [
-    [{ max: 300, fee: 15 }, { max: Infinity, fee: 0 }],
-    [{ max: 200, fee: 25 }, { max: 400, fee: 15 }, { max: 600, fee: 5 }, { max: Infinity, fee: 0 }],
-    [{ max: 250, fee: 45 }, { max: 500, fee: 35 }, { max: 750, fee: 25 }, { max: 900, fee: 15 }, { max: Infinity, fee: 0 }],
-    [{ max: 400, fee: 55 }, { max: 700, fee: 45 }, { max: 1000, fee: 35 }, { max: 1200, fee: 15 }, { max: Infinity, fee: 0 }]
-  ];
-  return tiers[band].find(t => subtotal <= t.max).fee;
-}
-function getHandlingFee(subtotal) {
-  if (subtotal <= 200) return 5;
-  if (subtotal <= 500) return 7;
-  if (subtotal <= 1000) return 8;
-  return 10;
-}
-const BISLERI_20L_NAME = 'Bisleri 20L Can';
-const BISLERI_CONTAINER_DEPOSIT = 150;
-const BISLERI_RETURN_STORAGE_KEY = 'neerbeku_bisleri_container_return_v1';
-function getBisleriReturnState() {
-  const canQty = Number(cart?.[BISLERI_20L_NAME]?.qty || 0);
-  try {
-    const saved = JSON.parse(localStorage.getItem(BISLERI_RETURN_STORAGE_KEY) || 'null');
-    if (!saved || Number(saved.cartQty) !== canQty) return { canQty, returnedContainers: 0, hasAnswer: true };
-    return { canQty, returnedContainers: Math.max(0, Math.min(canQty, Number(saved.returnedContainers) || 0)), hasAnswer: true };
-  } catch { return { canQty, returnedContainers: 0, hasAnswer: true }; }
-}
-function setBisleriReturnCount(value) {
-  const state = getBisleriReturnState();
-  const returned = Math.max(0, Math.min(state.canQty, Math.floor(Number(value) || 0)));
-  localStorage.setItem(BISLERI_RETURN_STORAGE_KEY, JSON.stringify({ cartQty: state.canQty, returnedContainers: returned, hasContainer: returned > 0 }));
-  renderCart(false);
-}
-function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
-  const productSubtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const bisleriQty = items.find(item => item.name === BISLERI_20L_NAME)?.qty || 0;
-  const returnState = getBisleriReturnState();
-  const returnedContainers = bisleriQty ? Math.min(bisleriQty, returnState.returnedContainers) : 0;
-  const containerDeposit = bisleriQty * BISLERI_CONTAINER_DEPOSIT;
-  const returnCredit = returnedContainers * BISLERI_CONTAINER_DEPOSIT;
-  const subtotal = productSubtotal + containerDeposit - returnCredit;
-  const handlingFee = items.length ? getHandlingFee(subtotal) : 0;
-  const deliveryFee = items.length && distanceKm != null ? getDeliveryFee(distanceKm, subtotal) : 0;
-  return { productSubtotal, containerDeposit, returnedContainers, returnCredit, subtotal, deliveryFee, handlingFee, distanceKm, total: subtotal + deliveryFee + handlingFee };
-}
-document.addEventListener('deliverylocationchange', () => {
-  if (typeof renderCart === 'function') renderCart(false);
-});
 
     const STORAGE_KEY_USER = 'neer_bekuuu_user_info';
     const STORAGE_KEY_LAST_ORDER = 'neer_bekuuu_last_order';
@@ -164,43 +53,10 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('productModalBackdrop').classList.remove('active');
     }
 
-    function showQuantityLimitNotice(anchor) {
-      if (!anchor || !document.body) return;
-      document.querySelectorAll('.quantity-limit-notice').forEach(node => node.remove());
-      const notice = document.createElement('div');
-      notice.className = 'quantity-limit-notice';
-      notice.textContent = 'Maximum 5 quantity per order';
-      notice.setAttribute('role', 'alert');
-      Object.assign(notice.style, {
-        position: 'fixed', zIndex: '10000', maxWidth: '230px',
-        padding: '8px 12px', borderRadius: '8px',
-        background: '#fff1f2', border: '1px solid #fecdd3',
-        color: '#b91c1c', fontSize: '12px', fontWeight: '800',
-        lineHeight: '1.35', textAlign: 'center',
-        boxShadow: '0 4px 14px rgba(0,0,0,.14)',
-        pointerEvents: 'none'
-      });
-      document.body.appendChild(notice);
-      const rect = anchor.getBoundingClientRect();
-      const left = Math.max(8, Math.min(window.innerWidth - notice.offsetWidth - 8,
-        rect.left + rect.width / 2 - notice.offsetWidth / 2));
-      let top = rect.bottom + 7;
-      if (top + notice.offsetHeight > window.innerHeight - 8) {
-        top = Math.max(8, rect.top - notice.offsetHeight - 7);
-      }
-      notice.style.left = left + 'px';
-      notice.style.top = top + 'px';
-      window.setTimeout(() => notice.remove(), 2200);
-    }
-
     function changeModalQty(change) {
       const qtyEl = document.getElementById('modalQtyVal');
       const current = parseInt(qtyEl.innerText, 10) || 1;
-      if (change > 0 && current >= 5) {
-        showQuantityLimitNotice(qtyEl.closest('.card-qty-controls') || qtyEl);
-        return;
-      }
-      const updated = Math.min(5, Math.max(1, current + change));
+      const updated = Math.min(99, Math.max(1, current + change));
       qtyEl.innerText = updated;
 
       if (activeModalCardRef) {
@@ -425,50 +281,6 @@ document.addEventListener('deliverylocationchange', () => {
 
     const CART_STORAGE_KEY = 'neerbeku_cart_v1';
     const catalog = window.NEER_CATALOG;
-    async function refreshLivePrices() {
-      try {
-        const response = await fetch('/api/prices', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
-        if (!response.ok) return;
-        const data = await response.json();
-        if (!data.prices) return;
-        for (const [name, value] of Object.entries(data.prices)) {
-          if (!Object.hasOwn(catalog, name) || !Number.isFinite(Number(value.sellingPrice)) || !Number.isFinite(Number(value.mrp))) continue;
-          catalog[name].price = Number(value.sellingPrice);
-          catalog[name].mrp = Number(value.mrp);
-        }
-        document.querySelectorAll('.water-card').forEach(card => {
-          const item = catalog[card.dataset.name];
-          if (!item) return;
-          card.dataset.price = String(item.price);
-          card.dataset.mrp = String(item.mrp);
-          const block = card.querySelector('.water-price-block');
-          if (!block) return;
-          const top = block.querySelector('.water-price-top');
-          const mrpEl = top?.querySelector('.water-mrp');
-          const savingsEl = top?.querySelector('.water-savings');
-          const discounted = item.mrp > item.price;
-          if (top) top.hidden = !discounted;
-          if (mrpEl) mrpEl.textContent = '₹' + item.mrp.toFixed(2);
-          if (savingsEl) {
-            savingsEl.hidden = !discounted;
-            savingsEl.textContent = 'Save ₹' + (item.mrp - item.price).toFixed(2);
-          }
-          const mainPrice = block.querySelector('.water-price');
-          if (mainPrice) {
-            const suffix = mainPrice.querySelector('span');
-            mainPrice.firstChild.textContent = '₹' + item.price.toFixed(2) + ' ';
-            if (suffix) mainPrice.append(suffix);
-          }
-          const caseMeta = block.querySelector('.water-case-meta');
-          if (caseMeta && item.caseQty) caseMeta.textContent = 'Case of ' + item.caseQty + ' · ₹' + (item.price / item.caseQty).toFixed(2) + ' per bottle';
-        });
-        cart = normalizeCart(cart);
-        renderCart(false);
-      } catch (error) {
-        console.warn('Live product prices could not be refreshed:', error);
-      }
-    }
-
     function normalizeCart(value) {
       const clean = {};
       if (!value || typeof value !== 'object') return clean;
@@ -476,7 +288,7 @@ document.addEventListener('deliverylocationchange', () => {
         if (!Object.hasOwn(catalog, name) || !item) continue;
         const qty = Number(item.qty);
         if (!Number.isInteger(qty) || qty < 1) continue;
-        clean[name] = { ...catalog[name], qty: Math.min(5, qty) };
+        clean[name] = { ...catalog[name], qty: Math.min(99, qty) };
       }
       return clean;
     }
@@ -485,63 +297,15 @@ document.addEventListener('deliverylocationchange', () => {
       catch { return {}; }
     }
     let cart = readCart();
-    const CART_NOTICE_CHANGE_KEY = 'neerbeku_cart_notice_change_v1';
-    const CART_NOTICE_LAST_SHOWN_KEY = 'neerbeku_cart_notice_last_shown_v1';
-    const CART_NOTICE_COUNT_KEY = 'neerbeku_cart_notice_count_v1';
-
-    function markCartChangedForNotice() {
-      try {
-        // localStorage survives the navigation from the storefront to cart.html
-        // and also works when the cart is opened in another same-origin tab.
-        localStorage.setItem(CART_NOTICE_CHANGE_KEY, String(Date.now()) + ':' + String(Math.random()));
-      } catch (error) {
-        console.warn('Could not save cart notice state.', error);
-      }
-    }
-
-    function maybeShowCartRequirementsNotice() {
-      const notice = document.getElementById('cart-requirements-notice');
-      if (!notice) return;
-      try {
-        const hasItems = Object.keys(readCart()).length > 0;
-        if (!hasItems) return;
-
-        // The Bisleri 20L return question must not depend on whether the
-        // separate cart-requirements notice was already shown this session.
-        const changeToken = localStorage.getItem(CART_NOTICE_CHANGE_KEY);
-        const lastShownToken = sessionStorage.getItem(CART_NOTICE_LAST_SHOWN_KEY);
-        const shownCount = Number(sessionStorage.getItem(CART_NOTICE_COUNT_KEY) || '0');
-        if (!changeToken || changeToken === lastShownToken || shownCount >= 2) return;
-        sessionStorage.setItem(CART_NOTICE_LAST_SHOWN_KEY, changeToken);
-        sessionStorage.setItem(CART_NOTICE_COUNT_KEY, String(shownCount + 1));
-        notice.hidden = false;
-        document.body.classList.add('cart-notice-open');
-      } catch (error) {
-        console.warn('Could not read cart notice session state.', error);
-      }
-    }
-
-    function closeCartRequirementsNotice() {
-      const notice = document.getElementById('cart-requirements-notice');
-      if (notice) notice.hidden = true;
-      document.body.classList.remove('cart-notice-open');
-    }
-
-    window.closeCartRequirementsNotice = closeCartRequirementsNotice;
-    maybeShowCartRequirementsNotice();
     function persistCart() {
       try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); }
       catch { alert('Your browser could not save the cart. Please enable site storage before opening checkout.'); }
     }
-    function changeCartQty(name, change, button) {
+    function changeCartQty(name, change) {
       if (!cart[name] || orderSubmitting) return;
       const qty = cart[name].qty + change;
       if (qty <= 0) { removeFromCart(name); return; }
-      if (qty > 5) {
-        showQuantityLimitNotice(button || document.querySelector('[data-product="' + CSS.escape(name) + '"]'));
-        return;
-      }
-      cart[name].qty = qty;
+      cart[name].qty = Math.min(99, qty);
       renderCart();
     }
 
@@ -549,11 +313,7 @@ document.addEventListener('deliverylocationchange', () => {
       const controls = button.closest('.card-qty-controls');
       const valueEl = controls.querySelector('.card-qty-value');
       const current = parseInt(valueEl.textContent, 10) || 1;
-      if (change > 0 && current >= 5) {
-        showQuantityLimitNotice(button);
-        return;
-      }
-      valueEl.textContent = Math.min(5, Math.max(1, current + change));
+      valueEl.textContent = Math.min(99, Math.max(1, current + change));
     }
 
     function addToCart(button) {
@@ -566,18 +326,10 @@ document.addEventListener('deliverylocationchange', () => {
       const price = parseFloat(card.dataset.price);
       const qty = parseInt(card.querySelector('.card-qty-value').textContent, 10) || 1;
 
-      markCartChangedForNotice();
-
-      const existingQty = cart[name]?.qty || 0;
-      if (existingQty + qty > 5) {
-        showQuantityLimitNotice(button);
-        return;
-      }
       if (cart[name]) {
-        cart[name].price = price;
-        cart[name].qty = existingQty + qty;
+        cart[name].qty = Math.min(99, cart[name].qty + qty);
       } else {
-        cart[name] = { ...catalog[name], price, qty };
+        cart[name] = { ...catalog[name], qty };
       }
 
       button.classList.add('added');
@@ -609,102 +361,39 @@ document.addEventListener('deliverylocationchange', () => {
       if (save) persistCart();
       const items = Object.values(cart);
       const count = items.reduce((n, item) => n + item.qty, 0);
-      const money = value => '₹' + Number(value || 0).toFixed(2);
-      const totals = calculateOrderTotals(items, cachedRoadDistanceKm);
-      const bisleriQty = items.find(item => item.name === BISLERI_20L_NAME)?.qty || 0;
-      const additionalJarDeposit = Math.max(0, totals.containerDeposit - totals.returnCredit);
+      const { subtotal, deliveryFee, total } = calculateOrderTotals(items);
+      const money = value => '₹' + value.toFixed(2);
       document.querySelectorAll('[data-cart-count], #cart-count').forEach(el => el.textContent = count);
-      document.querySelectorAll('[data-cart-total], #cart-total').forEach(el => el.textContent = money(totals.total));
-
+      document.querySelectorAll('[data-cart-total], #cart-total, #total-display').forEach(el => el.textContent = money(total));
       const subtotalEl = document.getElementById('items-subtotal');
-      if (subtotalEl) subtotalEl.textContent = money(totals.productSubtotal);
-      const returnedEl = document.getElementById('bisleri-return-count-summary');
-      if (returnedEl) returnedEl.textContent = totals.returnedContainers + (totals.returnedContainers === 1 ? ' jar' : ' jars');
-      const exchangeSection = document.getElementById('checkout-jar-exchange');
-      if (exchangeSection) exchangeSection.hidden = bisleriQty === 0;
-      const newCansEl = document.getElementById('bisleri-new-cans');
-      if (newCansEl) newCansEl.textContent = String(bisleriQty);
-      const depositEl = document.getElementById('bisleri-additional-deposit');
-      if (depositEl) depositEl.textContent = money(additionalJarDeposit);
-      const depositRow = document.getElementById('checkout-deposit-summary-row');
-      if (depositRow) depositRow.hidden = bisleriQty === 0;
-      const depositValue = document.getElementById('checkout-deposit-value');
-      if (depositValue) depositValue.textContent = money(additionalJarDeposit);
-      const jarNote = document.getElementById('checkout-jar-note');
-      if (jarNote) jarNote.textContent = totals.returnedContainers > 0
-        ? 'Please hand over your empty Bisleri 20L jars to our delivery partner during delivery.'
-        : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
-
       const deliveryEl = document.getElementById('delivery-fee');
-      if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : money(totals.deliveryFee);
-      else if (deliveryEl && !getDeliveryCoordinates()) deliveryEl.textContent = 'Choose location';
-      const handlingEl = document.getElementById('handling-fee');
-      if (handlingEl) handlingEl.textContent = money(totals.handlingFee);
-      const totalDisplay = document.getElementById('total-display');
-      if (totalDisplay) totalDisplay.textContent = money(totals.total);
-
-      const summaryItems = document.getElementById('checkout-summary-items');
-      if (summaryItems) summaryItems.innerHTML = items.length
-        ? items.map(item => '<div class="checkout-summary-row"><span>' + escapeHtml(item.name) + ' × ' + item.qty + '</span><strong>' + money(item.price * item.qty) + '</strong></div>').join('')
-        : '<p class="checkout-summary-empty">Your cart is empty.</p>';
-
+      if (subtotalEl) subtotalEl.textContent = money(subtotal);
+      if (deliveryEl) deliveryEl.textContent = money(deliveryFee);
       const totalInput = document.getElementById('input-total-bill');
-      if (totalInput) totalInput.value = money(totals.total);
+      if (totalInput) totalInput.value = money(total);
       const itemsInput = document.getElementById('cart-items-input');
-      if (itemsInput) itemsInput.value = items.map(item => item.name + ' x ' + item.qty + ' (' + money(item.price * item.qty) + ')').join(' | ');
-
+      if (itemsInput) itemsInput.value = items.map(i => `${i.name} x ${i.qty} (${money(i.price * i.qty)})`).join(' | ');
       const list = document.getElementById('cart-items');
       if (list) {
-        const jarState = getBisleriReturnState();
-        const jarOptions = Array.from({ length: bisleriQty }, (_, index) => index + 1)
-          .map(quantity => '<option value="' + quantity + '"' + (jarState.returnedContainers === quantity ? ' selected' : '') + '>' + quantity + ' empty jar' + (quantity === 1 ? '' : 's') + '</option>').join('');
-        const jarExchange = bisleriQty ? (
-          '<section class="checkout-exchange-card">' +
-            '<div class="checkout-exchange-title">↻ &nbsp;20L CAN EXCHANGE</div>' +
-            '<label for="bisleri-return-choice">Do you have empty Bisleri 20L cans to return?</label>' +
-            '<select id="bisleri-return-choice" data-bisleri-return-choice>' +
-              '<option value="0"' + (jarState.returnedContainers === 0 ? ' selected' : '') + '>No, I don\'t have empty cans</option>' +
-              '<option value="1"' + (jarState.returnedContainers > 0 ? ' selected' : '') + '>Yes, I have empty cans to return</option>' +
-            '</select>' +
-            '<div class="checkout-exchange-quantity"' + (jarState.returnedContainers > 0 ? '' : ' hidden') + '>' +
-              '<label for="bisleri-return-count-inline">How many empty cans will you return?</label>' +
-              '<select id="bisleri-return-count-inline" data-bisleri-return-count>' + jarOptions + '</select>' +
-            '</div>' +
-            '<small>₹150 refundable deposit is charged for each new can without an accepted empty-can return.</small>' +
-            '<div class="checkout-exchange-credit"><span>Refundable deposit</span><strong>' + money(additionalJarDeposit) + '</strong></div>' +
-          '</section>'
-        ) : '';
-        if (!items.length) {
-          list.innerHTML = '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
-        } else {
-          list.innerHTML = items.map(item =>
-            '<article class="checkout-item">' +
-              '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '">' +
-              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + money(item.price) + ' per unit</p>' +
-                '<div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="' + escapeHtml(item.name) + '" aria-label="Decrease ' + escapeHtml(item.name) + ' quantity">−</button><span>' + item.qty + '</span><button type="button" data-cart-action="plus" data-product="' + escapeHtml(item.name) + '" aria-label="Increase ' + escapeHtml(item.name) + ' quantity">+</button></div>' +
-                '<button type="button" class="checkout-remove" data-cart-action="remove" data-product="' + escapeHtml(item.name) + '">Remove</button>' +
-              '</div><strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
-            '</article>' + (item.name === BISLERI_20L_NAME ? jarExchange : '')
-          ).join('');
-        }
+        list.innerHTML = items.length ? items.map(item => `
+          <article class="checkout-item">
+            <img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}">
+            <div class="checkout-item-info"><h3>${escapeHtml(item.name)}</h3><p>${money(item.price)} each</p>
+            <div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="${escapeHtml(item.name)}" aria-label="Decrease ${escapeHtml(item.name)} quantity">−</button><span>${item.qty}</span><button type="button" data-cart-action="plus" data-product="${escapeHtml(item.name)}" aria-label="Increase ${escapeHtml(item.name)} quantity">+</button></div>
+            <button type="button" class="checkout-remove" data-cart-action="remove" data-product="${escapeHtml(item.name)}">Remove</button>
+            </div><strong class="checkout-line-total">${money(item.price * item.qty)}</strong>
+          </article>`).join('') : '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
       }
       const submit = document.getElementById('submit-order-btn');
-      if (submit) submit.disabled = true;
+      if (submit) submit.disabled = !items.length || orderSubmitting;
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
-        document.addEventListener('click', event => {
+    document.addEventListener('click', event => {
       const button = event.target.closest('[data-cart-action]');
       if (!button || orderSubmitting) return;
       const name = button.dataset.product;
       if (button.dataset.cartAction === 'remove') removeFromCart(name);
-      else changeCartQty(name, button.dataset.cartAction === 'plus' ? 1 : -1, button);
-    });
-    document.addEventListener('change', event => {
-      if (event.target.matches('[data-bisleri-return-choice]')) {
-        setBisleriReturnCount(Number(event.target.value) > 0 ? 1 : 0);
-      } else if (event.target.matches('[data-bisleri-return-count]')) {
-        setBisleriReturnCount(event.target.value);
-      }
+      else changeCartQty(name, button.dataset.cartAction === 'plus' ? 1 : -1);
     });
     window.addEventListener('storage', event => {
       if (event.key === CART_STORAGE_KEY && !orderSubmitting) { cart = readCart(); renderCart(false); }
@@ -781,7 +470,6 @@ document.addEventListener('deliverylocationchange', () => {
             }
           });
 
-          markCartChangedForNotice();
           renderCart();
           window.location.href = 'cart.html';
         }
@@ -792,7 +480,6 @@ document.addEventListener('deliverylocationchange', () => {
 
     if (document.getElementById('heroCarousel')) initHeroCarousel();
     initProductCarousels();
-    refreshLivePrices();
 
     // Match the rendered media height to its actual width on narrow screens.
     function syncMobileImageSquares() {
@@ -838,22 +525,9 @@ document.addEventListener('deliverylocationchange', () => {
         return row;
       });
       document.getElementById('confirm-items').replaceChildren(...rows);
-      const breakdown = calculateOrderTotals(order.items, order.distanceKm);
-      const bisleriQty = order.items.find(item => item.name === BISLERI_20L_NAME)?.qty || 0;
-      const returnedContainers = Math.min(bisleriQty, Number(order.bisleriReturnedContainers ?? breakdown.returnedContainers) || 0);
-      const additionalJarDeposit = Math.max(0, breakdown.containerDeposit - returnedContainers * BISLERI_CONTAINER_DEPOSIT);
-      const additionalCharges = additionalJarDeposit + breakdown.deliveryFee + breakdown.handlingFee;
-      document.getElementById('confirm-subtotal').textContent = '₹' + breakdown.productSubtotal.toFixed(2);
-      document.getElementById('confirm-new-cans').textContent = String(bisleriQty);
-      document.getElementById('confirm-bisleri-returns').textContent = returnedContainers + (returnedContainers === 1 ? ' jar' : ' jars');
-      document.getElementById('confirm-additional-deposit').textContent = '₹' + additionalJarDeposit.toFixed(2);
-      document.getElementById('confirm-exchange-section').hidden = bisleriQty === 0;
-      document.getElementById('confirm-exchange-note').textContent = returnedContainers > 0
-        ? 'Please hand over your empty Bisleri 20L jars to our delivery partner during delivery.'
-        : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
+      const breakdown = calculateOrderTotals(order.items);
+      document.getElementById('confirm-subtotal').textContent = '₹' + breakdown.subtotal.toFixed(2);
       document.getElementById('confirm-delivery-fee').textContent = '₹' + breakdown.deliveryFee.toFixed(2);
-      document.getElementById('confirm-handling-fee').textContent = '₹' + breakdown.handlingFee.toFixed(2);
-      document.getElementById('confirm-additional-charges').textContent = '₹' + additionalCharges.toFixed(2);
       document.getElementById('confirm-total').textContent = order.total;
       document.getElementById('confirm-time').textContent = order.time;
       document.getElementById('confirm-address').textContent = order.address;
@@ -862,18 +536,9 @@ document.addEventListener('deliverylocationchange', () => {
 
     let orderSubmitting = false;
     const form = document.getElementById('waterForm');
-    // Indian mobile numbers: accept digits only and cap both fields at 10 digits.
-    ['customer-phone', 'customer-alt-phone'].forEach(id => {
-      const input = document.getElementById(id);
-      if (!input) return;
-      input.addEventListener('input', () => {
-        const digits = input.value.replace(/\D/g, '').slice(0, 10);
-        if (input.value !== digits) input.value = digits;
-      });
-    });
     form?.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (orderSubmitting || form.querySelector('#submit-order-btn')?.disabled) return;
+      if (orderSubmitting) return;
       orderSubmitting = true;
       const checkingButton = form.querySelector('.submit-btn');
       checkingButton.disabled = true;
@@ -902,42 +567,20 @@ document.addEventListener('deliverylocationchange', () => {
       const orderRef = generateMemorableOrderId();
       const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
 
+      const customerName = document.getElementById('customer-name').value;
+      const customerPhone = document.getElementById('customer-phone').value;
+      
       const savedAccountAddress = window.getSelectedNeerBekuAddress?.();
       if (savedAccountAddress) {
         document.getElementById('customer-address').value = savedAccountAddress.address;
         document.getElementById('delivery-latitude').value = savedAccountAddress.latitude || '';
         document.getElementById('delivery-longitude').value = savedAccountAddress.longitude || '';
         document.getElementById('delivery-address-source').value = 'saved-account';
-        // Keep the editable checkout contact fields as entered by the customer.
-        // The saved address supplies delivery details, not an enforced phone number.
+        document.getElementById('customer-name').value = savedAccountAddress.name;
+        document.getElementById('customer-phone').value = savedAccountAddress.phone;
         document.getElementById('landmark-notes').value = savedAccountAddress.landmark || '';
       } else if (window.syncDeliveryAddress) {
         window.syncDeliveryAddress();
-      }
-
-      const customerName = document.getElementById('customer-name').value.trim();
-      const customerPhone = document.getElementById('customer-phone').value.trim();
-      const alternatePhone = document.getElementById('customer-alt-phone')?.value.trim() || '';
-      const normalizedAlternatePhone = alternatePhone.replace(/\D/g, '');
-      if (alternatePhone && normalizedAlternatePhone.length !== 10) {
-        alert('Please enter a valid 10-digit alternate mobile number.');
-        document.getElementById('customer-alt-phone').focus();
-        return;
-      }
-      if (!customerName) {
-        alert('Please enter your name to place the order.');
-        document.getElementById('customer-name').focus();
-        return;
-      }
-      if (!/^\d{10}$/.test(customerPhone)) {
-        alert('Please enter a valid 10-digit mobile number.');
-        document.getElementById('customer-phone').focus();
-        return;
-      }
-      if (!customerPhone) {
-        alert('Please enter your mobile number to place the order.');
-        document.getElementById('customer-phone').focus();
-        return;
       }
 
       const customerAddress = document.getElementById('customer-address').value.trim();
@@ -954,65 +597,20 @@ document.addEventListener('deliverylocationchange', () => {
       if (!deliveryWindow) return;
 
       const landmarkNotes = document.getElementById('landmark-notes').value || 'None';
-      const requiredAddressFields = ['address-house', 'address-street', 'address-area', 'address-city'];
-      if (requiredAddressFields.some(id => !document.getElementById(id)?.value.trim())) {
-        alert('Please complete your house/flat, street, area and city details.');
-        return;
-      }
-      let deliveryDistanceKm;
-      try {
-        deliveryDistanceKm = await fetchRoadDistance(true);
-      } catch (error) {
-        alert(error.message || 'We could not calculate your road distance. Please select your location again.');
-        return;
-      }
-      if (deliveryDistanceKm > MAX_DELIVERY_RADIUS_KM) {
-        alert('Sorry, this address is outside our 5.5 km delivery area. You can browse products, but checkout is not available at this location.');
-        return;
-      }
-      // Persist the first checkout's complete details to the signed-in account.
-      if (window.saveCurrentNeerBekuAddress && !(await window.saveCurrentNeerBekuAddress())) {
-        throw new Error('We could not save your delivery details. Please check them and try again.');
-      }
-
-      const orderTotals = calculateOrderTotals(Object.values(cart), deliveryDistanceKm);
+      const orderTotals = calculateOrderTotals(Object.values(cart));
       const totalBill = '₹' + orderTotals.total.toFixed(2);
 
       const payload = {
         orderId: orderRef,
         name: customerName,
         phone: customerPhone,
-        alternatePhone: alternatePhone || '',
         address: customerAddress,
-        addressDetails: {
-          house: document.getElementById('address-house').value.trim(),
-          street: document.getElementById('address-street').value.trim(),
-          area: document.getElementById('address-area').value.trim(),
-          city: document.getElementById('address-city').value.trim(),
-          postcode: document.getElementById('address-postcode').value.trim(),
-          landmark: landmarkNotes === 'None' ? '' : landmarkNotes
-        },
-        notes: `${landmarkNotes}${alternatePhone ? ' | Alternate mobile: ' + alternatePhone : ''} | Product subtotal: ₹${orderTotals.productSubtotal.toFixed(2)}; Bisleri 20L container deposit: ₹${orderTotals.containerDeposit.toFixed(2)}; Returned Bisleri containers: ${orderTotals.returnedContainers}; Return credit: ₹${orderTotals.returnCredit.toFixed(2)}; Payable items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}; Handling fee: ₹${orderTotals.handlingFee.toFixed(2)}`,
-        items: Object.values(cart).map(item => ({
-          productId: item.id || item.productId || item.name,
-          name: item.name,
-          unitPrice: Number(item.price),
-          quantity: Number(item.qty),
-          lineTotal: Number(item.price) * Number(item.qty)
-        })),
-        productSubtotal: orderTotals.productSubtotal,
-        bisleri20LQuantity: Object.values(cart).find(item => item.name === BISLERI_20L_NAME)?.qty || 0,
-        bisleriContainerDeposit: orderTotals.containerDeposit,
-        bisleriReturnedContainers: orderTotals.returnedContainers,
-        bisleriReturnCredit: orderTotals.returnCredit,
+        notes: `${landmarkNotes} | Items subtotal: ₹${orderTotals.subtotal.toFixed(2)}; Delivery fee: ₹${orderTotals.deliveryFee.toFixed(2)}`,
         cart: document.getElementById('cart-items-input').value,
-        qty: Number(document.getElementById('cart-count').textContent) || 0,
+        qty: document.getElementById('cart-count').textContent,
         bill: totalBill,
         subtotal: orderTotals.subtotal,
         deliveryFee: orderTotals.deliveryFee,
-        handlingFee: orderTotals.handlingFee,
-        distanceKm: deliveryDistanceKm,
-        deliveryWindow: deliveryWindow,
         time: deliveryWindow,
         latitude: latitude,
         longitude: longitude,
@@ -1040,7 +638,6 @@ document.addEventListener('deliverylocationchange', () => {
           
           renderConfirmation({
             items: Object.values(cart),
-            distanceKm: deliveryDistanceKm,
             total: totalBill,
             time: deliveryWindow,
             name: customerName,
@@ -1234,7 +831,6 @@ if (document.getElementById('preferred-time')) {
   let selectedAddress = null;
   let accountUser = null;
   let showingAddressList = false;
-  let editingAddressId = null;
 
   const field = id => document.getElementById(id);
   const setText = (element, value) => { if (element) element.textContent = value || ''; };
@@ -1244,14 +840,9 @@ if (document.getElementById('preferred-time')) {
 
   function setEntryVisible(visible) {
     if (!entryPanel) return;
-    // Keep contact details visible; reveal address entry only when needed.
-    entryPanel.hidden = false;
-    field('delivery-address-entry').hidden = !visible;
+    entryPanel.hidden = !visible;
     entryPanel.querySelectorAll('input, select, textarea, button').forEach(control => {
-      // Contact details must remain editable even when a saved address is selected.
-      // Only lock the address-entry controls until the customer chooses to edit an address.
-      if (['customer-name', 'customer-phone', 'customer-alt-phone',
-           'delivery-date', 'scheduled-slot'].includes(control.id)) return;
+      if (control.id === 'delivery-date' || control.id === 'scheduled-slot') return;
       control.disabled = !visible;
     });
   }
@@ -1262,9 +853,8 @@ if (document.getElementById('preferred-time')) {
     accountPanel.hidden = false;
     showingAddressList = false;
     addressListEl.hidden = true;
-    chooseAddressButton.textContent = 'Manage saved addresses';
-    chooseAddressButton.hidden = addresses.length === 0;
-    addAddressButton.hidden = addresses.length >= 2;
+    chooseAddressButton.textContent = 'Choose another address';
+    chooseAddressButton.hidden = addresses.length < 2;
     if (address) {
       activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(address.address)}</span><span>${escape(address.name)} · ${escape(address.phone)}</span>${address.landmark ? `<small>${escape(address.landmark)}</small>` : ''}`;
       setEntryVisible(false);
@@ -1284,19 +874,10 @@ if (document.getElementById('preferred-time')) {
     field('customer-name').value = address.name || accountUser?.name || '';
     field('customer-phone').value = address.phone || '';
     field('customer-address').value = address.address || '';
-    field('address-house').value = address.house || '';
-    field('address-street').value = address.street || '';
-    field('address-area').value = address.area || '';
-    field('address-city').value = address.city || '';
-    field('address-postcode').value = address.postcode || '';
-    field('delivery-latitude').value = address.latitude ?? '';
-    field('delivery-longitude').value = address.longitude ?? '';
+    field('delivery-latitude').value = address.latitude || '';
+    field('delivery-longitude').value = address.longitude || '';
     field('delivery-address-source').value = 'saved-account';
     field('landmark-notes').value = address.landmark || '';
-    field('account-address-label').value = address.label || 'Home';
-    if (address.latitude != null && address.longitude != null) {
-      window.restoreDeliveryLocation?.(Number(address.latitude), Number(address.longitude));
-    }
   }
 
   function renderAddressChoices() {
@@ -1309,27 +890,9 @@ if (document.getElementById('preferred-time')) {
         <div><strong>${escape(address.label || 'Delivery address')}</strong><p>${escape(address.address)}</p><small>${escape(address.name)} · ${escape(address.phone)}</small></div>
         <div class="saved-address-option-actions">
           <button type="button" data-use-address="${escape(address.id)}">${selectedAddress?.id === address.id ? 'Selected' : 'Use this'}</button>
-          <button type="button" data-edit-address="${escape(address.id)}">Edit</button>
           <button type="button" class="saved-address-delete" data-delete-address="${escape(address.id)}" aria-label="Delete ${escape(address.label || 'address')}">Delete</button>
         </div>
       </article>`).join('');
-    addressListEl.querySelectorAll('[data-edit-address]').forEach(button => button.addEventListener('click', () => {
-      const address = addresses.find(item => item.id === button.dataset.editAddress);
-      if (!address) return;
-      editingAddressId = address.id;
-      selectedAddress = null;
-      populateCheckoutFields(address);
-      setEntryVisible(true);
-      saveRow.hidden = false;
-      cancelButton.hidden = false;
-      field('account-address-label').value = address.label;
-      saveButton.textContent = 'Update saved address';
-      addressListEl.hidden = true;
-      showingAddressList = false;
-      window.switchAddressMode?.('manual');
-      entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setText(saveMessage, 'Edit the details below and save your changes.');
-    }));
     addressListEl.querySelectorAll('[data-use-address]').forEach(button => button.addEventListener('click', () => {
       const choose = async () => {
         const chosen = addresses.find(item => item.id === button.dataset.useAddress);
@@ -1390,8 +953,6 @@ if (document.getElementById('preferred-time')) {
   }
 
   function openAddressEntry() {
-    editingAddressId = null;
-    saveButton.textContent = 'Save address to my account';
     showAccountAddress(null);
     selectedAddress = null;
     setEntryVisible(true);
@@ -1411,8 +972,7 @@ if (document.getElementById('preferred-time')) {
     field('customer-address').value = '';
     field('delivery-latitude').value = '';
     field('delivery-longitude').value = '';
-    const savedLabels = addresses.map(item => item.label);
-    field('account-address-label').value = !savedLabels.includes('Home') ? 'Home' : 'Work';
+    field('account-address-label').value = addresses.length ? '' : 'Home';
     window.switchAddressMode?.('manual');
     entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -1422,61 +982,37 @@ if (document.getElementById('preferred-time')) {
     const name = field('customer-name').value.trim();
     const phone = field('customer-phone').value.trim();
     const address = field('customer-address').value.trim();
-    const label = field('account-address-label').value.trim();
-    const house = field('address-house').value.trim();
-    const street = field('address-street').value.trim();
-    const area = field('address-area').value.trim();
-    const city = field('address-city').value.trim();
-    const postcode = field('address-postcode').value.trim();
-    const latitude = field('delivery-latitude').value;
-    const longitude = field('delivery-longitude').value;
-    if (!name || !/^\d{10}$/.test(phone) || !house || !street || !area || !city || !address || !latitude || !longitude) {
-      setText(saveMessage, 'Complete your name, mobile number, house, street, area, city, and select your map location before saving.');
+    const label = field('account-address-label').value.trim() || 'Delivery address';
+    if (!name || !phone || !address) {
+      setText(saveMessage, 'Enter your name, mobile number, and a complete delivery address first.');
       return;
     }
     saveButton.disabled = true;
     setText(saveMessage, 'Saving address…');
     try {
       const response = await fetch('/api/customer/addresses', {
-        method: editingAddressId ? 'PUT' : 'POST', credentials: 'same-origin',
+        method: 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...(editingAddressId ? { action: 'edit', id: editingAddressId } : {}),
           label, name, phone, address,
-          house, street, area, city, postcode,
           landmark: field('landmark-notes').value.trim(),
-          latitude, longitude,
+          latitude: field('delivery-latitude').value || null,
+          longitude: field('delivery-longitude').value || null,
           isDefault: true
         })
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Could not save this address.');
-      if (editingAddressId) {
-        const refreshResponse = await fetch('/api/customer/addresses', { credentials: 'same-origin', cache: 'no-store' });
-        const refreshed = await refreshResponse.json();
-        if (!refreshResponse.ok) throw new Error(refreshed.error || 'Address updated, but the list could not be refreshed.');
-        addresses = refreshed.addresses || [];
-      } else {
-        addresses = result.addresses || [];
-      }
-      const saved = addresses.find(item => item.id === (editingAddressId || result.id)) || addresses.find(item => item.is_default) || addresses[0];
-      editingAddressId = null;
-      saveButton.textContent = 'Save address to my account';
+      addresses = result.addresses || [];
+      const saved = addresses.find(item => item.id === result.id) || addresses.find(item => item.is_default) || addresses[0];
       if (saved) populateCheckoutFields(saved);
       showAccountAddress(saved || null);
       renderAddressChoices();
       setText(addressMessage, 'Address saved. It will be available the next time you sign in.');
-      return true;
     } catch (error) {
       setText(saveMessage, error.message || 'Could not save this address.');
-      return false;
     } finally { saveButton.disabled = false; }
   }
-
-  window.saveCurrentNeerBekuAddress = async () => {
-    if (!accountUser || selectedAddress) return true;
-    return await saveAddress();
-  };
 
   function handleSignedIn(user) {
     accountUser = user;

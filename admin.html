@@ -38,31 +38,6 @@
       </div>
     </div>
 
-    <div class="card"><h3>Add New Product</h3><p class="section-help">Add a product to the storefront. Existing products are kept unchanged.</p>
-<form id="addProductForm" class="add-product-form">
-<label>Product name<input id="newProductName" required maxlength="100"></label>
-<label>Brand / card label<input id="newProductBrand" required maxlength="80" placeholder="e.g. Brand • Packaged Water"></label>
-<label>Description<textarea id="newProductDescription" required maxlength="1000" rows="3"></textarea></label>
-<label>Category<select id="newProductCategory" required><option value="water">Water</option><option value="accessories">Accessories</option></select></label>
-<label>Unit label<input id="newProductUnit" required maxlength="30" placeholder="/ bottle, / case, / can"></label>
-<label>Selling price (₹)<input id="newProductPrice" required type="number" min="0" max="1000000" step="0.01"></label>
-<label>MRP (₹)<input id="newProductMrp" required type="number" min="0" max="1000000" step="0.01"></label>
-<label>Case quantity (optional)<input id="newProductCaseQty" type="number" min="1" max="500" step="1"></label>
-<label>Product image<input id="newProductImage" type="file" accept="image/png,image/jpeg,image/webp" required><small>PNG, JPG or WebP; maximum 1 MB.</small></label>
-<button class="btn" id="addProductSubmit" type="submit">Add product</button></form><p id="addProductStatus" class="price-status" role="status"></p></div>
-
-    <div class="card">
-      <h3>Product Price Management</h3>
-      <p class="section-help">Update selling price and MRP independently. Changes are saved centrally and used by the storefront and cart.</p>
-      <p id="priceStatus" class="price-status" role="status">Loading product prices…</p>
-      <div class="price-table-wrap">
-        <table class="price-table">
-          <thead><tr><th>Product</th><th>Selling Price (₹)</th><th>MRP (₹)</th><th>Action</th></tr></thead>
-          <tbody id="priceTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
     <!-- System Overview Card -->
     <div class="card">
       <h3>System Overview</h3>
