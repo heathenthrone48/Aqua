@@ -86,8 +86,8 @@
   <div class="account-address-top"><div><p class="account-eyebrow">YOUR NEERBEKU ACCOUNT</p><h3>Delivery address</h3></div><span class="account-secure-badge">Saved to your account</span></div>
   <div class="account-active-address" id="account-active-address"></div>
   <div class="account-address-actions">
-    <button class="account-action-secondary" id="choose-saved-address" type="button" hidden>Choose another address</button>
-    <button class="account-action-primary" id="add-saved-address" type="button">Add address</button>
+    <button class="account-action-secondary" id="choose-saved-address" type="button" aria-expanded="false" aria-controls="saved-address-list" hidden>Manage saved addresses</button>
+    <button class="account-action-primary" id="add-saved-address" type="button">Add new address</button>
   </div>
   <div class="saved-address-list" id="saved-address-list" hidden></div>
   <p class="account-address-message" id="account-address-message" aria-live="polite" role="status"></p>
@@ -129,12 +129,14 @@
 <label for="scheduled-slot">Delivery window</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning (8 AM–11 AM)</option><option value="Midday (11 AM–2 PM)">Midday (11 AM–2 PM)</option><option value="Afternoon (2 PM–5 PM)">Afternoon (2 PM–5 PM)</option><option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option></select>
 </div><p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
 </div>
-<section class="location-section">
+<p id="delivery-route-status" aria-live="polite" role="status"></p>
+<section class="location-section" id="delivery-address-entry">
 <h3 class="checkout-step-title">3. Delivery details</h3>
 <h3>📍 Delivery Address</h3>
 <div class="form-group account-address-label-field">
-<label for="account-address-label">Save this address as</label>
-<select id="account-address-label"><option value="Home">Home</option><option value="Work">Work</option></select>
+<label for="account-address-label">Address name</label>
+<input id="account-address-label" type="text" maxlength="40" required placeholder="Home, Work, Parents…" list="address-label-suggestions"/>
+<datalist id="address-label-suggestions"><option value="Home"><option value="Work"><option value="Parents"></datalist>
 </div>
 <p class="location-help">
     Choose your location using GPS or the map, then complete your delivery address.
@@ -156,7 +158,6 @@
       Search for an address or use your current location.
     </p>
 <div id="delivery-map"></div>
-<p id="delivery-route-status" aria-live="polite" role="status"></p>
 <p class="location-help">
       Select a pin on the map or use your current location. A location is required for every order.
     </p>
