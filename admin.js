@@ -176,7 +176,13 @@ async function saveProductPrice(id, sellingInput, mrpInput, button) {
   document.getElementById('priceStatus').textContent = 'Saving price…';
   try {
     await stockApi('/api/prices', 'PUT', { id, sellingPrice, mrp });
-    priceState[id] = { sellingPrice, mrp };
+    const data = await stockApi('/api/prices');
+    const saved = data.prices?.[id];
+    if (!saved || Number(saved.sellingPrice) !== Math.round(sellingPrice * 100) / 100 ||
+        Number(saved.mrp) !== Math.round(mrp * 100) / 100) {
+      throw new Error('Price read-back did not match. Reload prices and try again.');
+    }
+    priceState = data.prices;
     document.getElementById('priceStatus').textContent = 'Saved. Storefront and cart will use the new prices on their next refresh.';
   } catch (problem) {
     document.getElementById('priceStatus').textContent = 'Could not save price. ' + problem.message;

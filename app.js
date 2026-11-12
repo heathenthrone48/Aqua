@@ -425,24 +425,30 @@ document.addEventListener('deliverylocationchange', () => {
 
     const CART_STORAGE_KEY = 'neerbeku_cart_v1';
     const catalog = window.NEER_CATALOG;
+    let orderSubmitting = false;
+    let priceRefreshInProgress = false;
     async function refreshLivePrices() {
+      if (priceRefreshInProgress || orderSubmitting) return;
+      priceRefreshInProgress = true;
       try {
         const response = await fetch('/api/prices', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
         if (!response.ok) return;
         const data = await response.json();
-        if (!data.prices) return;
+        if (!data.prices || orderSubmitting) return;
+        let pricesChanged = false;
         for (const [name, value] of Object.entries(data.prices)) {
           if (!Object.hasOwn(catalog, name) || !Number.isFinite(Number(value.sellingPrice)) || !Number.isFinite(Number(value.mrp))) continue;
+          if (catalog[name].price !== Number(value.sellingPrice) || catalog[name].mrp !== Number(value.mrp)) pricesChanged = true;
           catalog[name].price = Number(value.sellingPrice);
           catalog[name].mrp = Number(value.mrp);
         }
+        if (!pricesChanged) return;
         document.querySelectorAll('.water-card').forEach(card => {
           const item = catalog[card.dataset.name];
           if (!item) return;
           card.dataset.price = String(item.price);
           card.dataset.mrp = String(item.mrp);
-          const block = card.querySelector('.water-price-block');
-          if (!block) return;
+          const block = card.querySelector('.water-price-block') || card;
           const top = block.querySelector('.water-price-top');
           const mrpEl = top?.querySelector('.water-mrp');
           const savingsEl = top?.querySelector('.water-savings');
@@ -466,6 +472,8 @@ document.addEventListener('deliverylocationchange', () => {
         renderCart(false);
       } catch (error) {
         console.warn('Live product prices could not be refreshed:', error);
+      } finally {
+        priceRefreshInProgress = false;
       }
     }
 
@@ -793,6 +801,11 @@ document.addEventListener('deliverylocationchange', () => {
     if (document.getElementById('heroCarousel')) initHeroCarousel();
     initProductCarousels();
     refreshLivePrices();
+    setInterval(() => { if (!document.hidden) refreshLivePrices(); }, 10000);
+    window.addEventListener('focus', refreshLivePrices);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshLivePrices();
+    });
 
     // Match the rendered media height to its actual width on narrow screens.
     function syncMobileImageSquares() {
@@ -860,7 +873,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('confirm-contact').textContent = `${order.name}, ${order.phone}`;
     }
 
-    let orderSubmitting = false;
+
     const form = document.getElementById('waterForm');
     // Indian mobile numbers: accept digits only and cap both fields at 10 digits.
     ['customer-phone', 'customer-alt-phone'].forEach(id => {
