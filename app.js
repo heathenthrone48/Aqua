@@ -1244,9 +1244,9 @@ if (document.getElementById('preferred-time')) {
 
   function setEntryVisible(visible) {
     if (!entryPanel) return;
-    // Keep the saved fields and map visible during faster checkout; lock fields
-    // until the customer chooses to add or change an address.
+    // Keep contact details visible; reveal address entry only when needed.
     entryPanel.hidden = false;
+    field('delivery-address-entry').hidden = !visible;
     entryPanel.querySelectorAll('input, select, textarea, button').forEach(control => {
       // Contact details must remain editable even when a saved address is selected.
       // Only lock the address-entry controls until the customer chooses to edit an address.
