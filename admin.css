@@ -185,10 +185,23 @@
 .price-input { width: 112px; max-width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font: inherit; }
 .price-save-btn { white-space: nowrap; }
 .price-save-btn:disabled { opacity: .6; cursor: wait; }
+.order-filters { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(145px, 1fr)) auto; align-items: end; gap: 12px; margin: 18px 0 8px; }
+.order-filters label { display: grid; gap: 6px; color: #334155; font-size: .82rem; font-weight: 600; }
+.order-filters input { min-width: 0; padding: 9px 10px; border: 1px solid var(--border); border-radius: 7px; font: inherit; color: var(--text); background: #fff; }
+.orders-table { min-width: 1120px; }
+.orders-table td { vertical-align: top; max-width: 300px; overflow-wrap: anywhere; }
+.telegram-order-status { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: .78rem; font-weight: 700; white-space: nowrap; }
+.telegram-sent { color: #166534; background: #dcfce7; }
+.telegram-pending { color: #92400e; background: #fef3c7; }
+.telegram-failed { color: #991b1b; background: #fee2e2; }
+.order-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; color: #64748b; font-size: .85rem; }
 @media (max-width: 600px) {
   body { padding: 12px; }
   .price-input { width: 94px; }
   th, td { padding: 10px 8px; }
+  .order-filters { grid-template-columns: 1fr 1fr; }
+  .order-filters label:first-child { grid-column: 1 / -1; }
+  .order-filters .btn { grid-column: 1 / -1; }
 }
 
 .water-price-top[hidden] { display: none !important; }

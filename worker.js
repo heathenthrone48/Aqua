@@ -34,6 +34,8 @@ const PRODUCT_IDS = new Set([
   "Automatic Electric Water Dispenser Pump"
 ]);
 
+const TELEGRAM_ORDER_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
+
 function json(data, status = 200) {
   return Response.json(data, {
     status,
@@ -119,6 +121,95 @@ async function getCurrentUser(request, env) {
     JOIN auth_users AS users ON users.google_sub = auth_sessions.google_sub
     WHERE auth_sessions.token_hash = ? AND auth_sessions.expires_at > ?`).bind(hash, now).first();
   return row || null;
+}
+
+function normalizeOrder(data) {
+  const orderId = String(data.orderId || data.orderID || "").trim();
+  const name = String(data.name || "").trim();
+  const phone = String(data.phone || "").trim();
+  const address = String(data.address || "").trim();
+  const deliveryWindow = String(data.deliveryWindow || data.time || "").trim();
+  const items = Array.isArray(data.items) ? data.items : [];
+  const totalAmount = Number(String(data.bill || "").replace(/[^0-9.-]/g, ""));
+
+  if (!/^[A-Za-z0-9_-]{3,80}$/.test(orderId) || !name || name.length > 120 ||
+      !/^[+0-9().\-\s]{6,32}$/.test(phone) || !address || address.length > 600 ||
+      !deliveryWindow || deliveryWindow.length > 160 || !items.length || items.length > 50 ||
+      !Number.isFinite(totalAmount) || totalAmount < 0 || totalAmount > 1e7) {
+    return null;
+  }
+
+  const normalizedItems = [];
+  for (const item of items) {
+    const productId = String(item?.productId || "").trim();
+    const itemName = String(item?.name || "").trim();
+    const unitPrice = Number(item?.unitPrice);
+    const quantity = Number(item?.quantity);
+    const lineTotal = Number(item?.lineTotal);
+    if (!productId || productId.length > 120 || !itemName || itemName.length > 120 ||
+        !Number.isFinite(unitPrice) || unitPrice < 0 || unitPrice > 1e6 ||
+        !Number.isInteger(quantity) || quantity < 1 || quantity > 500 ||
+        !Number.isFinite(lineTotal) || lineTotal < 0 || lineTotal > 1e7) return null;
+    normalizedItems.push({ productId, name: itemName, unitPrice, quantity, lineTotal });
+  }
+
+  const optionalNumber = value => value === null || value === undefined || value === "" ? null : Number(value);
+  const latitude = optionalNumber(data.latitude);
+  const longitude = optionalNumber(data.longitude);
+  const distanceKm = optionalNumber(data.distanceKm);
+  if ((latitude !== null && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) ||
+      (longitude !== null && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180)) ||
+      (distanceKm !== null && (!Number.isFinite(distanceKm) || distanceKm < 0 || distanceKm > 1000))) return null;
+
+  const sourceAddressDetails = data.addressDetails && typeof data.addressDetails === "object" ? data.addressDetails : {};
+  const addressDetails = Object.fromEntries(["house", "street", "area", "city", "postcode", "landmark"]
+    .map(key => [key, String(sourceAddressDetails[key] || "").trim().slice(0, key === "landmark" ? 250 : 200)]));
+  const order = {
+    orderId, name, phone,
+    alternatePhone: String(data.alternatePhone || "").trim().slice(0, 32),
+    address,
+    addressDetails,
+    notes: String(data.notes || "").slice(0, 2000),
+    items: normalizedItems,
+    productSubtotal: Number(data.productSubtotal) || 0,
+    bisleri20LQuantity: Number(data.bisleri20LQuantity) || 0,
+    bisleriContainerDeposit: Number(data.bisleriContainerDeposit) || 0,
+    bisleriReturnedContainers: Number(data.bisleriReturnedContainers) || 0,
+    bisleriReturnCredit: Number(data.bisleriReturnCredit) || 0,
+    cart: String(data.cart || "").slice(0, 4000),
+    qty: Number(data.qty) || normalizedItems.reduce((sum, item) => sum + item.quantity, 0),
+    bill: String(data.bill || "").slice(0, 40),
+    subtotal: Number(data.subtotal) || 0,
+    deliveryFee: Number(data.deliveryFee) || 0,
+    handlingFee: Number(data.handlingFee) || 0,
+    distanceKm,
+    deliveryWindow,
+    time: deliveryWindow,
+    latitude,
+    longitude,
+    addressSource: String(data.addressSource || "").slice(0, 40),
+    paymentMethod: "Cash on delivery"
+  };
+
+  if ([order.productSubtotal, order.bisleriContainerDeposit, order.bisleriReturnCredit,
+       order.subtotal, order.deliveryFee, order.handlingFee].some(value => !Number.isFinite(value) || value < 0 || value > 1e7)) return null;
+  return { order, totalAmount };
+}
+
+async function notifyTelegram(order) {
+  try {
+    const response = await fetch(TELEGRAM_ORDER_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(order),
+      signal: AbortSignal.timeout(10000)
+    });
+    const result = await response.json();
+    return response.ok && result.success === true;
+  } catch (error) {
+    console.error("Telegram order notification failed:", error);
+    return false;
+  }
 }
 
 export default {
@@ -394,6 +485,91 @@ export default {
           : json({ error: "Incorrect password" }, 401);
       }
 
+      if (url.pathname === "/api/orders" && request.method === "POST") {
+        const contentLength = Number(request.headers.get("Content-Length") || 0);
+        if (contentLength > 50000) return json({ error: "Order is too large" }, 413);
+        let data;
+        try { data = await request.json(); } catch { return json({ error: "Invalid order request" }, 400); }
+        if (JSON.stringify(data).length > 50000) return json({ error: "Order is too large" }, 413);
+        const validated = normalizeOrder(data);
+        if (!validated) return json({ error: "Please check the order details and try again." }, 400);
+
+        const { order, totalAmount } = validated;
+        const now = Math.floor(Date.now() / 1000);
+        const inserted = await env.DB.prepare(`INSERT INTO orders
+          (order_id, created_at, customer_name, phone, address, items_json, total_amount, delivery_window, order_json, telegram_status)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+          ON CONFLICT(order_id) DO NOTHING`)
+          .bind(order.orderId, now, order.name, order.phone, order.address,
+            JSON.stringify(order.items), totalAmount, order.deliveryWindow, JSON.stringify(order)).run();
+
+        if (!inserted.meta?.changes) {
+          const existing = await env.DB.prepare("SELECT telegram_status FROM orders WHERE order_id = ?")
+            .bind(order.orderId).first();
+          if (!existing) return json({ error: "Could not confirm that the order was saved. Please contact the store before retrying." }, 503);
+          return json({ success: true, saved: true, duplicate: true, telegramSent: existing.telegram_status === "sent", orderId: order.orderId });
+        }
+
+        const telegramSent = await notifyTelegram(order);
+        await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
+          .bind(telegramSent ? "sent" : "failed", order.orderId).run();
+        return json({ success: true, saved: true, telegramSent, orderId: order.orderId });
+      }
+
+      if (url.pathname === "/api/admin/orders" && request.method === "GET") {
+        if (!(await validPassword(request, env))) return json({ error: "Please log in again" }, 401);
+        const query = String(url.searchParams.get("q") || "").trim().slice(0, 120);
+        const from = Number(url.searchParams.get("from"));
+        const to = Number(url.searchParams.get("to"));
+        const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 50, 1), 100);
+        const offset = Math.max(Number(url.searchParams.get("offset")) || 0, 0);
+        const clauses = [];
+        const values = [];
+        if (query) {
+          clauses.push("(order_id LIKE ? OR customer_name LIKE ? OR phone LIKE ? OR address LIKE ? OR items_json LIKE ?)");
+          const match = `%${query}%`;
+          values.push(match, match, match, match, match);
+        }
+        if (url.searchParams.has("from")) {
+          if (!Number.isSafeInteger(from) || from < 0) return json({ error: "Invalid start date" }, 400);
+          clauses.push("created_at >= ?");
+          values.push(from);
+        }
+        if (url.searchParams.has("to")) {
+          if (!Number.isSafeInteger(to) || to < 0) return json({ error: "Invalid end date" }, 400);
+          clauses.push("created_at < ?");
+          values.push(to);
+        }
+        const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+        const count = await env.DB.prepare(`SELECT COUNT(*) AS total FROM orders ${where}`).bind(...values).first();
+        const { results } = await env.DB.prepare(`SELECT order_id, created_at, customer_name, phone, address, items_json,
+          total_amount, delivery_window, order_json, telegram_status FROM orders ${where}
+          ORDER BY created_at DESC LIMIT ? OFFSET ?`).bind(...values, limit, offset).all();
+        return json({
+          total: Number(count?.total || 0),
+          limit,
+          offset,
+          orders: results.map(row => {
+            let details = {};
+            try { details = JSON.parse(row.order_json); } catch {}
+            let items = [];
+            try { items = JSON.parse(row.items_json); } catch {}
+            return {
+              orderId: row.order_id,
+              createdAt: row.created_at,
+              name: row.customer_name,
+              phone: row.phone,
+              address: row.address,
+              items,
+              totalAmount: Number(row.total_amount),
+              deliveryWindow: row.delivery_window,
+              telegramStatus: row.telegram_status,
+              details
+            };
+          })
+        });
+      }
+
       if (url.pathname === "/api/catalog" && request.method === "GET") {
         const {results}=await env.DB.prepare("SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty FROM custom_products ORDER BY sort_order,created_at").all();
         return json({products:results.map(r=>({id:r.id,name:r.name,brand:r.brand,description:r.description,category:r.category,unitLabel:r.unit_label,price:Number(r.selling_price),mrp:Number(r.mrp),caseQty:r.case_qty==null?null:Number(r.case_qty)}))});
@@ -515,8 +691,11 @@ export default {
       }
 
       return json({ error: "Not found" }, 404);
-    } catch {
-      return json({ error: "Stock service unavailable" }, 503);
+    } catch (error) {
+      console.error("Worker request failed:", error);
+      return json({ error: url.pathname === "/api/orders"
+        ? "Order could not be saved. Please try again or call the store before placing another order."
+        : "Stock service unavailable" }, 503);
     }
   }
 };

@@ -913,7 +913,6 @@ document.addEventListener('deliverylocationchange', () => {
       submitBtn.disabled = true;
 
       const orderRef = generateMemorableOrderId();
-      const CLOUDFLARE_WORKER_URL = "https://water-order-sms.ashinsobharaj1.workers.dev/";
 
       const savedAccountAddress = window.getSelectedNeerBekuAddress?.();
       if (savedAccountAddress) {
@@ -1033,7 +1032,7 @@ document.addEventListener('deliverylocationchange', () => {
       };
 
       try {
-        const response = await fetch(CLOUDFLARE_WORKER_URL, {
+        const response = await fetch('/api/orders', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -1042,6 +1041,12 @@ document.addEventListener('deliverylocationchange', () => {
         const result = await response.json();
 
         if (response.ok && result.success) {
+          const confirmationLead = document.querySelector('#thankyou-screen .confirm-lead');
+          if (confirmationLead) {
+            confirmationLead.textContent = result.telegramSent === false
+              ? 'Your order is saved securely. The store notification is delayed; please call us if you need an immediate confirmation.'
+              : 'Thank you for your order. We have received it and will contact you shortly to confirm delivery.';
+          }
           saveCustomerData({
             name: customerName,
             phone: customerPhone,
@@ -1068,13 +1073,13 @@ document.addEventListener('deliverylocationchange', () => {
           renderCart(false);
           window.scrollTo(0, 0);
         } else {
-          alert("Order dispatch failed: " + JSON.stringify(result.details || result));
+          alert(result.error || "We could not save your order. Please try again or call us before placing another order.");
           submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
           submitBtn.disabled = false;
         }
       } catch (error) {
         console.error("Error:", error);
-        alert("Network error. Please try again or call directly.");
+        alert("We could not confirm that your order was saved. Please try again or call us before placing another order.");
         submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
         submitBtn.disabled = false;
       }
