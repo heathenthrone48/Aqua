@@ -69,7 +69,7 @@
       <div style="display: flex; gap: 32px; margin-top: 16px;">
         <div>
           <span style="font-size: 2rem; font-weight: bold; color: var(--primary);" id="totalOrdersCount">0</span>
-          <p style="font-size: 0.85rem; color: #64748b;">Total Orders Logged</p>
+          <p style="font-size: 0.85rem; color: #64748b;">Matching orders</p>
         </div>
         <div>
           <span style="font-size: 2rem; font-weight: bold; color: var(--success);" id="telegramStatus">Active</span>
@@ -78,31 +78,43 @@
       </div>
     </div>
 
-    <!-- Submissions Log Section -->
+    <!-- Durable order history from D1 -->
     <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3>Recent Submissions Log</h3>
-        <button class="btn" onclick="clearLogs()" style="background: #ef4444; font-size: 0.8rem; padding: 6px 12px;">Clear History</button>
+      <h3>Order History</h3>
+      <p class="section-help">Orders are stored in the connected D1 database and are available from any device.</p>
+      <div class="order-filters">
+        <label>Search orders<input id="orderSearch" type="search" placeholder="Reference, customer, phone, item or address" autocomplete="off"></label>
+        <label>From<input id="orderDateFrom" type="date"></label>
+        <label>To<input id="orderDateTo" type="date"></label>
+        <button class="btn btn-secondary" id="resetOrderFilters" type="button">Reset filters</button>
       </div>
+      <p id="orderHistoryStatus" class="price-status" role="status">Sign in to load saved orders.</p>
       
       <div style="overflow-x: auto;">
-        <table>
+        <table class="orders-table">
           <thead>
             <tr>
-              <th>Time</th>
+              <th>Date</th>
+              <th>Reference</th>
               <th>Customer</th>
               <th>Phone</th>
-              <th>Item / Qty</th>
+              <th>Items</th>
+              <th>Total</th>
               <th>Address</th>
+              <th>Delivery window</th>
+              <th>Telegram</th>
             </tr>
           </thead>
           <tbody id="logsTableBody">
-            <!-- Dynamic order rows -->
           </tbody>
         </table>
-        <div id="emptyLogMsg" style="text-align: center; padding: 24px; color: #64748b; font-size: 0.9rem;">
-          No local orders recorded yet.
+        <div id="emptyLogMsg" style="display:none; text-align: center; padding: 24px; color: #64748b; font-size: 0.9rem;">
+          No orders match these filters.
         </div>
+      </div>
+      <div class="order-pagination">
+        <span id="orderResultCount" aria-live="polite"></span>
+        <button class="btn btn-secondary" id="loadMoreOrders" type="button" hidden>Load more</button>
       </div>
     </div>
   </div>

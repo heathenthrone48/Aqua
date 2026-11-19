@@ -23,6 +23,10 @@ let loadingStock = false;
 let priceState = {};
 let savingPriceId = "";
 let loginPending = false;
+let orderOffset = 0;
+let orderTotal = 0;
+const ORDER_PAGE_SIZE = 50;
+let orderSearchTimer = null;
 
 function stockMessage(text) {
   let element = document.getElementById('liveStockStatus');
@@ -256,43 +260,92 @@ setInterval(() => {
 }, 10000);
 window.addEventListener('focus', refreshAdminStock);
 
-    /* Load Order Logs */
-    function loadLogs() {
-      let orders = [];
-      try { const saved = JSON.parse(localStorage.getItem('waterOrders')); if (Array.isArray(saved)) orders = saved.filter(order => order && typeof order === 'object'); } catch {}
+    /* Durable order history loaded from the connected D1 database. */
+    async function loadLogs(reset = true) {
       const tbody = document.getElementById('logsTableBody');
       const emptyMsg = document.getElementById('emptyLogMsg');
+      const status = document.getElementById('orderHistoryStatus');
       const countDisplay = document.getElementById('totalOrdersCount');
-
-      countDisplay.textContent = orders.length;
-      tbody.innerHTML = '';
-
-      if (orders.length === 0) {
-        emptyMsg.style.display = 'block';
-        return;
+      const resultCount = document.getElementById('orderResultCount');
+      const loadMore = document.getElementById('loadMoreOrders');
+      if (!tbody || !adminPassword) return;
+      if (reset) {
+        orderOffset = 0;
+        orderTotal = 0;
+        tbody.replaceChildren();
       }
+      status.textContent = 'Loading saved orders…';
+      loadMore.disabled = true;
 
-      emptyMsg.style.display = 'none';
+      const params = new URLSearchParams({ limit: String(ORDER_PAGE_SIZE), offset: String(orderOffset) });
+      const query = document.getElementById('orderSearch').value.trim();
+      const fromValue = document.getElementById('orderDateFrom').value;
+      const toValue = document.getElementById('orderDateTo').value;
+      if (query) params.set('q', query);
+      const dateBoundary = (value, nextDay = false) => {
+        const [year, month, day] = value.split('-').map(Number);
+        return Math.floor(new Date(year, month - 1, day + (nextDay ? 1 : 0)).getTime() / 1000);
+      };
+      if (fromValue) params.set('from', String(dateBoundary(fromValue)));
+      if (toValue) params.set('to', String(dateBoundary(toValue, true)));
 
-      orders.forEach(order => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${escapeHtml(order.time || 'N/A')}</td>
-          <td>${escapeHtml(order.name || 'N/A')}</td>
-          <td>${escapeHtml(order.phone || 'N/A')}</td>
-          <td>${escapeHtml(order.item || '20L Can')} (${escapeHtml(order.quantity || 1)})</td>
-          <td>${escapeHtml(order.address || 'N/A')}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+      try {
+        const data = await stockApi('/api/admin/orders?' + params.toString());
+        orderTotal = Number(data.total) || 0;
+        (data.orders || []).forEach(order => {
+          const items = Array.isArray(order.items) && order.items.length
+            ? order.items.map(item => `${item.name} × ${item.quantity}`).join(', ')
+            : '—';
+          const created = Number(order.createdAt);
+          const dateLabel = Number.isFinite(created)
+            ? new Date(created * 1000).toLocaleString()
+            : '—';
+          const telegramLabel = order.telegramStatus === 'sent' ? 'Sent' :
+            order.telegramStatus === 'failed' ? 'Failed' : 'Pending';
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${escapeHtml(dateLabel)}</td>
+            <td>${escapeHtml(order.orderId || '—')}</td>
+            <td>${escapeHtml(order.name || '—')}</td>
+            <td>${escapeHtml(order.phone || '—')}</td>
+            <td>${escapeHtml(items)}</td>
+            <td>${escapeHtml('₹' + Number(order.totalAmount || 0).toFixed(2))}</td>
+            <td>${escapeHtml(order.address || '—')}</td>
+            <td>${escapeHtml(order.deliveryWindow || '—')}</td>
+            <td><span class="telegram-order-status telegram-${escapeHtml(order.telegramStatus || 'pending')}">${escapeHtml(telegramLabel)}</span></td>
+          `;
+          tbody.appendChild(row);
+        });
+        orderOffset += (data.orders || []).length;
+        countDisplay.textContent = String(orderTotal);
+        resultCount.textContent = orderTotal
+          ? `Showing ${Math.min(orderOffset, orderTotal)} of ${orderTotal} matching orders`
+          : '0 matching orders';
+        emptyMsg.style.display = orderOffset ? 'none' : 'block';
+        status.textContent = 'Connected — order records are saved in this environment’s D1 database.';
+        loadMore.hidden = orderOffset >= orderTotal;
+      } catch (problem) {
+        status.textContent = 'Could not load saved orders. Apply migrations/0005_orders.sql to this environment’s D1 database, then refresh. ' + problem.message;
+        if (reset) emptyMsg.style.display = 'none';
+        loadMore.hidden = true;
+      } finally {
+        loadMore.disabled = false;
+      }
     }
 
-    function clearLogs() {
-      if (confirm("Are you sure you want to clear local submission records?")) {
-        localStorage.removeItem('waterOrders');
-        loadLogs();
-      }
-    }
+    document.getElementById('orderSearch')?.addEventListener('input', () => {
+      clearTimeout(orderSearchTimer);
+      orderSearchTimer = setTimeout(() => loadLogs(true), 250);
+    });
+    document.getElementById('orderDateFrom')?.addEventListener('change', () => loadLogs(true));
+    document.getElementById('orderDateTo')?.addEventListener('change', () => loadLogs(true));
+    document.getElementById('resetOrderFilters')?.addEventListener('click', () => {
+      document.getElementById('orderSearch').value = '';
+      document.getElementById('orderDateFrom').value = '';
+      document.getElementById('orderDateTo').value = '';
+      loadLogs(true);
+    });
+    document.getElementById('loadMoreOrders')?.addEventListener('click', () => loadLogs(false));
 
     function escapeHtml(text) {
       return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
