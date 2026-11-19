@@ -115,7 +115,12 @@
 <section class="reference-checkout-card reference-delivery-card"><h2>3. Delivery details</h2><div class="panel checkout-details-panel">
 <h3 class="checkout-step-title">Delivery window</h3>
 <div class="form-group">
-<select id="preferred-time" name="Preferred_Time"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
+<div class="delivery-window-summary" aria-live="polite">
+  <div class="delivery-window-summary-icon" aria-hidden="true">◷</div>
+  <div class="delivery-window-summary-copy"><span>Selected delivery window</span><strong id="delivery-window-selected">ASAP · Within 1–2 hours</strong></div>
+  <button class="delivery-window-change" id="change-delivery-window" type="button" aria-haspopup="dialog" aria-controls="delivery-window-dialog">Change</button>
+</div>
+<select class="delivery-window-native-select" id="preferred-time" name="Preferred_Time" aria-hidden="true" tabindex="-1"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
 <option value="Today - Morning (8 AM–11 AM)" data-day="today" data-end="11">Today - Morning (8 AM–11 AM)</option>
 <option value="Today - Midday (11 AM–2 PM)" data-day="today" data-end="14">Today - Midday (11 AM–2 PM)</option>
 <option value="Today - Afternoon (2 PM–5 PM)" data-day="today" data-end="17">Today - Afternoon (2 PM–5 PM)</option>
@@ -125,10 +130,7 @@
 <option value="Tomorrow - Afternoon (2 PM–5 PM)" data-day="tomorrow" data-end="17">Tomorrow - Afternoon (2 PM–5 PM)</option>
 <option value="Tomorrow - Evening (5 PM–8 PM)" data-day="tomorrow" data-end="20">Tomorrow - Evening (5 PM–8 PM)</option>
 <option value="scheduled">Schedule for Another Date</option></select>
-<div id="scheduled-delivery-fields" hidden>
-<label for="delivery-date">Delivery date</label><input type="date" id="delivery-date" disabled>
-<label for="scheduled-slot">Delivery window</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning (8 AM–11 AM)</option><option value="Midday (11 AM–2 PM)">Midday (11 AM–2 PM)</option><option value="Afternoon (2 PM–5 PM)">Afternoon (2 PM–5 PM)</option><option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option></select>
-</div><p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
+<p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
 </div>
 <p id="delivery-route-status" aria-live="polite" role="status"></p>
 <section class="location-section" id="delivery-address-entry">
@@ -224,6 +226,27 @@
 
 </form>
 </div>
+<dialog class="delivery-window-dialog" id="delivery-window-dialog" aria-labelledby="delivery-window-dialog-title">
+  <div class="delivery-window-sheet">
+    <div class="delivery-window-sheet-handle" aria-hidden="true"></div>
+    <div class="delivery-window-sheet-header">
+      <div><span class="delivery-window-eyebrow">DELIVERY PREFERENCE</span><h2 id="delivery-window-dialog-title">Choose a delivery window</h2></div>
+      <button class="delivery-window-close" id="close-delivery-window" type="button" aria-label="Close delivery window picker">×</button>
+    </div>
+    <div class="delivery-window-tabs" role="tablist" aria-label="Choose delivery date">
+      <button class="delivery-window-tab active" type="button" role="tab" aria-selected="true" data-window-day="today">Today</button>
+      <button class="delivery-window-tab" type="button" role="tab" aria-selected="false" data-window-day="tomorrow">Tomorrow</button>
+      <button class="delivery-window-tab" type="button" role="tab" aria-selected="false" data-window-day="date">Pick a date</button>
+    </div>
+    <div class="delivery-window-options" id="delivery-window-options" role="radiogroup" aria-label="Available delivery windows"></div>
+    <div class="delivery-window-custom-date" id="scheduled-delivery-fields" hidden>
+      <div class="form-group"><label for="delivery-date">Choose a delivery date</label><input type="date" id="delivery-date" disabled></div>
+      <div class="form-group"><label for="scheduled-slot">Choose a time</label><select id="scheduled-slot" disabled><option value="Morning (8 AM–11 AM)">Morning · 8–11 AM</option><option value="Midday (11 AM–2 PM)">Midday · 11 AM–2 PM</option><option value="Afternoon (2 PM–5 PM)">Afternoon · 2–5 PM</option><option value="Evening (5 PM–8 PM)">Evening · 5–8 PM</option></select></div>
+      <button class="delivery-window-apply" id="apply-custom-delivery-window" type="button">Use this delivery window</button>
+    </div>
+    <p class="delivery-window-sheet-note">Times are in Bengaluru time (IST).</p>
+  </div>
+</dialog>
 <!-- PRODUCT DETAIL POPUP MODAL VIEW -->
 
 <!-- Thank You Screen -->

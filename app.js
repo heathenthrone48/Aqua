@@ -1222,15 +1222,130 @@ function refreshDeliveryChoices() {
   for (const option of select.options) {
     if (option.dataset.day === 'today') option.disabled = now.hour >= Number(option.dataset.end);
   }
-  const scheduled = select.value === 'scheduled';
-  document.getElementById('scheduled-delivery-fields').hidden = !scheduled;
-  for (const id of ['delivery-date', 'scheduled-slot']) {
-    const field = document.getElementById(id);
-    field.disabled = !scheduled;
-    field.required = scheduled;
-  }
-  document.getElementById('delivery-date').min = nextStoreDate(now.date);
+  const dateInput = document.getElementById('delivery-date');
+  if (dateInput) dateInput.min = nextStoreDate(now.date);
 }
+
+// Compact selected delivery card with a bottom-sheet picker. The original
+// select remains the source of truth for order validation and submission.
+function initDeliveryWindowPicker() {
+  const select = document.getElementById('preferred-time');
+  const dialog = document.getElementById('delivery-window-dialog');
+  const optionsContainer = document.getElementById('delivery-window-options');
+  const selectedLabel = document.getElementById('delivery-window-selected');
+  if (!select || !dialog || !optionsContainer || !selectedLabel) return;
+
+  const dateFields = document.getElementById('scheduled-delivery-fields');
+  const dateInput = document.getElementById('delivery-date');
+  const timeSelect = document.getElementById('scheduled-slot');
+  let activeDay = 'today';
+
+  function summaryText() {
+    const option = select.selectedOptions[0];
+    if (!option || option.value.startsWith('ASAP')) return 'ASAP · Within 1–2 hours';
+    if (option.value === 'scheduled') {
+      const date = dateInput?.value;
+      const time = timeSelect?.selectedOptions[0]?.textContent || '';
+      if (!date) return 'Choose another date';
+      const parsed = new Date(`${date}T12:00:00`);
+      const friendlyDate = parsed.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+      return `${friendlyDate} · ${time.replace(/\s*·\s*/, ' ')}`;
+    }
+    const match = option.textContent.match(/^(Today|Tomorrow) - ([^(]+)\s*\(([^)]+)\)/);
+    return match ? `${match[1]} · ${match[2].trim()} · ${match[3]}` : option.textContent;
+  }
+
+  function renderSummary() {
+    selectedLabel.textContent = summaryText();
+  }
+
+  function setTab(day) {
+    activeDay = day;
+    dialog.querySelectorAll('[data-window-day]').forEach(tab => {
+      const active = tab.dataset.windowDay === day;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
+    const choosingDate = day === 'date';
+    dateFields.hidden = !choosingDate;
+    dateInput.disabled = !choosingDate;
+    timeSelect.disabled = !choosingDate;
+    dateInput.required = choosingDate;
+    timeSelect.required = choosingDate;
+    optionsContainer.hidden = choosingDate;
+    if (!choosingDate) renderOptions();
+  }
+
+  function renderOptions() {
+    refreshDeliveryChoices();
+    optionsContainer.replaceChildren();
+    const choices = [select.options[0], ...Array.from(select.options).filter(option => option.dataset.day === activeDay)];
+    for (const option of choices) {
+      const asap = !option.dataset.day;
+      const match = option.textContent.match(/^(?:Today|Tomorrow) - ([^(]+)\s*\(([^)]+)\)/);
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'delivery-window-option';
+      row.setAttribute('role', 'radio');
+      row.setAttribute('aria-checked', String(select.value === option.value));
+      row.disabled = option.disabled;
+
+      const icon = document.createElement('span');
+      icon.className = 'delivery-window-option-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = asap ? '◷' : ({ Morning: '☀', Midday: '☼', Afternoon: '◒', Evening: '☾' }[match?.[1].trim()] || '◷');
+
+      const copy = document.createElement('span');
+      copy.className = 'delivery-window-option-copy';
+      const title = document.createElement('strong');
+      title.textContent = asap ? 'ASAP' : match?.[1].trim() || option.textContent;
+      const detail = document.createElement('small');
+      detail.textContent = asap ? 'Within 1–2 hours' : match?.[2] || '';
+      copy.append(title, detail);
+
+      const mark = document.createElement('span');
+      mark.className = 'delivery-window-radio-mark';
+      mark.setAttribute('aria-hidden', 'true');
+      row.append(icon, copy, mark);
+      row.addEventListener('click', () => {
+        select.value = option.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        renderSummary();
+        dialog.close();
+      });
+      optionsContainer.append(row);
+    }
+  }
+
+  document.getElementById('change-delivery-window')?.addEventListener('click', () => {
+    refreshDeliveryChoices();
+    const selectedOption = select.selectedOptions[0];
+    setTab(selectedOption?.dataset.day || (select.value === 'scheduled' ? 'date' : 'today'));
+    renderSummary();
+    dialog.showModal();
+  });
+  document.getElementById('close-delivery-window')?.addEventListener('click', () => dialog.close());
+  dialog.querySelectorAll('[data-window-day]').forEach(tab => {
+    tab.addEventListener('click', () => setTab(tab.dataset.windowDay));
+  });
+  dialog.addEventListener('click', event => {
+    if (event.target === dialog) dialog.close();
+  });
+  document.getElementById('apply-custom-delivery-window')?.addEventListener('click', () => {
+    if (!dateInput.value || !dateInput.checkValidity() || dateInput.value < dateInput.min) {
+      dateInput.reportValidity();
+      dateInput.focus();
+      return;
+    }
+    select.value = 'scheduled';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    renderSummary();
+    dialog.close();
+  });
+  select.addEventListener('change', renderSummary);
+  renderSummary();
+}
+
 function getDeliveryWindow() {
   refreshDeliveryChoices();
   const select = document.getElementById('preferred-time');
@@ -1260,6 +1375,7 @@ if (document.getElementById('preferred-time')) {
   document.getElementById('preferred-time').addEventListener('change', refreshDeliveryChoices);
   window.addEventListener('focus', refreshDeliveryChoices);
   refreshDeliveryChoices();
+  initDeliveryWindowPicker();
 }
 
 

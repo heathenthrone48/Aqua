@@ -610,6 +610,75 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .saved-address-preview #account-save-address-row { display: none !important; }
 .cart-page .reference-summary-card{padding:0;border:0;background:transparent;box-shadow:none}
 .cart-page .reference-summary-card>.checkout-order-summary{margin:16px 0;padding:22px;border:1px solid #dce7ee;border-radius:24px;box-shadow:0 5px 18px rgba(31,76,108,.035)}
+/* Minimal delivery selection in checkout, with a focused mobile bottom sheet. */
+.delivery-window-native-select{
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+}
+.delivery-window-summary{
+  display:flex;align-items:center;gap:13px;min-height:74px;padding:13px 15px;
+  border:1px solid #dce7ee;border-radius:16px;background:#f8fbfd;
+}
+.delivery-window-summary-icon{
+  display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:13px;
+  background:#e8f4fc;color:#087bc1;font-size:25px;font-weight:700;
+}
+.delivery-window-summary-copy{display:grid;gap:4px;min-width:0;flex:1}
+.delivery-window-summary-copy>span{color:#718293;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.delivery-window-summary-copy>strong{color:#12365b;font-size:15px;line-height:1.35;font-weight:800}
+.delivery-window-change{flex:0 0 auto;padding:9px 12px;border:1px solid #d6e7f2;border-radius:10px;background:#fff;color:#087bc1;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.delivery-window-change:hover{background:#eef8ff}
+.delivery-window-dialog{
+  position:fixed;inset:0 0 0 auto;margin:auto 0 0;width:min(100%,560px);max-width:560px;max-height:min(86dvh,760px);
+  padding:0;border:0;border-radius:24px 24px 0 0;background:#fff;color:#20384d;box-shadow:0 -14px 50px #102f481f;overflow:auto;
+}
+.delivery-window-dialog::backdrop{background:rgba(11,29,47,.48);backdrop-filter:blur(3px)}
+.delivery-window-sheet{padding:10px 22px max(24px,env(safe-area-inset-bottom))}
+.delivery-window-sheet-handle{width:42px;height:4px;margin:0 auto 20px;border-radius:99px;background:#d9e2e9}
+.delivery-window-sheet-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
+.delivery-window-eyebrow{color:#77899a;font-size:10px;font-weight:850;letter-spacing:.11em}
+.delivery-window-sheet-header h2{margin:5px 0 0;color:#12365b;font-size:21px;line-height:1.25;letter-spacing:-.35px}
+.delivery-window-close{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border:1px solid #e0e8ee;border-radius:50%;background:#fff;color:#53697c;font:inherit;font-size:25px;line-height:1;cursor:pointer}
+.delivery-window-tabs{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:7px;margin-bottom:17px;padding:4px;border-radius:13px;background:#f2f6f9}
+.delivery-window-tab{min-height:42px;padding:9px 8px;border:1px solid transparent;border-radius:10px;background:transparent;color:#62778a;font:inherit;font-size:13px;font-weight:750;white-space:nowrap;cursor:pointer}
+.delivery-window-tab.active{border-color:#d5e8f5;background:#fff;color:#087bc1;box-shadow:0 2px 8px #183c570c}
+.delivery-window-options{display:grid;gap:8px}
+.delivery-window-options[hidden]{display:none}
+.delivery-window-option{display:flex;align-items:center;gap:13px;width:100%;min-height:68px;padding:11px 13px;border:1px solid #e0e8ee;border-radius:14px;background:#fff;color:#12365b;text-align:left;cursor:pointer;transition:border-color .15s ease,background .15s ease,transform .15s ease}
+.delivery-window-option:hover:not(:disabled){border-color:#9bcce9;background:#f8fcff}
+.delivery-window-option[aria-checked="true"]{border-color:#1687cf;background:#eff8ff;box-shadow:0 0 0 1px #1687cf inset}
+.delivery-window-option:disabled{opacity:.42;cursor:not-allowed;background:#f7f8f9}
+.delivery-window-option-icon{display:grid;place-items:center;flex:0 0 40px;width:40px;height:40px;border-radius:12px;background:#f0f7fb;color:#087bc1;font-size:21px}
+.delivery-window-option[aria-checked="true"] .delivery-window-option-icon{background:#dcefff}
+.delivery-window-option-copy{display:grid;gap:3px;flex:1;min-width:0}
+.delivery-window-option-copy strong{font-size:14px;font-weight:800}
+.delivery-window-option-copy small{color:#718293;font-size:12px}
+.delivery-window-radio-mark{position:relative;flex:0 0 19px;width:19px;height:19px;border:1.6px solid #bccbd6;border-radius:50%}
+.delivery-window-option[aria-checked="true"] .delivery-window-radio-mark{border:6px solid #087bc1}
+.delivery-window-custom-date{padding-top:2px}
+.delivery-window-custom-date .form-group{margin:0 0 14px}
+.delivery-window-custom-date label{display:block;margin:0 0 7px;color:#12365b;font-size:12px;font-weight:800;text-transform:uppercase}
+.delivery-window-custom-date input,.delivery-window-custom-date select{box-sizing:border-box;width:100%;min-height:50px;padding:12px 14px;border:1px solid #cbdbe8;border-radius:12px;background:#fff;color:#20384d;font:inherit;font-size:15px}
+.delivery-window-apply{width:100%;min-height:50px;margin-top:4px;border:0;border-radius:13px;background:#087bc1;color:#fff;font:inherit;font-size:14px;font-weight:850;cursor:pointer}
+.delivery-window-apply:hover{background:#066aa8}
+.delivery-window-sheet-note{margin:15px 0 0;color:#718293;font-size:11px;line-height:1.5;text-align:center}
+@media(min-width:700px){
+ .delivery-window-dialog{inset:0;margin:auto;max-height:min(84vh,720px);border-radius:24px}
+ .delivery-window-sheet{padding:20px 26px 26px}
+ .delivery-window-sheet-handle{display:none}
+}
+@media(max-width:380px){
+ .delivery-window-summary{gap:9px;padding:11px}
+ .delivery-window-summary-icon{flex-basis:36px;width:36px;height:36px}
+ .delivery-window-summary-copy>strong{font-size:13px}
+ .delivery-window-change{padding:8px 10px}
+ .delivery-window-sheet{padding-left:16px;padding-right:16px}
+ .delivery-window-tab{font-size:12px}
+}
+@media(prefers-reduced-motion:no-preference){
+ .delivery-window-dialog[open]{animation:delivery-sheet-in .2s ease-out}
+ @keyframes delivery-sheet-in{from{transform:translateY(20px);opacity:.7}to{transform:translateY(0);opacity:1}}
+}
 @media(max-width:600px){
  .cart-page .reference-checkout-card{padding:18px;border-radius:19px}
  .cart-page .reference-delivery-card #delivery-address-fields{grid-template-columns:1fr}
