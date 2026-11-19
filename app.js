@@ -1091,6 +1091,10 @@ document.addEventListener('deliverylocationchange', () => {
     });
 
 // Shared stock from the existing /api/stock Worker endpoint.
+document.querySelectorAll('[data-staging-live-badge]').forEach(badge => {
+  badge.hidden = !location.hostname.toLowerCase().startsWith('neerbeku-staging.');
+});
+
 let liveStock = {};
 let stockReady = false;
 let stockRequest = null;
