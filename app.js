@@ -1032,20 +1032,53 @@ document.addEventListener('deliverylocationchange', () => {
       };
 
       try {
+        // Save the order in D1 first, then use the same direct Telegram Worker
+        // request that the checkout used before the order-history migration.
         const response = await fetch('/api/orders', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ ...payload, notificationMode: "direct" })
         });
 
         const result = await response.json();
 
         if (response.ok && result.success) {
+          let telegramSent = result.telegramSent === true;
+          if (!result.duplicate) {
+          try {
+            const telegramResponse = await fetch('https://water-order-sms.ashinsobharaj1.workers.dev/', {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            const telegramResult = await telegramResponse.json();
+            telegramSent = telegramResponse.ok && telegramResult.success === true;
+            if (!telegramSent) {
+              console.error("Telegram Worker rejected order:", telegramResponse.status, telegramResult);
+            }
+          } catch (notificationError) {
+            console.error("Telegram order notification failed:", notificationError);
+          }
+
+          try {
+            const statusResponse = await fetch('/api/orders/telegram-status', {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ orderId, status: telegramSent ? "sent" : "failed" })
+            });
+            if (!statusResponse.ok) {
+              console.error("Could not update the saved order notification status:", await statusResponse.text());
+            }
+          } catch (statusError) {
+            console.error("Could not update Telegram status in D1:", statusError);
+          }
+          }
+
           const confirmationLead = document.querySelector('#thankyou-screen .confirm-lead');
           if (confirmationLead) {
-            confirmationLead.textContent = result.telegramSent === false
-              ? 'Your order is saved securely. The store notification is delayed; please call us if you need an immediate confirmation.'
-              : 'Thank you for your order. We have received it and will contact you shortly to confirm delivery.';
+            confirmationLead.textContent = telegramSent
+              ? 'Thank you for your order. We have received it and will contact you shortly to confirm delivery.'
+              : 'Your order is saved securely. The store notification is delayed; please call us if you need an immediate confirmation.';
           }
           saveCustomerData({
             name: customerName,
@@ -1166,7 +1199,7 @@ if (window.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe(siteHead
 window.addEventListener('resize', syncHeaderHeight);
 renderCart(false);
 if (document.body.classList.contains('cart-page') && !['neerbeku.com', 'www.neerbeku.com'].includes(location.hostname)) {
-  document.getElementById('cart-feedback').textContent = 'Test checkout — orders will not be sent from this address.';
+  document.getElementById('cart-feedback').textContent = 'Staging checkout — orders are saved in staging and sent to the store notification channel.';
 }
 
 // Resolve requested delivery dates in the store's timezone, not the visitor's.

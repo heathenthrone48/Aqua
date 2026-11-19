@@ -509,6 +509,7 @@ export default {
         if (!validated) return json({ error: "Please check the order details and try again." }, 400);
 
         const { order, totalAmount } = validated;
+        const directTelegramMode = data.notificationMode === "direct";
         const now = Math.floor(Date.now() / 1000);
         const inserted = await env.DB.prepare(`INSERT INTO orders
           (order_id, created_at, customer_name, phone, address, items_json, total_amount, delivery_window, order_json, telegram_status)
@@ -524,10 +525,29 @@ export default {
           return json({ success: true, saved: true, duplicate: true, telegramSent: existing.telegram_status === "sent", orderId: order.orderId });
         }
 
+        if (directTelegramMode) {
+          return json({ success: true, saved: true, telegramStatus: "pending", orderId: order.orderId });
+        }
+
+        // Keep server-side delivery for older storefront versions during rollout.
         const telegramSent = await notifyTelegram(order, url.origin);
         await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
           .bind(telegramSent ? "sent" : "failed", order.orderId).run();
         return json({ success: true, saved: true, telegramSent, orderId: order.orderId });
+      }
+
+      if (url.pathname === "/api/orders/telegram-status" && request.method === "POST") {
+        let data;
+        try { data = await request.json(); } catch { return json({ error: "Invalid status update" }, 400); }
+        const orderId = String(data.orderId || "").trim();
+        const status = String(data.status || "");
+        if (!/^[A-Za-z0-9_-]{3,80}$/.test(orderId) || !["sent", "failed"].includes(status)) {
+          return json({ error: "Invalid order status update" }, 400);
+        }
+        const updated = await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
+          .bind(status, orderId).run();
+        if (!updated.meta?.changes) return json({ error: "Order not found" }, 404);
+        return json({ success: true, orderId, telegramStatus: status });
       }
 
       if (url.pathname === "/api/admin/orders" && request.method === "GET") {
