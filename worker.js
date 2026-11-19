@@ -196,18 +196,32 @@ function normalizeOrder(data) {
   return { order, totalAmount };
 }
 
-async function notifyTelegram(order) {
+async function notifyTelegram(order, siteOrigin) {
   try {
     const response = await fetch(TELEGRAM_ORDER_WORKER_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(order),
-      signal: AbortSignal.timeout(10000)
+      headers: {
+        "Content-Type": "application/json",
+        // The previous browser-to-Telegram request included the storefront Origin.
+        // Preserve it for the server-to-server relay.
+        "Origin": siteOrigin
+      },
+      body: JSON.stringify(order)
     });
-    const result = await response.json();
-    return response.ok && result.success === true;
+    const responseText = await response.text();
+    let result = null;
+    try { result = JSON.parse(responseText); } catch {}
+
+    if (!response.ok || result?.success !== true) {
+      console.error("Telegram relay failed:", {
+        status: response.status,
+        response: responseText.slice(0, 500)
+      });
+      return false;
+    }
+    return true;
   } catch (error) {
-    console.error("Telegram order notification failed:", error);
+    console.error("Telegram order notification failed:", error?.message || String(error));
     return false;
   }
 }
@@ -510,7 +524,7 @@ export default {
           return json({ success: true, saved: true, duplicate: true, telegramSent: existing.telegram_status === "sent", orderId: order.orderId });
         }
 
-        const telegramSent = await notifyTelegram(order);
+        const telegramSent = await notifyTelegram(order, url.origin);
         await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
           .bind(telegramSent ? "sent" : "failed", order.orderId).run();
         return json({ success: true, saved: true, telegramSent, orderId: order.orderId });
