@@ -341,32 +341,25 @@ async function validateOrderPricing(order, totalAmount, env) {
   return null;
 }
 
-async function notifyTelegram(order, siteOrigin) {
+async function notifyTelegram(order, siteOrigin, relay) {
   try {
-    const response = await fetch(TELEGRAM_ORDER_WORKER_URL, {
+    const response = await relay.fetch(TELEGRAM_ORDER_WORKER_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // The previous browser-to-Telegram request included the storefront Origin.
-        // Preserve it for the server-to-server relay.
         "Origin": siteOrigin
       },
-      body: JSON.stringify(order)
+      body: JSON.stringify(order),
+      signal: AbortSignal.timeout(10000)
     });
-    const responseText = await response.text();
-    let result = null;
-    try { result = JSON.parse(responseText); } catch {}
-
+    const result = await response.json().catch(() => null);
     if (!response.ok || result?.success !== true) {
-      console.error("Telegram relay failed:", {
-        status: response.status,
-        response: responseText.slice(0, 500)
-      });
+      console.error("Telegram relay failed", { orderId: order.orderId, status: response.status });
       return false;
     }
     return true;
   } catch (error) {
-    console.error("Telegram order notification failed:", error?.message || String(error));
+    console.error("Telegram relay request failed", { orderId: order.orderId, error: error?.name });
     return false;
   }
 }
@@ -612,7 +605,7 @@ export default {
           return json({ success: true, saved: true, duplicate: true, telegramSent: existing.telegram_status === "sent", orderId: order.orderId });
         }
 
-        const telegramSent = await notifyTelegram(order, url.origin);
+        const telegramSent = await notifyTelegram(order, url.origin, env.TELEGRAM_ORDERS);
         await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
           .bind(telegramSent ? "sent" : "failed", order.orderId).run();
         return json({ success: true, saved: true, telegramSent, orderId: order.orderId });
