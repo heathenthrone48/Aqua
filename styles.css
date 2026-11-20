@@ -400,9 +400,14 @@
       border-color: #0284c7;
     }
 
-    .product-carousel-arrow.prev { left: 8px; }
-    .product-carousel-arrow.next { right: 8px; }
+    .product-carousel-arrow.prev { left: 2px; }
+    .product-carousel-arrow.next { right: 2px; }
     .product-carousel-arrow.is-hidden { display: none; }
+
+    .product-image-carousel:has(.product-carousel-arrow:not(.is-hidden)) .product-image-slide img {
+      box-sizing: border-box;
+      padding-inline: 36px;
+    }
 
     .product-carousel-dots {
       position: absolute;
@@ -935,6 +940,11 @@
       .water-card .product-image-slide img { padding: 2px; }
       .water-card .product-image-count { display: none; }
       .water-card .product-carousel-arrow { width: 26px; height: 26px; font-size: 1rem; }
+      .water-card .product-carousel-arrow.prev { left: 1px; }
+      .water-card .product-carousel-arrow.next { right: 1px; }
+      .water-card .product-image-carousel:has(.product-carousel-arrow:not(.is-hidden)) .product-image-slide img {
+        padding-inline: 28px;
+      }
       .water-card .card-bottom { display: flex; align-items: center; gap: 6px; padding-top: 9px; }
       .water-card .card-qty-row { flex: 0 0 auto; justify-content: flex-start; margin: 0; }
       .water-card .card-qty-label { display: none; }
