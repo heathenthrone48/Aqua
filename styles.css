@@ -1148,3 +1148,65 @@
   .shop-page .water-card .water-desc{font-size:13px}
   .shop-page .water-card .water-price{font-size:22px}
 }
+
+.water-price-top[hidden], .water-savings[hidden] { display: none; }
+
+@media (max-width: 620px) {
+  .shop-page .water-card { position: relative; }
+  .shop-page .water-card .water-title {
+    font-size: clamp(.8rem, 3.6vw, 1rem);
+    line-height: 1.25;
+    min-height: 2.5em;
+  }
+  .shop-page .water-card .water-price-block {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "price mrp" "price details";
+    align-content: center;
+    align-items: center;
+    gap: 2px 5px;
+    margin: 0;
+    min-height: 2.75rem;
+  }
+  .shop-page .water-card .water-price {
+    grid-area: price;
+    margin: 0;
+    font-size: clamp(.9rem, 4vw, 1.25rem);
+    overflow-wrap: anywhere;
+  }
+  .shop-page .water-card .water-price-top {
+    grid-area: mrp;
+    min-height: 0;
+    margin: 0;
+  }
+  .shop-page .water-card .water-savings {
+    position: absolute;
+    z-index: 2;
+    top: 11px;
+    left: 11px;
+    pointer-events: none;
+    font-size: .65rem;
+    background: #e3f3fc;
+  }
+  .shop-page .water-card .water-case-meta {
+    grid-area: details;
+    margin: 0;
+    font-size: clamp(.59rem, 2.7vw, .72rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  .shop-page .water-card .card-bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding-top: 5px;
+  }
+  .shop-page .water-card .card-qty-row { justify-content: space-between; }
+  .shop-page .water-card .card-qty-label { display: inline; font-size: .65rem; }
+  .shop-page .water-card .add-cart-btn {
+    width: 100%;
+    min-height: 40px;
+    font-size: .72rem;
+  }
+  .shop-page .water-card .add-cart-btn::after { content: none; }
+}
