@@ -196,6 +196,151 @@ function normalizeOrder(data) {
   return { order, totalAmount };
 }
 
+const MAX_DELIVERY_RADIUS_KM = 5.5;
+function getDeliveryFee(distanceKm, subtotal) {
+  if (distanceKm == null || distanceKm > MAX_DELIVERY_RADIUS_KM) return 0;
+  const band = distanceKm < 1 ? 0 : distanceKm <= 2 ? 1 : distanceKm <= 4 ? 2 : 3;
+  const tiers = [
+    [{ max: 300, fee: 15 }, { max: Infinity, fee: 0 }],
+    [{ max: 200, fee: 25 }, { max: 400, fee: 15 }, { max: 600, fee: 5 }, { max: Infinity, fee: 0 }],
+    [{ max: 250, fee: 45 }, { max: 500, fee: 35 }, { max: 750, fee: 25 }, { max: 900, fee: 15 }, { max: Infinity, fee: 0 }],
+    [{ max: 400, fee: 55 }, { max: 700, fee: 45 }, { max: 1000, fee: 35 }, { max: 1200, fee: 15 }, { max: Infinity, fee: 0 }]
+  ];
+  return tiers[band].find(t => subtotal <= t.max).fee;
+}
+function getHandlingFee(subtotal) {
+  if (subtotal <= 200) return 5;
+  if (subtotal <= 500) return 7;
+  if (subtotal <= 1000) return 8;
+  return 10;
+}
+
+async function deliveryRoute(data, env) {
+  if (!env.ORS_API_KEY) {
+    return json({ error: "Road distance service is not configured yet." }, 503);
+  }
+
+  if (data.latitude === undefined || data.latitude === null || data.latitude === "" ||
+      data.longitude === undefined || data.longitude === null || data.longitude === "") {
+    return json({ error: "Choose a valid GPS or map location." }, 400);
+  }
+
+  const latitude = Number(data.latitude);
+  const longitude = Number(data.longitude);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+      !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    return json({ error: "Choose a valid GPS or map location." }, 400);
+  }
+
+  let routeResponse;
+  try {
+    routeResponse = await fetch("https://api.heigit.org/openrouteservice/v2/directions/driving-car/geojson", {
+      method: "POST",
+      headers: {
+        "Authorization": env.ORS_API_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        coordinates: [[77.691037, 12.815047], [longitude, latitude]],
+        instructions: false
+      })
+    });
+  } catch {
+    return json({ error: "The road distance service is temporarily unavailable. Please try again." }, 502);
+  }
+
+  let routeData;
+  try {
+    routeData = await routeResponse.json();
+  } catch {
+    return json({ error: "Invalid response from road distance service." }, 502);
+  }
+
+  const feature = routeData.features?.[0];
+  const summary = feature?.properties?.summary;
+  const geometry = feature?.geometry;
+  if (!routeResponse.ok || !Number.isFinite(summary?.distance) ||
+      summary.distance <= 0 || geometry?.type !== "LineString" ||
+      !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
+    return json({
+      error: "Could not calculate a road route for this location. Please adjust the map pin and try again."
+    }, 422);
+  }
+
+  const distanceMeters = summary.distance;
+  const distanceKm = distanceMeters / 1000;
+  return json({
+    distanceKm: Number(distanceKm.toFixed(3)),
+    distanceMeters,
+    durationSeconds: Number.isFinite(summary.duration) ? summary.duration : null,
+    geometry: geometry.coordinates,
+    withinServiceArea: distanceKm <= 5.5
+  });
+}
+
+async function validateOrderPricing(order, totalAmount, env) {
+  const { results: overrides } = await env.DB.prepare("SELECT product_id, selling_price FROM product_prices").all();
+  const { results: custom } = await env.DB.prepare("SELECT id, name, selling_price, available FROM custom_products").all();
+  const { results: stock } = await env.DB.prepare("SELECT product_id, available FROM product_stock").all();
+  const prices = new Map(Object.entries(DEFAULT_PRODUCT_PRICES).map(([id, price]) => [id, price.sellingPrice]));
+  const unavailable = new Set(stock.filter(row => row.available !== 1).map(row => row.product_id));
+  const customNames = new Map();
+  for (const row of overrides) {
+    if (prices.has(row.product_id)) prices.set(row.product_id, Number(row.selling_price));
+  }
+  for (const row of custom) {
+    prices.set(row.id, Number(row.selling_price));
+    customNames.set(row.id, row.name);
+    if (row.available !== 1) unavailable.add(row.id);
+  }
+
+  const cents = value => Math.round(value * 100);
+  let productCents = 0;
+  let bisleriQty = 0;
+  for (const item of order.items) {
+    const price = prices.get(item.productId);
+    if (price === undefined || unavailable.has(item.productId)) {
+      return json({ error: "An item in your cart is no longer available. Please update your cart." }, 409);
+    }
+    const lineCents = cents(price) * item.quantity;
+    if (cents(item.unitPrice) !== cents(price) || cents(item.lineTotal) !== lineCents) {
+      return json({ error: "A price has changed. Please review your cart and try again." }, 409);
+    }
+    item.name = customNames.get(item.productId) ?? item.productId;
+    item.unitPrice = price;
+    item.lineTotal = lineCents / 100;
+    productCents += lineCents;
+    if (item.productId === "Bisleri 20L Can") bisleriQty += item.quantity;
+  }
+  const returned = order.bisleriReturnedContainers;
+  if (!Number.isSafeInteger(returned) || returned < 0 || returned > bisleriQty) {
+    return json({ error: "Check the number of empty jars being returned." }, 400);
+  }
+  const response = await deliveryRoute(order, env);
+  if (!response.ok) return response;
+  const { distanceKm, withinServiceArea } = await response.json();
+  if (!withinServiceArea) return json({ error: "This address is outside the delivery area." }, 422);
+
+  const productSubtotal = productCents / 100;
+  const deposit = bisleriQty * 150;
+  const credit = returned * 150;
+  const subtotal = productSubtotal + deposit - credit;
+  const deliveryFee = getDeliveryFee(distanceKm, productSubtotal);
+  const handlingFee = getHandlingFee(productSubtotal);
+  const total = subtotal + deliveryFee + handlingFee;
+  if (cents(totalAmount) !== cents(total)) {
+    return json({ error: "The checkout total has changed. Please review your cart and delivery location." }, 409);
+  }
+  Object.assign(order, {
+    productSubtotal, bisleri20LQuantity: bisleriQty, bisleriContainerDeposit: deposit,
+    bisleriReturnCredit: credit, subtotal, deliveryFee, handlingFee, distanceKm,
+    bill: "?" + total.toFixed(2),
+    qty: order.items.reduce((sum, item) => sum + item.quantity, 0),
+    cart: order.items.map(item => item.name + " x " + item.quantity + " (?" + item.lineTotal.toFixed(2) + ")").join(" | ")
+  });
+  return null;
+}
+
 async function notifyTelegram(order, siteOrigin) {
   try {
     const response = await fetch(TELEGRAM_ORDER_WORKER_URL, {
@@ -262,73 +407,9 @@ export default {
       }
 
       if (url.pathname === "/api/delivery/route" && request.method === "POST") {
-        if (!env.ORS_API_KEY) {
-          return json({ error: "Road distance service is not configured yet." }, 503);
-        }
-
         let data;
-        try {
-          data = await request.json();
-        } catch {
-          return json({ error: "Invalid request" }, 400);
-        }
-
-        if (data.latitude === undefined || data.latitude === null || data.latitude === "" ||
-            data.longitude === undefined || data.longitude === null || data.longitude === "") {
-          return json({ error: "Choose a valid GPS or map location." }, 400);
-        }
-
-        const latitude = Number(data.latitude);
-        const longitude = Number(data.longitude);
-        if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-            !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-          return json({ error: "Choose a valid GPS or map location." }, 400);
-        }
-
-        let routeResponse;
-        try {
-          routeResponse = await fetch("https://api.heigit.org/openrouteservice/v2/directions/driving-car/geojson", {
-            method: "POST",
-            headers: {
-              "Authorization": env.ORS_API_KEY,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              coordinates: [[77.691037, 12.815047], [longitude, latitude]],
-              instructions: false
-            })
-          });
-        } catch {
-          return json({ error: "The road distance service is temporarily unavailable. Please try again." }, 502);
-        }
-
-        let routeData;
-        try {
-          routeData = await routeResponse.json();
-        } catch {
-          return json({ error: "Invalid response from road distance service." }, 502);
-        }
-
-        const feature = routeData.features?.[0];
-        const summary = feature?.properties?.summary;
-        const geometry = feature?.geometry;
-        if (!routeResponse.ok || !Number.isFinite(summary?.distance) ||
-            summary.distance <= 0 || geometry?.type !== "LineString" ||
-            !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
-          return json({
-            error: "Could not calculate a road route for this location. Please adjust the map pin and try again."
-          }, 422);
-        }
-
-        const distanceMeters = summary.distance;
-        const distanceKm = distanceMeters / 1000;
-        return json({
-          distanceKm: Number(distanceKm.toFixed(3)),
-          distanceMeters,
-          durationSeconds: Number.isFinite(summary.duration) ? summary.duration : null,
-          geometry: geometry.coordinates,
-          withinServiceArea: distanceKm <= 5.5
-        });
+        try { data = await request.json(); } catch { return json({ error: "Invalid request" }, 400); }
+        return deliveryRoute(data || {}, env);
       }
 
       if (url.pathname === "/api/auth/google" && request.method === "POST") {
@@ -509,14 +590,20 @@ export default {
         if (!validated) return json({ error: "Please check the order details and try again." }, 400);
 
         const { order, totalAmount } = validated;
-        const directTelegramMode = data.notificationMode === "direct";
+        const existing = await env.DB.prepare("SELECT telegram_status FROM orders WHERE order_id = ?")
+          .bind(order.orderId).first();
+        if (existing) {
+          return json({ success: true, saved: true, duplicate: true, telegramSent: existing.telegram_status === "sent", orderId: order.orderId });
+        }
+        const pricingError = await validateOrderPricing(order, totalAmount, env);
+        if (pricingError) return pricingError;
         const now = Math.floor(Date.now() / 1000);
         const inserted = await env.DB.prepare(`INSERT INTO orders
           (order_id, created_at, customer_name, phone, address, items_json, total_amount, delivery_window, order_json, telegram_status)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
           ON CONFLICT(order_id) DO NOTHING`)
           .bind(order.orderId, now, order.name, order.phone, order.address,
-            JSON.stringify(order.items), totalAmount, order.deliveryWindow, JSON.stringify(order)).run();
+            JSON.stringify(order.items), Number(order.bill.slice(1)), order.deliveryWindow, JSON.stringify(order)).run();
 
         if (!inserted.meta?.changes) {
           const existing = await env.DB.prepare("SELECT telegram_status FROM orders WHERE order_id = ?")
@@ -525,29 +612,10 @@ export default {
           return json({ success: true, saved: true, duplicate: true, telegramSent: existing.telegram_status === "sent", orderId: order.orderId });
         }
 
-        if (directTelegramMode) {
-          return json({ success: true, saved: true, telegramStatus: "pending", orderId: order.orderId });
-        }
-
-        // Keep server-side delivery for older storefront versions during rollout.
         const telegramSent = await notifyTelegram(order, url.origin);
         await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
           .bind(telegramSent ? "sent" : "failed", order.orderId).run();
         return json({ success: true, saved: true, telegramSent, orderId: order.orderId });
-      }
-
-      if (url.pathname === "/api/orders/telegram-status" && request.method === "POST") {
-        let data;
-        try { data = await request.json(); } catch { return json({ error: "Invalid status update" }, 400); }
-        const orderId = String(data.orderId || "").trim();
-        const status = String(data.status || "");
-        if (!/^[A-Za-z0-9_-]{3,80}$/.test(orderId) || !["sent", "failed"].includes(status)) {
-          return json({ error: "Invalid order status update" }, 400);
-        }
-        const updated = await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
-          .bind(status, orderId).run();
-        if (!updated.meta?.changes) return json({ error: "Order not found" }, 404);
-        return json({ success: true, orderId, telegramStatus: status });
       }
 
       if (url.pathname === "/api/admin/orders" && request.method === "GET") {

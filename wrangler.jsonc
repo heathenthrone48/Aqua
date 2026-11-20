@@ -33,6 +33,7 @@
     }
   },
   "vars": {
-    "MAINTENANCE_MODE": "true"
+    "MAINTENANCE_MODE": "false",
+    "GOOGLE_CLIENT_ID": "851382474898-i55srvunioh0mgc4gv46bgh0mbf2u73g.apps.googleusercontent.com"
   }
 }

@@ -1032,48 +1032,15 @@ document.addEventListener('deliverylocationchange', () => {
       };
 
       try {
-        // Save the order in D1 first, then use the same direct Telegram Worker
-        // request that the checkout used before the order-history migration.
         const response = await fetch('/api/orders', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, notificationMode: "direct" })
+          body: JSON.stringify(payload)
         });
-
         const result = await response.json();
 
         if (response.ok && result.success) {
-          let telegramSent = result.telegramSent === true;
-          if (!result.duplicate) {
-          try {
-            const telegramResponse = await fetch('https://water-order-sms.ashinsobharaj1.workers.dev/', {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload)
-            });
-            const telegramResult = await telegramResponse.json();
-            telegramSent = telegramResponse.ok && telegramResult.success === true;
-            if (!telegramSent) {
-              console.error("Telegram Worker rejected order:", telegramResponse.status, telegramResult);
-            }
-          } catch (notificationError) {
-            console.error("Telegram order notification failed:", notificationError);
-          }
-
-          try {
-            const statusResponse = await fetch('/api/orders/telegram-status', {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ orderId, status: telegramSent ? "sent" : "failed" })
-            });
-            if (!statusResponse.ok) {
-              console.error("Could not update the saved order notification status:", await statusResponse.text());
-            }
-          } catch (statusError) {
-            console.error("Could not update Telegram status in D1:", statusError);
-          }
-          }
-
+          const telegramSent = result.telegramSent === true;
           const confirmationLead = document.querySelector('#thankyou-screen .confirm-lead');
           if (confirmationLead) {
             confirmationLead.textContent = telegramSent
