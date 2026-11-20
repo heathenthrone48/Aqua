@@ -1,4 +1,3 @@
-const DELIVERY_CENTRE = { latitude: 12.815047, longitude: 77.691037 };
 const MAX_DELIVERY_RADIUS_KM = 5.5;
 let cachedRoadDistanceKm = null;
 let cachedRouteKey = "";

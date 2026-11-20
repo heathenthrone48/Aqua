@@ -86,7 +86,7 @@
     }).addTo(map);
 
     // The circle is a visual guide only; eligibility is based on actual road distance.
-    serviceBoundary = L.circle([12.815047, 77.691037], {
+    serviceBoundary = L.circle([12.8097082, 77.6789059], {
       radius: 5500,
       color: "#087eaf",
       weight: 2,

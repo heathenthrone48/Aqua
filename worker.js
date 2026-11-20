@@ -241,7 +241,7 @@ async function deliveryRoute(data, env) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        coordinates: [[77.691037, 12.815047], [longitude, latitude]],
+        coordinates: [[77.6789059, 12.8097082], [longitude, latitude]],
         instructions: false
       })
     });
