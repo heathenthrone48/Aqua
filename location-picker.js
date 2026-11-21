@@ -67,7 +67,7 @@
     heading.textContent = "Confirm your delivery address";
     initMap();
     setTimeout(() => {
-      if (map) fitServiceArea(map, serviceBoundary, marker);
+      if (map) fitDeliveryMap(map, serviceBoundary, marker, routeLine);
       $("delivery-map").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 150);
   }
@@ -86,13 +86,24 @@
     }).addTo(target);
   }
 
-  function fitServiceArea(target, boundary, pin) {
+  function fitDeliveryMap(target, boundary, pin, route) {
     const container = target.getContainer();
     if (!container.clientWidth || !container.clientHeight) return;
     target.invalidateSize({ pan: false });
-    const bounds = boundary.getBounds();
+    const routeBounds = route?.getBounds();
+    const hasRoute = routeBounds?.isValid();
+    const bounds = hasRoute ? routeBounds.extend(DISPATCH_LOCATION) : boundary.getBounds();
     if (pin) bounds.extend(pin.getLatLng());
-    target.fitBounds(bounds, { padding: [12, 12], animate: false });
+    target.fitBounds(bounds, { padding: hasRoute ? [22, 20] : [12, 12], maxZoom: 17, animate: false });
+  }
+
+  function addRoadLine(target, result) {
+    if (!Array.isArray(result?.geometry) || result.geometry.length < 2) return null;
+    return L.polyline(result.geometry.map(([lng, lat]) => [lat, lng]), {
+      color: result.withinServiceArea ? "#087eaf" : "#dc3545",
+      weight: 5,
+      opacity: 0.85
+    }).addTo(target);
   }
 
   function observeMapSize(target, fit) {
@@ -103,7 +114,7 @@
   function initMap() {
     if (map || !window.L) return;
 
-    map = L.map("delivery-map").setView(DISPATCH_LOCATION, 12);
+    map = L.map("delivery-map", { zoomSnap: 0.25 }).setView(DISPATCH_LOCATION, 12);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -114,7 +125,7 @@
     serviceBoundary = addServiceBoundary(map);
     L.marker(DISPATCH_LOCATION).addTo(map)
       .bindPopup("NeerBeku distribution center (delivery route starts here)");
-    observeMapSize(map, () => fitServiceArea(map, serviceBoundary, marker));
+    observeMapSize(map, () => fitDeliveryMap(map, serviceBoundary, marker, routeLine));
 
     map.on("click", event => {
       selectCoordinates(
@@ -142,7 +153,6 @@
       marker.setLatLng(point);
     }
 
-    fitServiceArea(map, serviceBoundary, marker);
     drawRoadRoute(lat, lon);
   }
 
@@ -155,6 +165,7 @@
       map.removeLayer(routeLine);
       routeLine = null;
     }
+    fitDeliveryMap(map, serviceBoundary, marker);
     routeStatus.textContent = "Calculating driving route from the NeerBeku distribution center…";
     try {
       const response = await fetch("/api/delivery/route", {
@@ -169,11 +180,8 @@
       if (!response.ok || !Array.isArray(result.geometry)) {
         throw new Error(result.error || "Could not calculate the road route.");
       }
-      routeLine = L.polyline(result.geometry.map(([lng, latitude]) => [latitude, lng]), {
-        color: result.withinServiceArea ? "#087eaf" : "#dc3545",
-        weight: 5,
-        opacity: 0.85
-      }).addTo(map);
+      routeLine = addRoadLine(map, result);
+      if (routeLine) fitDeliveryMap(map, serviceBoundary, marker, routeLine);
       const km = Number(result.distanceKm).toFixed(2);
       routeStatus.textContent = result.withinServiceArea
         ? `Driving route: ${km} km from the distribution center. This location is within the 5.5 km service limit.`
@@ -424,8 +432,8 @@
 
   // Show the confirmed delivery pin without making the main checkout map editable.
   const pinPreview = $("checkout-pin-preview");
-  let pinPreviewMap, pinPreviewMarker, pinPreviewBoundary;
-  window.updateCheckoutPinPreview = coordinates => {
+  let pinPreviewMap, pinPreviewMarker, pinPreviewBoundary, pinPreviewRoute;
+  window.updateCheckoutPinPreview = (coordinates, routeResult) => {
     if (!pinPreview) return;
     pinPreview.hidden = !coordinates || !window.L;
     if (pinPreview.hidden) return;
@@ -434,7 +442,7 @@
       pinPreviewMap = L.map("checkout-pin-map", {
         dragging: false, touchZoom: false, scrollWheelZoom: false,
         doubleClickZoom: false, boxZoom: false, keyboard: false,
-        zoomControl: false, tapHold: false
+        zoomControl: false, tapHold: false, zoomSnap: 0.25
       });
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -443,11 +451,16 @@
       pinPreviewMap.setView(DISPATCH_LOCATION, 12);
       pinPreviewBoundary = addServiceBoundary(pinPreviewMap);
       pinPreviewMarker = L.marker(point, { interactive: false, keyboard: false }).addTo(pinPreviewMap);
-      observeMapSize(pinPreviewMap, () => fitServiceArea(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker));
+      L.circleMarker(DISPATCH_LOCATION, {
+        radius: 5, color: "#fff", weight: 2, fillColor: "#124d78", fillOpacity: 1, interactive: false
+      }).addTo(pinPreviewMap);
+      observeMapSize(pinPreviewMap, () => fitDeliveryMap(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker, pinPreviewRoute));
     } else {
       pinPreviewMarker.setLatLng(point);
-      fitServiceArea(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker);
     }
+    if (pinPreviewRoute) pinPreviewMap.removeLayer(pinPreviewRoute);
+    pinPreviewRoute = addRoadLine(pinPreviewMap, routeResult);
+    fitDeliveryMap(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker, pinPreviewRoute);
   };
 
   // Expose helpers for the existing checkout integration.
@@ -458,7 +471,7 @@
     if (marker) map.removeLayer(marker);
     if (routeLine) map.removeLayer(routeLine);
     marker = routeLine = null;
-    if (map) fitServiceArea(map, serviceBoundary);
+    if (map) fitDeliveryMap(map, serviceBoundary);
     routeStatus.textContent = '';
     setStatus('Select a location for your new delivery address.');
   };

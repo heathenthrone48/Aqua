@@ -1,6 +1,7 @@
 const MAX_DELIVERY_RADIUS_KM = 5.5;
 const MAX_PRODUCT_QUANTITY = 20;
 let cachedRoadDistanceKm = null;
+let cachedRouteResult = null;
 let cachedRouteKey = "";
 let routeRequest = null;
 function getDeliveryCoordinates() {
@@ -33,6 +34,10 @@ async function fetchRoadDistance(force = false) {
   if (routeRequest !== controller) throw new DOMException('Route request superseded', 'AbortError');
   cachedRouteKey = coordinates.key;
   cachedRoadDistanceKm = Number(result.distanceKm);
+  cachedRouteResult = result;
+  if (checkoutAddressConfirmed && getDeliveryCoordinates()?.key === coordinates.key) {
+    window.updateCheckoutPinPreview?.(coordinates, result);
+  }
   return cachedRoadDistanceKm;
 }
 async function refreshDeliveryQuote() {
@@ -40,6 +45,7 @@ async function refreshDeliveryQuote() {
   const coordinates = getDeliveryCoordinates();
   cachedRoadDistanceKm = null;
   cachedRouteKey = '';
+  cachedRouteResult = null;
   if (routeRequest) routeRequest.abort();
   if (!coordinates) {
     if (feeEl) feeEl.textContent = 'Choose location';
@@ -1519,7 +1525,8 @@ if (document.getElementById('preferred-time')) {
           street: field('address-street').value
         })
       : 'Choose a delivery address');
-    window.updateCheckoutPinPreview?.(checkoutAddressConfirmed ? getDeliveryCoordinates() : null);
+    const coordinates = checkoutAddressConfirmed ? getDeliveryCoordinates() : null;
+    window.updateCheckoutPinPreview?.(coordinates, coordinates?.key === cachedRouteKey ? cachedRouteResult : null);
     renderCart(false);
   }
 
