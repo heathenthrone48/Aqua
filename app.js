@@ -789,7 +789,7 @@ document.addEventListener('deliverylocationchange', () => {
         }
 
         const savedOrder = localStorage.getItem(STORAGE_KEY_LAST_ORDER);
-        if (savedOrder && savedUser && document.getElementById('reorder-banner')) {
+        if (savedOrder && savedUser && document.querySelector('#reorder-banner:not([hidden])')) {
           const user = JSON.parse(savedUser);
           const lastOrder = JSON.parse(savedOrder);
           
