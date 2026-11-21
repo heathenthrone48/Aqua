@@ -12,17 +12,17 @@ header{background:rgba(255,255,255,.97);border-bottom:1px solid #e0eaf4;box-shad
 .category-tab.active{background:var(--shop-blue);color:white;box-shadow:none;border-color:var(--shop-blue)}
 .category-tab:hover:not(.active){background:#dcecff}
 .shop-page .water-card {
-  background: linear-gradient(180deg, #ffffffdf, #e4f2fd9c 65%, #e4f2fd26);
+  background: #fff;
   border: 1px solid transparent;
   border-radius: 18px;
-  box-shadow: none;
+  box-shadow: 0 3px 14px #22567a0b;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 .shop-page .water-card:hover {
-  background: linear-gradient(180deg, #fffffff0, #dcedfbb8 65%, #dcedfb33);
+  background: #fff;
   border-color: transparent;
-  box-shadow: none;
+  box-shadow: 0 3px 14px #22567a0b;
 }
 .shop-page .water-card .product-image-carousel {
   background: transparent;
