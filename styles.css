@@ -1250,7 +1250,7 @@
 .shop-page .water-card .product-image-carousel .product-image-slide img {
   box-sizing: border-box;
   padding: 0;
-  scale: 1.08;
+  object-fit: contain;
 }
 .shop-page .water-card .product-image-carousel { touch-action: pan-y pinch-zoom; }
 .shop-page .water-card .product-carousel-dots { display: none; }
