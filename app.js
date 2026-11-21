@@ -648,13 +648,9 @@ document.addEventListener('deliverylocationchange', () => {
       }
 
       button.classList.add('added');
-      button.querySelector('.card-add-label').textContent = '✓ Added';
       card.classList.add('in-cart');
 
-      setTimeout(() => {
-        button.classList.remove('added');
-        applyLiveStock();
-      }, 900);
+      setTimeout(() => button.classList.remove('added'), 450);
 
       renderCart();
     }
@@ -1200,7 +1196,7 @@ function applyLiveStock() {
     button.disabled = !available;
     button.style.opacity = available ? '' : '0.6';
     button.style.cursor = available ? '' : 'not-allowed';
-    button.querySelector('.card-add-label').textContent = !stockReady ? 'Checking stock…' : available ? (button.classList.contains('added') ? '✓ Added' : 'Add') : 'Out of stock';
+    button.querySelector('.card-add-label').textContent = !stockReady ? 'Checking stock…' : available ? 'Add' : 'Out of stock';
   });
   if (activeModalCardRef) {
     const button = document.getElementById('modalAddToCartBtn');
