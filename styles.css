@@ -1184,35 +1184,20 @@
 }
 .shop-page .water-card .card-bottom {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
   align-items: center;
   gap: 6px;
   padding-top: 7px;
-}
-.shop-page .water-card .card-bottom { --card-control-shadow: 0 3px 10px rgba(2, 132, 199, .22); }
-.shop-page .water-card .card-qty-row { margin: 0; }
-.shop-page .water-card .card-qty-controls {
-  display: grid;
-  grid-template-columns: 30px minmax(18px, auto) 30px;
-  align-items: stretch;
-  gap: 0;
-  padding: 0;
-  border-radius: 10px;
-  background: var(--shop-cart-control-bg);
-  box-shadow: var(--card-control-shadow);
-}
-.shop-page .water-card .card-qty-controls:has(.card-qty-btn:active) {
-  box-shadow: 0 1px 4px rgba(2, 132, 199, .18);
 }
 .shop-page .water-card .card-qty-btn {
   position: relative;
   padding: 0;
   font-size: 0;
   width: 100%;
-  height: 100%;
-  min-height: 38px;
-  border-radius: 9px;
-  background: transparent;
+  aspect-ratio: 1;
+  height: auto;
+  border-radius: 50%;
+  background: var(--shop-cart-control-bg);
   color: var(--shop-cart-control-ink);
   box-shadow: none;
   touch-action: manipulation;
@@ -1241,33 +1226,62 @@
   color: #fff;
   transform: scale(.92);
 }
-.shop-page .water-card .card-qty-value {
-  align-self: center;
-  min-width: 0;
-  color: #124366;
-  font-variant-numeric: tabular-nums;
-}
-@media (prefers-reduced-motion: reduce) {
-  .shop-page .water-card .card-qty-btn { transition: none; }
-  .shop-page .water-card .card-qty-btn:active { transform: none; }
-}
 .shop-page .water-card .add-cart-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   width: 100%;
-  min-height: 38px;
+  min-width: 0;
+  min-height: 42px;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: 999px;
   letter-spacing: 0;
   font-size: 1rem;
-  box-shadow: var(--card-control-shadow);
+  background: linear-gradient(180deg, #318ee0, #1769c4);
+  color: #fff;
+  box-shadow: 0 3px 9px #1769c44d;
 }
+.shop-page .water-card .add-cart-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 4px #1769c44d;
+}
+.shop-page .water-card .add-cart-btn.added { background: #168660; }
+.shop-page .water-card .card-qty-value {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 3px;
+  border-radius: 999px;
+  background: #fff;
+  color: #1769c4;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+.shop-page .water-card .card-bottom:has(.add-cart-btn:disabled) { grid-template-columns: 1fr; }
+.shop-page .water-card .card-bottom:has(.add-cart-btn:disabled) .card-qty-btn,
+.shop-page .water-card .add-cart-btn:disabled .card-qty-value,
+.product-modal-card:has(#modalAddToCartBtn:disabled) .card-qty-controls { display: none; }
 .shop-page .water-card .add-cart-btn:disabled {
-  font-size: .7rem;
+  background: #edf4fb;
+  color: #335470;
+  font-size: .8rem;
   box-shadow: none;
+  transform: none;
 }
 @media (max-width: 620px) {
-  .shop-page .water-card .card-bottom { gap: 4px; }
-  .shop-page .water-card .card-qty-controls { grid-template-columns: 24px 14px 24px; }
-  .shop-page .water-card .add-cart-btn:disabled { font-size: clamp(.55rem, 2.25vw, .68rem); }
+  .shop-page .water-card .card-bottom {
+    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    gap: 4px;
+  }
+  .shop-page .water-card .add-cart-btn { min-height: 36px; gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shop-page .water-card .card-qty-btn,
+  .shop-page .water-card .add-cart-btn { transition: none; transform: none; }
+  .shop-page .water-card .card-qty-btn:active,
+  .shop-page .water-card .add-cart-btn:active:not(:disabled) { transform: none; }
 }
 .shop-page .water-card .add-cart-btn::after { content: none; }
 

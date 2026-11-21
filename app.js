@@ -141,7 +141,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('modalSubtitle').innerText = desc;
       document.getElementById('modalPrice').innerHTML = `₹${price} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ unit</span>`;
       document.getElementById('modalImg').src = img;
-      document.getElementById('modalQtyVal').innerText = card.querySelector('.card-qty-value').innerText || '1';
+      document.getElementById('modalQtyVal').innerText = card.querySelector('.card-qty-value').textContent || '1';
 
       const featuresBox = document.getElementById('modalBoxFeatures');
       const hygieneBox = document.getElementById('modalBoxHygiene');
@@ -613,7 +613,7 @@ document.addEventListener('deliverylocationchange', () => {
     }
 
     function changeCardQty(button, change) {
-      const controls = button.closest('.card-qty-controls');
+      const controls = button.closest('.card-bottom');
       const valueEl = controls.querySelector('.card-qty-value');
       const current = parseInt(valueEl.textContent, 10) || 1;
       if (change > 0 && current >= 5) {
@@ -648,7 +648,7 @@ document.addEventListener('deliverylocationchange', () => {
       }
 
       button.classList.add('added');
-      button.innerText = '✓ Added';
+      button.querySelector('.card-add-label').textContent = '✓ Added';
       card.classList.add('in-cart');
 
       setTimeout(() => {
@@ -1200,7 +1200,7 @@ function applyLiveStock() {
     button.disabled = !available;
     button.style.opacity = available ? '' : '0.6';
     button.style.cursor = available ? '' : 'not-allowed';
-    button.textContent = !stockReady ? 'CHECKING STOCK…' : available ? 'Add' : 'OUT OF STOCK';
+    button.querySelector('.card-add-label').textContent = !stockReady ? 'Checking stock…' : available ? (button.classList.contains('added') ? '✓ Added' : 'Add') : 'Out of stock';
   });
   if (activeModalCardRef) {
     const button = document.getElementById('modalAddToCartBtn');
