@@ -754,7 +754,10 @@ document.addEventListener('deliverylocationchange', () => {
       const basketSummary = document.getElementById('basket-summary');
       if (basketSummary) basketSummary.hidden = !items.length;
       updateOrderButton();
-      document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
+      document.querySelectorAll('.water-card').forEach(card => {
+        card.classList.toggle('in-cart', !!cart[card.dataset.name]);
+        updateCardAddLabel(card);
+      });
     }
         document.addEventListener('click', event => {
       const button = event.target.closest('[data-cart-action]');
@@ -1193,6 +1196,14 @@ let liveStock = {};
 let stockReady = false;
 let stockRequest = null;
 
+function updateCardAddLabel(card) {
+  const product = card.dataset.name;
+  const label = card.querySelector('.card-add-label');
+  if (!stockReady) label.textContent = 'Checking stock…';
+  else if (liveStock[product] !== true) label.textContent = 'Out of stock';
+  else label.textContent = cart[product] ? 'Add more' : 'Add';
+}
+
 function applyLiveStock() {
   document.querySelectorAll('.water-card').forEach(card => {
     const available = stockReady && liveStock[card.dataset.name] === true;
@@ -1200,7 +1211,7 @@ function applyLiveStock() {
     button.disabled = !available;
     button.style.opacity = available ? '' : '0.6';
     button.style.cursor = available ? '' : 'not-allowed';
-    button.querySelector('.card-add-label').textContent = !stockReady ? 'Checking stock…' : available ? 'Add' : 'Out of stock';
+    updateCardAddLabel(card);
   });
   if (activeModalCardRef) {
     const button = document.getElementById('modalAddToCartBtn');
