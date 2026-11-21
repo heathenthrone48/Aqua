@@ -1080,3 +1080,20 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .delivery-checkout-page .checkout-address-card { border: 0; border-radius: 10px; }
 .delivery-checkout-page .checkout-pin-preview { border: 0; }
 .delivery-checkout-page .checkout-summary-total-card { border-radius: 10px; }
+
+.basket-page .cart-panel,
+.basket-page .basket-summary {
+  margin: 12px 0 16px;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid #dce7ee;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.basket-page .cart-header { margin-bottom: 4px; }
+.basket-page .checkout-item { padding-block: 9px; }
+.basket-page .checkout-item > img { background: transparent; }
+.basket-page .checkout-exchange-card { border: 0; border-radius: 10px; }
+.basket-page .checkout-exchange-card.needs-review { border-inline-start: 3px solid #eab0aa; }
+.basket-page .basket-summary .submit-btn { margin-top: 4px; }
