@@ -935,7 +935,11 @@ document.addEventListener('deliverylocationchange', () => {
       button.disabled = orderSubmitting;
       button.toggleAttribute('data-checkout-incomplete', !!blocker);
       button.setAttribute('aria-busy', String(orderSubmitting));
-      if (!blocker) document.getElementById('place-order-feedback').textContent = '';
+      const feedback = document.getElementById('place-order-feedback');
+      if (feedback.dataset.blocker !== blocker) {
+        feedback.textContent = '';
+        delete feedback.dataset.blocker;
+      }
     }
 
     function guideToCheckoutRequirement() {
@@ -943,11 +947,13 @@ document.addEventListener('deliverylocationchange', () => {
       if (!blocker) return false;
       const feedback = document.getElementById('place-order-feedback');
       feedback.textContent = '';
+      feedback.dataset.blocker = blocker;
       if (blocker === 'jars') {
         window.location.href = 'cart.html#selected-items';
       } else if (blocker === 'address') {
         document.getElementById('open-address-sheet').click();
       } else if (blocker === 'window') {
+        feedback.textContent = 'Choose a delivery window before placing your order.';
         document.getElementById('change-delivery-window').click();
       } else if (blocker === 'empty') {
         feedback.textContent = 'Add at least one item to your cart.';
