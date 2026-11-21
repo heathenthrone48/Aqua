@@ -1167,10 +1167,10 @@
 .shop-page .water-card .water-price-block {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
-  grid-template-areas: "price mrp" "price details";
+  grid-template-areas: "price mrp" "details details";
   align-content: center;
-  align-items: center;
-  gap: 1px 6px;
+  align-items: baseline;
+  gap: 3px 6px;
   margin: 0;
 }
 .shop-page .water-card .water-price {
@@ -1182,6 +1182,7 @@
   grid-area: mrp;
   min-height: 0;
   margin: 0;
+  white-space: nowrap;
 }
 .shop-page .water-card .water-savings {
   position: absolute;
