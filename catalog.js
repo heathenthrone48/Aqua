@@ -2,7 +2,7 @@
 window.NEER_CATALOG = {
 "Bisleri 20L Can": { "name": "Bisleri 20L Can", "price": 100.0, "image": "images/bisleri-20l-1.png" , "mrp": 100},
 "Bisleri 1L Case": { "name": "Bisleri 1L Case", "price": 180.0, "image": "images/bisleri-1l-1.png" , "mrp": 240, "caseQty": 12},
-"Bailey 1L Case": { "name": "Bailey 1L Case", "price": 230.0, "image": "images/bailley-1l-1.png" },
+"Bailey 1L Case": { "name": "Bailey 1L Case", "price": 190.0, "image": "images/bailley-1l-1.png", "mrp": 240, "caseQty": 12 },
 "Kinley 1L Case": { "name": "Kinley 1L Case", "price": 230.0, "image": "images/kinley-1l-1.png" , "mrp": 300, "caseQty": 15},
 "Bisleri 2L Case": { "name": "Bisleri 2L Case", "price": 250.0, "image": "images/bisleri-2l-1.png" , "mrp": 270, "caseQty": 9},
 "Bailey 2L Case": { "name": "Bailey 2L Case", "price": 240.0, "image": "images/bailley-2l-1.png" , "mrp": 315, "caseQty": 9},
