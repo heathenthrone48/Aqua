@@ -898,3 +898,5 @@ body.cart-page{background:#f2f8fc;color:#20384d}
   color: #15567d;
   border-color: #c8dfef;
 }
+
+.cart-page #selected-items { scroll-margin-top: calc(var(--shop-header-height, 64px) + 8px); }

@@ -818,7 +818,7 @@ document.addEventListener('deliverylocationchange', () => {
 
           markCartChangedForNotice();
           renderCart();
-          window.location.href = 'cart.html';
+          window.location.href = 'cart.html#selected-items';
         }
       } catch (e) {
         console.error('Quick reorder failed:', e);
