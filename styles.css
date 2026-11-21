@@ -162,11 +162,7 @@
       margin: 28px 0 10px;
       border-radius: 24px;
       overflow: hidden;
-      background: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow);
+      background: transparent;
       aspect-ratio: 16 / 7;
     }
 
@@ -271,9 +267,6 @@
     .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(148, 163, 184, 0.4); }
 
     .category-filter-wrapper {
-      position: sticky;
-      top: 85px;
-      z-index: 90;
       margin: 16px 0 24px;
       padding: 6px 0;
       display: flex;
@@ -917,7 +910,6 @@
       header { padding: 12px 16px; }
       .brand-logo { height: 40px; }
       .contact-help-label { display: none; }
-      .category-filter-wrapper { top: 78px; }
       .hero-carousel-wrapper { aspect-ratio: 16 / 9; margin: 16px 0 10px; }
       .container { padding: 0 12px; }
       .water-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -951,8 +943,6 @@
         padding: 8px 2px; font-size: 0; letter-spacing: 0; border-radius: 10px;
         box-shadow: 0 2px 8px rgba(2, 132, 199, 0.17);
       }
-      .water-card .add-cart-btn::after { content: 'Add'; font-size: 0.75rem; }
-      .water-card .add-cart-btn.added::after { content: 'Added'; font-size: 0.65rem; }
       .cart-item { grid-template-columns: 1fr auto; }
       .cart-item .remove-cart-btn { grid-column: 2; grid-row: 1; justify-self: end; }
       .cart-item-total { grid-column: 2; grid-row: 2; }
@@ -1192,48 +1182,126 @@
 }
 .shop-page .water-card .card-bottom {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
   align-items: center;
   gap: 6px;
   padding-top: 7px;
 }
-.shop-page .water-card .card-qty-row { margin: 0; }
-.shop-page .water-card .card-qty-controls {
-  display: grid;
-  grid-template-columns: 30px minmax(18px, auto) 30px;
-  align-items: stretch;
-  gap: 0;
-  padding: 0;
-  border-radius: 10px;
-  background: #f5f9fd;
-}
 .shop-page .water-card .card-qty-btn {
+  position: relative;
+  padding: 0;
+  font-size: 0;
   width: 100%;
-  height: 100%;
-  min-height: 36px;
-  border-radius: 8px;
-  background: transparent;
+  aspect-ratio: 1;
+  height: auto;
+  border-radius: 50%;
+  background: var(--shop-cart-control-bg);
+  color: var(--shop-cart-control-ink);
   box-shadow: none;
+  touch-action: manipulation;
+  transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
 }
-.shop-page .water-card .card-qty-btn:hover { background: #dcecf9; color: #102f50; }
-.shop-page .water-card .card-qty-value {
-  align-self: center;
-  min-width: 0;
-  font-variant-numeric: tabular-nums;
+.shop-page .water-card .card-qty-btn::before,
+.shop-page .water-card .card-qty-btn:last-child::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+.shop-page .water-card .card-qty-btn:last-child::after {
+  width: 2px;
+  height: 12px;
+}
+@media (hover: hover) {
+  .shop-page .water-card .card-qty-btn:hover { background: #d9edff; }
+}
+.shop-page .water-card .card-qty-btn:active {
+  background: #086cbc;
+  color: #fff;
+  transform: scale(.92);
 }
 .shop-page .water-card .add-cart-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   width: 100%;
-  min-height: 38px;
+  min-width: 0;
+  min-height: 42px;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: 999px;
   letter-spacing: 0;
+  font-size: 1rem;
+  background: linear-gradient(180deg, #f1f8ff, #e1effc);
+  color: #15548a;
+  box-shadow: 0 3px 8px #1769c424;
+}
+.shop-page .water-card .add-cart-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  box-shadow: 0 1px 4px #1769c424;
+}
+.shop-page .water-card .add-cart-btn.is-added:not(:disabled) {
+  background: #dcf5e9;
+  color: #176341;
+  box-shadow: 0 3px 8px #17634124;
+}
+.shop-page .water-card .add-cart-btn.is-added:not(:disabled) .card-qty-value { color: #176341; }
+.shop-page .water-card .card-add-label { white-space: nowrap; }
+.shop-page .add-cart-btn[aria-disabled="true"]:not(:disabled):not(.is-added) {
+  opacity: .65;
+  box-shadow: none;
+  transform: none;
+  cursor: default;
+}
+.shop-page .water-card .card-qty-value {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 3px;
+  border-radius: 999px;
+  background: #fff;
+  color: #1769c4;
+  font-size: .75rem;
+  font-variant-numeric: tabular-nums;
+}
+.shop-page .water-card .card-bottom:has(.add-cart-btn:disabled) { grid-template-columns: 1fr; }
+.shop-page .water-card .card-bottom:has(.add-cart-btn:disabled) .card-qty-btn,
+.shop-page .water-card .add-cart-btn:disabled .card-qty-value,
+.product-modal-card:has(#modalAddToCartBtn:disabled) .card-qty-controls { display: none; }
+.shop-page .water-card .add-cart-btn:disabled {
+  background: #edf4fb;
+  color: #335470;
+  font-size: .8rem;
+  box-shadow: none;
+  transform: none;
 }
 @media (max-width: 620px) {
-  .shop-page .water-card .card-bottom { gap: 4px; }
-  .shop-page .water-card .card-qty-controls { grid-template-columns: 24px 14px 24px; }
-  .shop-page .water-card .add-cart-btn { font-size: clamp(.58rem, 2.35vw, .72rem); }
+  .shop-page .water-card .card-bottom {
+    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    gap: 4px;
+  }
+  .shop-page .water-card .add-cart-btn { min-height: 36px; gap: 4px; }
+  .shop-page .water-card .add-cart-btn.is-added:not(:disabled) {
+    font-size: clamp(.625rem, 2.8vw, .875rem);
+    padding-inline: 2px;
+  }
 }
-.shop-page .water-card .add-cart-btn::after { content: none; }
+@media (max-width: 380px) {
+  .shop-page .water-card .card-bottom { grid-template-columns: 26px minmax(0, 1fr) 26px; gap: 3px; }
+  .shop-page .water-card .card-qty-btn { min-height: 32px; }
+  .shop-page .water-card .add-cart-btn { gap: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shop-page .water-card .card-qty-btn,
+  .shop-page .water-card .add-cart-btn { transition: none; transform: none; }
+  .shop-page .water-card .card-qty-btn:active,
+  .shop-page .water-card .add-cart-btn:active:not(:disabled) { transform: none; }
+}
 
 @media (max-width: 620px) {
   .shop-page .water-card .product-clickable-area { flex: none; }

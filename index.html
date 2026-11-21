@@ -37,7 +37,7 @@
           </a>
         </nav>
       </div>
-      <a class="store-cart" href="cart.html#selected-items" aria-label="View your cart">
+      <a class="store-cart" href="cart.html" aria-label="View your cart">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg>
         <span class="store-cart-label">Cart</span><span class="store-cart-count" data-cart-count>0</span>
       </a>
@@ -109,14 +109,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹100.00</span><span class="water-savings" hidden></span></div><div class="water-price">₹100.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -138,14 +136,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹240.00</span><span class="water-savings">Save ₹60.00</span></div><div class="water-price">₹180.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div><span class="water-case-meta">12 pcs · ₹15.00 each</span></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -167,14 +163,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹300.00</span><span class="water-savings">Save ₹70.00</span></div><div class="water-price">₹230.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div><span class="water-case-meta">15 pcs · ₹15.33 each</span></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -196,14 +190,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹270.00</span><span class="water-savings">Save ₹20.00</span></div><div class="water-price">₹250.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div><span class="water-case-meta">9 pcs · ₹27.78 each</span></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -225,14 +217,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹315.00</span><span class="water-savings">Save ₹75.00</span></div><div class="water-price">₹240.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div><span class="water-case-meta">9 pcs · ₹26.67 each</span></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -254,14 +244,12 @@
           <div class="water-price-block"><div class="water-price-top" hidden><span class="water-mrp"></span><span class="water-savings"></span></div><div class="water-price">₹230 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -283,14 +271,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹315.00</span><span class="water-savings">Save ₹75.00</span></div><div class="water-price">₹240.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div><span class="water-case-meta">9 pcs · ₹26.67 each</span></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -312,14 +298,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹240.00</span><span class="water-savings">Save ₹40.00</span></div><div class="water-price">₹200.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ case</span></div><span class="water-case-meta">24 pcs · ₹8.33 each</span></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -341,14 +325,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹130.00</span><span class="water-savings" hidden></span></div><div class="water-price">₹130.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -370,14 +352,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹120.00</span><span class="water-savings" hidden></span></div><div class="water-price">₹120.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -399,14 +379,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹80.00</span><span class="water-savings" hidden></span></div><div class="water-price">₹80.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ bottle</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -428,14 +406,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹70.00</span><span class="water-savings" hidden></span></div><div class="water-price">₹70.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ can</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -457,14 +433,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹200.00</span><span class="water-savings">Save ₹50.00</span></div><div class="water-price">₹150.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ piece</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -486,14 +460,12 @@
           <div class="water-price-block"><div class="water-price-top"><span class="water-mrp">₹400.00</span><span class="water-savings">Save ₹150.00</span></div><div class="water-price">₹250.00 <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ piece</span></div></div>
 
           <div class="card-bottom">
-            <div class="card-qty-row">
-              <div class="card-qty-controls">
-                <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
-                <span class="card-qty-value">1</span>
-                <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
-              </div>
-            </div>
-            <button type="button" class="add-cart-btn" onclick="addToCart(this)">ADD TO CART</button>
+            <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+            <button type="button" class="add-cart-btn" onclick="addToCart(this)">
+              <span class="card-add-label">Add</span>
+              <span class="card-qty-value" aria-live="polite">1</span>
+            </button>
+            <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
           </div>
         </div>
 
@@ -555,7 +527,7 @@
     </div>
   </div>
 
-<aside class="cart-dock" aria-label="Shopping cart"><div class="cart-dock-inner"><a class="cart-dock-summary" href="cart.html#selected-items"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg></span><span><strong><span data-cart-count>0</span> items · <span data-cart-total>₹0.00</span></strong><small>Your water, ready to go</small></span></a><a class="view-cart-button" href="cart.html#selected-items">View cart <span aria-hidden="true">→</span></a></div></aside>
+<aside class="cart-dock" aria-label="Shopping cart"><div class="cart-dock-inner"><a class="cart-dock-summary" href="cart.html"><span class="dock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26" aria-hidden="true"><path d="M2 3h3l3 13h11l3-10H6"/><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/></svg></span><span><strong><span data-cart-count>0</span> items · <span data-cart-total>₹0.00</span></strong><small>Your water, ready to go</small></span></a><a class="view-cart-button" href="cart.html">View cart <span aria-hidden="true">→</span></a></div></aside>
   <footer class="nb-footer">
 <div class="nb-footer-grid">
 <section class="nb-footer-brand"><a href="index.html"><img src="images/logo.png" alt="NeerBeku" width="220" height="70"></a><h2>Your local drinking water delivery partner</h2><p>A water delivery service by <strong>Amrutha Store.</strong> Order packaged drinking water, water cans and dispenser accessories online for delivery in serviceable areas around Bommasandra.</p></section>
@@ -567,7 +539,7 @@
 <section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Our Service Area</h2><p><strong>Bommasandra, Bengaluru</strong></p><p>Selected nearby locations, subject to serviceability.</p><div class="nb-area-tags"><span>Bommasandra</span><span>Nearby areas</span></div><a class="nb-map-link" href="https://maps.app.goo.gl/9mWcH5nPK5VWgZbH7" target="_blank" rel="noopener noreferrer">View our location on Google Maps ↗</a></section>
 <section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 14 4-4M9 16l-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 10a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-2 2"/></svg>Quick Links</h2><nav class="nb-policy-links" aria-label="Store policies">
 <a href="policies.html#delivery">Delivery Policy <span>›</span></a><a href="policies.html#availability">Service Availability <span>›</span></a><a href="policies.html#hours">Operating Hours <span>›</span></a><a href="policies.html#jar">Jar Returns &amp; Refunds <span>›</span></a><a href="policies.html#inspection">Jar Inspection <span>›</span></a><a href="policies.html#contact">Contact Support <span>›</span></a></nav></section>
-<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="m8 12 3 3 5-6"/></svg>Business Info</h2><ul class="nb-contact-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 5 3h14l2 6M3 9h18v3H3ZM5 12v9h14v-9M9 21v-6h6v6"/></svg><span>Operated by: <strong>Amrutha Store</strong></span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Bommasandra, Bengaluru</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span>Daily: 8:00 AM–9:00 PM</span></li></ul><a class="nb-store-access" href="admin.html">Store access →</a></section>
+<section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="m8 12 3 3 5-6"/></svg>Business Info</h2><ul class="nb-contact-list"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 5 3h14l2 6M3 9h18v3H3ZM5 12v9h14v-9M9 21v-6h6v6"/></svg><span>Operated by: <strong>Amrutha Store</strong></span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>Bommasandra, Bengaluru</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span>Daily: 8:00 AM–9:00 PM</span></li></ul></section>
 </div>
 <div class="nb-footer-features">
 <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span><strong>Local Delivery</strong><small>Subject to location and availability</small></span></div>

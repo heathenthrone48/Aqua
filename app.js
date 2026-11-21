@@ -1,5 +1,7 @@
 const MAX_DELIVERY_RADIUS_KM = 5.5;
+const MAX_PRODUCT_QUANTITY = 20;
 let cachedRoadDistanceKm = null;
+let cachedRouteResult = null;
 let cachedRouteKey = "";
 let routeRequest = null;
 function getDeliveryCoordinates() {
@@ -32,6 +34,10 @@ async function fetchRoadDistance(force = false) {
   if (routeRequest !== controller) throw new DOMException('Route request superseded', 'AbortError');
   cachedRouteKey = coordinates.key;
   cachedRoadDistanceKm = Number(result.distanceKm);
+  cachedRouteResult = result;
+  if (checkoutAddressConfirmed && getDeliveryCoordinates()?.key === coordinates.key) {
+    window.updateCheckoutPinPreview?.(coordinates, result);
+  }
   return cachedRoadDistanceKm;
 }
 async function refreshDeliveryQuote() {
@@ -39,6 +45,7 @@ async function refreshDeliveryQuote() {
   const coordinates = getDeliveryCoordinates();
   cachedRoadDistanceKm = null;
   cachedRouteKey = '';
+  cachedRouteResult = null;
   if (routeRequest) routeRequest.abort();
   if (!coordinates) {
     if (feeEl) feeEl.textContent = 'Choose location';
@@ -53,7 +60,7 @@ async function refreshDeliveryQuote() {
     if (distanceKm > MAX_DELIVERY_RADIUS_KM) {
       if (feeEl) feeEl.textContent = 'Outside 5.5 km service area';
     } else if (feeEl) {
-      feeEl.textContent = '₹' + getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)).toFixed(2);
+      feeEl.textContent = formatDeliveryFee(getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)));
     }
     if (typeof renderCart === 'function') renderCart(false);
   } catch (error) {
@@ -74,6 +81,9 @@ function getDeliveryFee(distanceKm, subtotal) {
     [{ max: 400, fee: 55 }, { max: 700, fee: 45 }, { max: 1000, fee: 35 }, { max: 1200, fee: 15 }, { max: Infinity, fee: 0 }]
   ];
   return tiers[band].find(t => subtotal <= t.max).fee;
+}
+function formatDeliveryFee(amount) {
+  return amount === 0 ? 'Free delivery' : '₹' + amount.toFixed(2);
 }
 function getHandlingFee(subtotal) {
   if (subtotal <= 200) return 5;
@@ -141,7 +151,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('modalSubtitle').innerText = desc;
       document.getElementById('modalPrice').innerHTML = `₹${price} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ unit</span>`;
       document.getElementById('modalImg').src = img;
-      document.getElementById('modalQtyVal').innerText = card.querySelector('.card-qty-value').innerText || '1';
+      setProductQuantity(document.getElementById('modalQtyVal'), document.getElementById('modalAddToCartBtn'), Number(card.querySelector('.card-qty-value').textContent));
 
       const featuresBox = document.getElementById('modalBoxFeatures');
       const hygieneBox = document.getElementById('modalBoxHygiene');
@@ -173,7 +183,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.querySelectorAll('.quantity-limit-notice').forEach(node => node.remove());
       const notice = document.createElement('div');
       notice.className = 'quantity-limit-notice';
-      notice.textContent = 'Maximum 5 quantity per order';
+      notice.textContent = `You can order up to ${MAX_PRODUCT_QUANTITY} of each product.`;
       notice.setAttribute('role', 'alert');
       Object.assign(notice.style, {
         position: 'fixed', zIndex: '10000', maxWidth: '230px',
@@ -197,24 +207,37 @@ document.addEventListener('deliverylocationchange', () => {
       window.setTimeout(() => notice.remove(), 2200);
     }
 
+    function setProductQuantity(valueEl, addButton, quantity) {
+      const changed = Number(valueEl.textContent) !== quantity;
+      valueEl.textContent = quantity;
+      if (quantity === 0) addButton.setAttribute('aria-disabled', 'true');
+      else addButton.removeAttribute('aria-disabled');
+      const card = addButton.closest('.water-card');
+      if (card) {
+        if (changed) addButton.classList.remove('is-added');
+        updateCardAddLabel(card);
+      }
+    }
+
     function changeModalQty(change) {
       const qtyEl = document.getElementById('modalQtyVal');
-      const current = parseInt(qtyEl.innerText, 10) || 1;
-      if (change > 0 && current >= 5) {
+      const current = Number(qtyEl.textContent);
+      if (change > 0 && current >= MAX_PRODUCT_QUANTITY) {
         showQuantityLimitNotice(qtyEl.closest('.card-qty-controls') || qtyEl);
         return;
       }
-      const updated = Math.min(5, Math.max(1, current + change));
-      qtyEl.innerText = updated;
+      const updated = Math.max(0, current + change);
+      setProductQuantity(qtyEl, document.getElementById('modalAddToCartBtn'), updated);
 
       if (activeModalCardRef) {
-        activeModalCardRef.querySelector('.card-qty-value').innerText = updated;
+        setProductQuantity(activeModalCardRef.querySelector('.card-qty-value'), activeModalCardRef.querySelector('.add-cart-btn'), updated);
       }
     }
 
     function addModalItemToCart() {
       if (activeModalCardRef) {
         const addBtn = activeModalCardRef.querySelector('.add-cart-btn');
+        if (addBtn.getAttribute('aria-disabled') === 'true') return;
         addToCart(addBtn);
         closeProductModalDirect();
       }
@@ -516,7 +539,7 @@ document.addEventListener('deliverylocationchange', () => {
         if (!Object.hasOwn(catalog, name) || !item) continue;
         const qty = Number(item.qty);
         if (!Number.isInteger(qty) || qty < 1) continue;
-        clean[name] = { ...catalog[name], qty: Math.min(5, qty) };
+        clean[name] = { ...catalog[name], qty: Math.min(MAX_PRODUCT_QUANTITY, qty) };
       }
       return clean;
     }
@@ -604,7 +627,7 @@ document.addEventListener('deliverylocationchange', () => {
       if (!cart[name] || orderSubmitting) return;
       const qty = cart[name].qty + change;
       if (qty <= 0) { removeFromCart(name); return; }
-      if (qty > 5) {
+      if (qty > MAX_PRODUCT_QUANTITY) {
         showQuantityLimitNotice(button || document.querySelector('[data-product="' + CSS.escape(name) + '"]'));
         return;
       }
@@ -613,17 +636,18 @@ document.addEventListener('deliverylocationchange', () => {
     }
 
     function changeCardQty(button, change) {
-      const controls = button.closest('.card-qty-controls');
+      const controls = button.closest('.card-bottom');
       const valueEl = controls.querySelector('.card-qty-value');
-      const current = parseInt(valueEl.textContent, 10) || 1;
-      if (change > 0 && current >= 5) {
+      const current = Number(valueEl.textContent);
+      if (change > 0 && current >= MAX_PRODUCT_QUANTITY) {
         showQuantityLimitNotice(button);
         return;
       }
-      valueEl.textContent = Math.min(5, Math.max(1, current + change));
+      setProductQuantity(valueEl, controls.querySelector('.add-cart-btn'), Math.max(0, current + change));
     }
 
     function addToCart(button) {
+      if (button.getAttribute('aria-disabled') === 'true') return;
       const card = button.closest('.water-card');
       const name = card.dataset.name;
       if (!stockReady || liveStock[name] !== true) {
@@ -631,12 +655,13 @@ document.addEventListener('deliverylocationchange', () => {
         return;
       }
       const price = parseFloat(card.dataset.price);
-      const qty = parseInt(card.querySelector('.card-qty-value').textContent, 10) || 1;
+      const qty = Number(card.querySelector('.card-qty-value').textContent);
+      if (qty === 0) return;
 
       markCartChangedForNotice();
 
       const existingQty = cart[name]?.qty || 0;
-      if (existingQty + qty > 5) {
+      if (existingQty + qty > MAX_PRODUCT_QUANTITY) {
         showQuantityLimitNotice(button);
         return;
       }
@@ -647,15 +672,7 @@ document.addEventListener('deliverylocationchange', () => {
         cart[name] = { ...catalog[name], price, qty };
       }
 
-      button.classList.add('added');
-      button.innerText = '✓ ADDED TO CART';
-      card.classList.add('in-cart');
-
-      setTimeout(() => {
-        button.classList.remove('added');
-        applyLiveStock();
-      }, 900);
-
+      button.classList.add('is-added');
       renderCart();
     }
 
@@ -703,7 +720,7 @@ document.addEventListener('deliverylocationchange', () => {
         : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
 
       const deliveryEl = document.getElementById('delivery-fee');
-      if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : money(totals.deliveryFee);
+      if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : formatDeliveryFee(totals.deliveryFee);
       else if (deliveryEl && !getDeliveryCoordinates()) deliveryEl.textContent = 'Choose location';
       const handlingEl = document.getElementById('handling-fee');
       if (handlingEl) handlingEl.textContent = money(totals.handlingFee);
@@ -754,7 +771,10 @@ document.addEventListener('deliverylocationchange', () => {
       const basketSummary = document.getElementById('basket-summary');
       if (basketSummary) basketSummary.hidden = !items.length;
       updateOrderButton();
-      document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
+      document.querySelectorAll('.water-card').forEach(card => {
+        card.classList.toggle('in-cart', !!cart[card.dataset.name]);
+        updateCardAddLabel(card);
+      });
     }
         document.addEventListener('click', event => {
       const button = event.target.closest('[data-cart-action]');
@@ -908,7 +928,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('confirm-exchange-note').textContent = returnedContainers > 0
         ? 'Please hand over your empty Bisleri 20L jars to our delivery partner during delivery.'
         : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
-      document.getElementById('confirm-delivery-fee').textContent = '₹' + breakdown.deliveryFee.toFixed(2);
+      document.getElementById('confirm-delivery-fee').textContent = formatDeliveryFee(breakdown.deliveryFee);
       document.getElementById('confirm-handling-fee').textContent = '₹' + breakdown.handlingFee.toFixed(2);
       document.getElementById('confirm-additional-charges').textContent = '₹' + additionalCharges.toFixed(2);
       document.getElementById('confirm-total').textContent = order.total;
@@ -1193,6 +1213,20 @@ let liveStock = {};
 let stockReady = false;
 let stockRequest = null;
 
+function updateCardAddLabel(card) {
+  const product = card.dataset.name;
+  const button = card.querySelector('.add-cart-btn');
+  const label = button.querySelector('.card-add-label');
+  if (!cart[product]) button.classList.remove('is-added');
+  const added = button.classList.contains('is-added');
+  const quantity = Number(button.querySelector('.card-qty-value').textContent);
+  if (added || quantity === 0) button.setAttribute('aria-disabled', 'true');
+  else button.removeAttribute('aria-disabled');
+  if (!stockReady) label.textContent = 'Checking stock…';
+  else if (liveStock[product] !== true) label.textContent = 'Out of stock';
+  else label.textContent = added ? 'Added' : 'Add';
+}
+
 function applyLiveStock() {
   document.querySelectorAll('.water-card').forEach(card => {
     const available = stockReady && liveStock[card.dataset.name] === true;
@@ -1200,7 +1234,7 @@ function applyLiveStock() {
     button.disabled = !available;
     button.style.opacity = available ? '' : '0.6';
     button.style.cursor = available ? '' : 'not-allowed';
-    button.textContent = !stockReady ? 'CHECKING STOCK…' : available ? 'ADD TO CART' : 'OUT OF STOCK';
+    updateCardAddLabel(card);
   });
   if (activeModalCardRef) {
     const button = document.getElementById('modalAddToCartBtn');
@@ -1491,7 +1525,8 @@ if (document.getElementById('preferred-time')) {
           street: field('address-street').value
         })
       : 'Choose a delivery address');
-    window.updateCheckoutPinPreview?.(checkoutAddressConfirmed ? getDeliveryCoordinates() : null);
+    const coordinates = checkoutAddressConfirmed ? getDeliveryCoordinates() : null;
+    window.updateCheckoutPinPreview?.(coordinates, coordinates?.key === cachedRouteKey ? cachedRouteResult : null);
     renderCart(false);
   }
 

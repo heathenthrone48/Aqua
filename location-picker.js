@@ -22,6 +22,9 @@
   const routeStatus = $("delivery-route-status") || status;
   const gpsButton = $("use-current-location");
 
+  const DISPATCH_LOCATION = [12.8097082, 77.6789059];
+  const SERVICE_RADIUS_METRES = 5500;
+
   let map;
   let marker;
   let routeLine;
@@ -64,19 +67,54 @@
     heading.textContent = "Confirm your delivery address";
     initMap();
     setTimeout(() => {
-      if (map) map.invalidateSize();
+      if (map) fitDeliveryMap(map, serviceBoundary, marker, routeLine);
       $("delivery-map").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 150);
   }
 
   locationTab.addEventListener("click", switchMode);
 
+  function addServiceBoundary(target) {
+    // This circle is a guide. Serviceability is based on driving distance.
+    return L.circle(DISPATCH_LOCATION, {
+      radius: SERVICE_RADIUS_METRES,
+      color: "#087eaf",
+      weight: 2,
+      fillColor: "#38a9d6",
+      fillOpacity: 0.07,
+      dashArray: "7 7"
+    }).addTo(target);
+  }
+
+  function fitDeliveryMap(target, boundary, pin, route) {
+    const container = target.getContainer();
+    if (!container.clientWidth || !container.clientHeight) return;
+    target.invalidateSize({ pan: false });
+    const routeBounds = route?.getBounds();
+    const hasRoute = routeBounds?.isValid();
+    const bounds = hasRoute ? routeBounds.extend(DISPATCH_LOCATION) : boundary.getBounds();
+    if (pin) bounds.extend(pin.getLatLng());
+    target.fitBounds(bounds, { padding: hasRoute ? [22, 20] : [12, 12], maxZoom: 17, animate: false });
+  }
+
+  function addRoadLine(target, result) {
+    if (!Array.isArray(result?.geometry) || result.geometry.length < 2) return null;
+    return L.polyline(result.geometry.map(([lng, lat]) => [lat, lng]), {
+      color: result.withinServiceArea ? "#087eaf" : "#dc3545",
+      weight: 5,
+      opacity: 0.85
+    }).addTo(target);
+  }
+
+  function observeMapSize(target, fit) {
+    fit();
+    new ResizeObserver(fit).observe(target.getContainer());
+  }
+
   function initMap() {
     if (map || !window.L) return;
 
-    // General map view only, not the customer's actual location.
-    const BASE_LOCATION = [12.8115, 77.6970];
-    map = L.map("delivery-map").setView(BASE_LOCATION, 14);
+    map = L.map("delivery-map", { zoomSnap: 0.25 }).setView(DISPATCH_LOCATION, 12);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -84,19 +122,10 @@
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    // The circle is a visual guide only; eligibility is based on actual road distance.
-    const dispatchLocation = [12.8097082, 77.6789059];
-    serviceBoundary = L.circle(dispatchLocation, {
-      radius: 5500,
-      color: "#087eaf",
-      weight: 2,
-      fillColor: "#38a9d6",
-      fillOpacity: 0.07,
-      dashArray: "7 7"
-    }).addTo(map);
-    L.marker(dispatchLocation).addTo(map)
+    serviceBoundary = addServiceBoundary(map);
+    L.marker(DISPATCH_LOCATION).addTo(map)
       .bindPopup("NeerBeku distribution center (delivery route starts here)");
-    map.fitBounds(serviceBoundary.getBounds(), { padding: [18, 18] });
+    observeMapSize(map, () => fitDeliveryMap(map, serviceBoundary, marker, routeLine));
 
     map.on("click", event => {
       selectCoordinates(
@@ -124,7 +153,6 @@
       marker.setLatLng(point);
     }
 
-    map.setView(point, 17);
     drawRoadRoute(lat, lon);
   }
 
@@ -137,6 +165,7 @@
       map.removeLayer(routeLine);
       routeLine = null;
     }
+    fitDeliveryMap(map, serviceBoundary, marker);
     routeStatus.textContent = "Calculating driving route from the NeerBeku distribution center…";
     try {
       const response = await fetch("/api/delivery/route", {
@@ -151,18 +180,12 @@
       if (!response.ok || !Array.isArray(result.geometry)) {
         throw new Error(result.error || "Could not calculate the road route.");
       }
-      routeLine = L.polyline(result.geometry.map(([lng, latitude]) => [latitude, lng]), {
-        color: result.withinServiceArea ? "#087eaf" : "#dc3545",
-        weight: 5,
-        opacity: 0.85
-      }).addTo(map);
+      routeLine = addRoadLine(map, result);
+      if (routeLine) fitDeliveryMap(map, serviceBoundary, marker, routeLine);
       const km = Number(result.distanceKm).toFixed(2);
       routeStatus.textContent = result.withinServiceArea
         ? `Driving route: ${km} km from the distribution center. This location is within the 5.5 km service limit.`
         : `Driving route: ${km} km from the distribution center. This location is outside the 5.5 km service limit.`;
-      if (routeLine.getBounds().isValid()) {
-        map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
-      }
     } catch (error) {
       if (error.name !== "AbortError") {
         routeStatus.textContent = error.message || "Road route unavailable. Please try another pin.";
@@ -409,8 +432,8 @@
 
   // Show the confirmed delivery pin without making the main checkout map editable.
   const pinPreview = $("checkout-pin-preview");
-  let pinPreviewMap, pinPreviewMarker;
-  window.updateCheckoutPinPreview = coordinates => {
+  let pinPreviewMap, pinPreviewMarker, pinPreviewBoundary, pinPreviewRoute;
+  window.updateCheckoutPinPreview = (coordinates, routeResult) => {
     if (!pinPreview) return;
     pinPreview.hidden = !coordinates || !window.L;
     if (pinPreview.hidden) return;
@@ -419,18 +442,25 @@
       pinPreviewMap = L.map("checkout-pin-map", {
         dragging: false, touchZoom: false, scrollWheelZoom: false,
         doubleClickZoom: false, boxZoom: false, keyboard: false,
-        zoomControl: false, tapHold: false
+        zoomControl: false, tapHold: false, zoomSnap: 0.25
       });
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(pinPreviewMap);
-      pinPreviewMap.setView(point, 16);
+      pinPreviewMap.setView(DISPATCH_LOCATION, 12);
+      pinPreviewBoundary = addServiceBoundary(pinPreviewMap);
       pinPreviewMarker = L.marker(point, { interactive: false, keyboard: false }).addTo(pinPreviewMap);
+      L.circleMarker(DISPATCH_LOCATION, {
+        radius: 5, color: "#fff", weight: 2, fillColor: "#124d78", fillOpacity: 1, interactive: false
+      }).addTo(pinPreviewMap);
+      observeMapSize(pinPreviewMap, () => fitDeliveryMap(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker, pinPreviewRoute));
+    } else {
+      pinPreviewMarker.setLatLng(point);
     }
-    pinPreviewMap.invalidateSize({ pan: false });
-    pinPreviewMarker.setLatLng(point);
-    pinPreviewMap.setView(point, 16, { animate: false });
+    if (pinPreviewRoute) pinPreviewMap.removeLayer(pinPreviewRoute);
+    pinPreviewRoute = addRoadLine(pinPreviewMap, routeResult);
+    fitDeliveryMap(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker, pinPreviewRoute);
   };
 
   // Expose helpers for the existing checkout integration.
@@ -441,6 +471,7 @@
     if (marker) map.removeLayer(marker);
     if (routeLine) map.removeLayer(routeLine);
     marker = routeLine = null;
+    if (map) fitDeliveryMap(map, serviceBoundary);
     routeStatus.textContent = '';
     setStatus('Select a location for your new delivery address.');
   };
