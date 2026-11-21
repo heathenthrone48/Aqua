@@ -39,14 +39,14 @@ function stockMessage(text) {
   element.textContent = text;
 }
 
-async function stockApi(path, method = 'GET', data) {
+async function stockApi(path, method = 'GET', data, timeout = 10000) {
   const headers = {};
   if (method !== 'GET' || path.startsWith('/api/admin/')) headers.Authorization = `Bearer ${adminPassword}`;
   if (data) headers['Content-Type'] = 'application/json';
   const response = await fetch(path, {
     method, headers, cache: 'no-store',
     body: data ? JSON.stringify(data) : undefined,
-    signal: AbortSignal.timeout(10000)
+    signal: AbortSignal.timeout(timeout)
   });
   const result = await response.json();
   if (!response.ok) {
@@ -314,6 +314,26 @@ window.addEventListener('focus', refreshAdminStock);
             <td>${escapeHtml(order.deliveryWindow || '—')}</td>
             <td><span class="telegram-order-status telegram-${escapeHtml(order.telegramStatus || 'pending')}">${escapeHtml(telegramLabel)}</span></td>
           `;
+          if (order.telegramStatus === 'failed') {
+            const retry = document.createElement('button');
+            retry.type = 'button';
+            retry.className = 'telegram-retry-button';
+            retry.textContent = 'Retry Telegram';
+            retry.addEventListener('click', async () => {
+              if (!confirm('Check Telegram for this order reference before retrying. Send the notification again?')) return;
+              retry.disabled = true;
+              retry.textContent = 'Retrying?';
+              try {
+                const result = await stockApi('/api/admin/orders/retry-telegram', 'POST', { orderId: order.orderId }, 15000);
+                await loadLogs(true);
+                status.textContent = result.telegramSent ? 'Telegram notification sent.' : 'Telegram delivery failed again. The order is still saved.';
+              } catch (error) {
+                await loadLogs(true);
+                status.textContent = error.message;
+              }
+            });
+            row.lastElementChild.append(' ', retry);
+          }
           tbody.appendChild(row);
         });
         orderOffset += (data.orders || []).length;

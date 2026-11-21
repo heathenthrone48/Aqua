@@ -37,7 +37,21 @@ ul{padding-left:20px;margin:14px 0 0}li{padding:5px 0;color:#43566c;font-size:14
 .contact h2{color:#fff;margin-bottom:5px}.contact p{margin:0;color:#c9d9e9;font-size:13px}
 .contact-links{display:grid;gap:7px;font-size:13px;color:#fff}
 .footer{text-align:center;color:#8a9bad;font-size:12px;padding:0 20px 35px}
-@media(max-width:800px){.wrap{grid-template-columns:1fr;margin-top:-30px}.side{position:static}.side nav{display:flex;gap:5px;overflow:auto}.side a{white-space:nowrap}.hero{padding:48px 20px 65px}.nav{padding:15px 20px}.wrap{padding:0 15px}.content-card{padding:23px 20px}.contact{display:block}.contact-links{margin-top:18px}.facts{grid-template-columns:1fr 1fr}}
+@media (max-width: 800px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); margin-top: -30px; padding: 0 15px; }
+  .side { position: static; min-width: 0; padding: 16px; }
+  .side nav { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .side a { padding: 7px 8px; }
+  .content { grid-template-columns: minmax(0, 1fr); }
+  .section-head > div:last-child { min-width: 0; }
+  .hero { padding: 40px 18px 60px; }
+  .nav { gap: 12px; }
+  .nav small { text-align: right; }
+  .content-card { padding: 20px 16px; }
+  .contact { display: block; padding: 20px 16px; scroll-margin-top: 20px; }
+  .contact-links { margin-top: 14px; overflow-wrap: anywhere; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media(max-width:430px){.facts{grid-template-columns:1fr}.hours{align-items:flex-start;flex-direction:column}}
 html{scroll-behavior:smooth}.side a:focus-visible,a:focus-visible{outline:3px solid #1479c9;outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}</style>
 <link rel="stylesheet" href="footer.css">
@@ -53,15 +67,15 @@ html{scroll-behavior:smooth}.side a:focus-visible,a:focus-visible{outline:3px so
 <section class="content-card" id="hours"><div class="section-head"><div class="icon">🕒</div><div><h2>Operating hours</h2><p class="sub">Our regular order and delivery operating window.</p></div></div><div class="hours"><span>Daily operating hours</span><strong>8:00 AM – 9:00 PM</strong></div><ul><li>Orders received outside operating hours will be handled during the next operating period.</li></ul></section>
 <section class="content-card" id="jar"><div class="section-head"><div class="icon">♻️</div><div><h2>20-litre Bisleri jar return policy</h2><p class="sub">Return terms for eligible jars supplied by NeerBeku.</p></div></div><div class="facts"><div class="fact"><strong>60 days</strong><small>Return window from delivery</small></div><div class="fact"><strong>₹10</strong><small>Usage deduction per accepted jar</small></div><div class="fact"><strong>Bisleri only</strong><small>Original 20L jars supplied by NeerBeku</small></div></div><ul><li>Only original <strong>20-litre Bisleri jars supplied by NeerBeku</strong> are eligible under this return policy.</li><li>The jar must be returned within <strong>60 days from the date of delivery</strong>.</li><li>If the jar is not returned within 60 days, it becomes the buyer's property and will no longer be eligible for return or refund.</li><li>A <strong>₹10 usage and handling deduction per accepted jar</strong> will be applied when the jar is returned.</li><li>The applicable refundable amount will be calculated from the jar deposit or payment arrangement, after the deduction.</li></ul><div class="note"><strong>Brand restriction:</strong> Kinley, Bailley and other brands' jars are not eligible for return under this policy.</div></section>
 <section class="content-card" id="inspection"><div class="section-head"><div class="icon">🔎</div><div><h2>Jar inspection & acceptance</h2><p class="sub">Every jar is checked before it is accepted for return.</p></div></div><ul><li>Our delivery team will inspect each jar at the time of return.</li><li>Jars with fungus, contamination, cracks or other physical damage will not be accepted for return.</li><li>Only jars that pass the inspection will qualify for the applicable refund, after the ₹10 deduction.</li><li>Please keep the jar available and reasonably clean for inspection when arranging a return.</li></ul></section>
-<section class="contact" id="contact"><div><h2>Need help with an order or jar return?</h2><p>Contact NeerBeku customer support for delivery availability and return assistance.</p></div><div class="contact-links"><a href="tel:+916361370223">☎ &nbsp;+91 63613 70223</a><a href="mailto:infoneerbeku@gmail.com">✉ &nbsp;infoneerbeku@gmail.com</a><span>📍 &nbsp;Bommasandra, Bengaluru</span></div></section>
+<section class="contact" id="contact"><div><h2>Need help with an order or jar return?</h2><p>Contact NeerBeku customer support for delivery availability and return assistance.</p></div><div class="contact-links"><a href="tel:+916364636093">☎ &nbsp;+91 63646 36093</a><a href="mailto:neerbekuinfo@gmail.com">✉ &nbsp;neerbekuinfo@gmail.com</a><span>📍 &nbsp;Bommasandra, Bengaluru</span></div></section>
 </div></main>
 <footer class="nb-footer">
 <div class="nb-footer-grid">
 <section class="nb-footer-brand"><a href="index.html"><img src="images/logo.png" alt="NeerBeku" width="220" height="70"></a><h2>Your local drinking water delivery partner</h2><p>A water delivery service by <strong>Amrutha Store.</strong> Order packaged drinking water, water cans and dispenser accessories online for delivery in serviceable areas around Bommasandra.</p></section>
 <section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3C10 23 1 14 3 3Z"/></svg>Contact Us</h2><ul class="nb-contact-list">
-<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3C10 23 1 14 3 3Z"/></svg><a href="tel:+916361370223">+91 63613 70223</a></li>
-<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8l-5 2 2-5A9 9 0 1 1 21 11Z"/><path d="M8 9h8M8 13h5"/></svg><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Chat on WhatsApp ↗</a></li>
-<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><a href="mailto:infoneerbeku@gmail.com">infoneerbeku@gmail.com</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 3 3 5-3 3a16 16 0 0 0 6 6l3-3 5 3v3C10 23 1 14 3 3Z"/></svg><a href="tel:+916364636093">+91 63646 36093</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8l-5 2 2-5A9 9 0 1 1 21 11Z"/><path d="M8 9h8M8 13h5"/></svg><a href="https://wa.me/916364636093" target="_blank" rel="noopener noreferrer">Chat on WhatsApp ↗</a></li>
+<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><a href="mailto:neerbekuinfo@gmail.com">neerbekuinfo@gmail.com</a></li>
 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg><span>Mon–Sun: 8:00 AM–9:00 PM<small>Order and delivery hours</small></span></li></ul></section>
 <section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>Our Service Area</h2><p><strong>Bommasandra, Bengaluru</strong></p><p>Selected nearby locations, subject to serviceability.</p><div class="nb-area-tags"><span>Bommasandra</span><span>Nearby areas</span></div><a class="nb-map-link" href="https://maps.app.goo.gl/9mWcH5nPK5VWgZbH7" target="_blank" rel="noopener noreferrer">View our location on Google Maps ↗</a></section>
 <section><h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 14 4-4M9 16l-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m0 10a4 4 0 0 0 6 0l5-5a4 4 0 0 0-6-6l-2 2"/></svg>Quick Links</h2><nav class="nb-policy-links" aria-label="Store policies">
@@ -74,6 +88,6 @@ html{scroll-behavior:smooth}.side a:focus-visible,a:focus-visible{outline:3px so
 <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 4v6c0 5-9 10-9 10S3 17 3 12V6Z"/><path d="m8 12 3 3 5-6"/></svg><span><strong>Easy Online Ordering</strong><small>Choose your preferred delivery window</small></span></div>
 <div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11a9 9 0 0 1-13 8l-5 2 2-5A9 9 0 1 1 21 11Z"/><path d="M8 9h8M8 13h5"/></svg><span><strong>Local Customer Support</strong><small>Call or message our store</small></span></div>
 </div>
-<div class="nb-footer-bottom"><p>© 2026 Amrutha Store. All rights reserved. <strong>NeerBeku</strong></p><a href="https://wa.me/916361370223" target="_blank" rel="noopener noreferrer">Contact us on WhatsApp ↗</a><span>Payment: Pay on delivery</span></div>
+<div class="nb-footer-bottom"><p>© 2026 Amrutha Store. All rights reserved. <strong>NeerBeku</strong></p><a href="https://wa.me/916364636093" target="_blank" rel="noopener noreferrer">Contact us on WhatsApp ↗</a><span>Payment: Pay on delivery</span></div>
 </footer>
 </body></html>

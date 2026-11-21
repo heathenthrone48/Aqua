@@ -241,7 +241,7 @@ async function deliveryRoute(data, env) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        coordinates: [[77.691037, 12.815047], [longitude, latitude]],
+        coordinates: [[77.6789059, 12.8097082], [longitude, latitude]],
         instructions: false
       })
     });
@@ -362,6 +362,17 @@ async function notifyTelegram(order, siteOrigin, relay) {
     console.error("Telegram relay request failed", { orderId: order.orderId, error: error?.name });
     return false;
   }
+}
+
+async function sendSavedOrderNotification(order, origin, env) {
+  const telegramSent = await notifyTelegram(order, origin, env.TELEGRAM_ORDERS);
+  try {
+    await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
+      .bind(telegramSent ? "sent" : "failed", order.orderId).run();
+  } catch (error) {
+    console.error("Could not record Telegram status", { orderId: order.orderId, error: error?.name });
+  }
+  return telegramSent;
 }
 
 export default {
@@ -605,10 +616,30 @@ export default {
           return json({ success: true, saved: true, duplicate: true, telegramSent: existing.telegram_status === "sent", orderId: order.orderId });
         }
 
-        const telegramSent = await notifyTelegram(order, url.origin, env.TELEGRAM_ORDERS);
-        await env.DB.prepare("UPDATE orders SET telegram_status = ? WHERE order_id = ?")
-          .bind(telegramSent ? "sent" : "failed", order.orderId).run();
+        const telegramSent = await sendSavedOrderNotification(order, url.origin, env);
         return json({ success: true, saved: true, telegramSent, orderId: order.orderId });
+      }
+
+      if (url.pathname === "/api/admin/orders/retry-telegram" && request.method === "POST") {
+        if (!(await validPassword(request, env))) return json({ error: "Please log in again" }, 401);
+        let data;
+        try { data = await request.json(); } catch { return json({ error: "Invalid retry request" }, 400); }
+        const orderId = data?.orderId;
+        if (typeof orderId !== "string" || !/^[A-Za-z0-9_-]{3,80}$/.test(orderId)) {
+          return json({ error: "Enter a valid order reference." }, 400);
+        }
+        const saved = await env.DB.prepare("SELECT order_json, telegram_status FROM orders WHERE order_id = ?")
+          .bind(orderId).first();
+        if (!saved) return json({ error: "Order not found." }, 404);
+        if (saved.telegram_status !== "failed") return json({ error: "Only failed notifications can be retried." }, 409);
+        let order;
+        try { order = JSON.parse(saved.order_json); } catch {}
+        if (order?.orderId !== orderId) return json({ error: "The saved notification details are unavailable." }, 409);
+        const claimed = await env.DB.prepare("UPDATE orders SET telegram_status = 'pending' WHERE order_id = ? AND telegram_status = 'failed'")
+          .bind(orderId).run();
+        if (!claimed.meta?.changes) return json({ error: "This notification is already being handled." }, 409);
+        const telegramSent = await sendSavedOrderNotification(order, url.origin, env);
+        return json({ success: true, telegramSent, orderId });
       }
 
       if (url.pathname === "/api/admin/orders" && request.method === "GET") {

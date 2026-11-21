@@ -27,7 +27,6 @@
   let routeLine;
   let routeController;
   let serviceBoundary;
-  let shopMarker;
   let searchTimer;
   let searchController;
   let reverseController;
@@ -86,7 +85,8 @@
     }).addTo(map);
 
     // The circle is a visual guide only; eligibility is based on actual road distance.
-    serviceBoundary = L.circle([12.815047, 77.691037], {
+    const dispatchLocation = [12.8097082, 77.6789059];
+    serviceBoundary = L.circle(dispatchLocation, {
       radius: 5500,
       color: "#087eaf",
       weight: 2,
@@ -94,8 +94,8 @@
       fillOpacity: 0.07,
       dashArray: "7 7"
     }).addTo(map);
-    shopMarker = L.marker([12.815047, 77.691037]).addTo(map)
-      .bindPopup("NeerBeku shop — delivery route starts here");
+    L.marker(dispatchLocation).addTo(map)
+      .bindPopup("NeerBeku distribution center (delivery route starts here)");
     map.fitBounds(serviceBoundary.getBounds(), { padding: [18, 18] });
 
     map.on("click", event => {
@@ -137,7 +137,7 @@
       map.removeLayer(routeLine);
       routeLine = null;
     }
-    routeStatus.textContent = "Calculating driving route from the NeerBeku shop…";
+    routeStatus.textContent = "Calculating driving route from the NeerBeku distribution center…";
     try {
       const response = await fetch("/api/delivery/route", {
         method: "POST",
@@ -158,8 +158,8 @@
       }).addTo(map);
       const km = Number(result.distanceKm).toFixed(2);
       routeStatus.textContent = result.withinServiceArea
-        ? `Driving route: ${km} km from the shop. This location is within the 5.5 km service limit.`
-        : `Driving route: ${km} km from the shop. This location is outside the 5.5 km service limit.`;
+        ? `Driving route: ${km} km from the distribution center. This location is within the 5.5 km service limit.`
+        : `Driving route: ${km} km from the distribution center. This location is outside the 5.5 km service limit.`;
       if (routeLine.getBounds().isValid()) {
         map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
       }
@@ -405,6 +405,32 @@
 
     // Recalculate the road distance and unlock checkout once serviceability is confirmed.
     document.dispatchEvent(new Event("deliverylocationchange"));
+  };
+
+  // Show the confirmed delivery pin without making the main checkout map editable.
+  const pinPreview = $("checkout-pin-preview");
+  let pinPreviewMap, pinPreviewMarker;
+  window.updateCheckoutPinPreview = coordinates => {
+    if (!pinPreview) return;
+    pinPreview.hidden = !coordinates || !window.L;
+    if (pinPreview.hidden) return;
+    const point = [coordinates.latitude, coordinates.longitude];
+    if (!pinPreviewMap) {
+      pinPreviewMap = L.map("checkout-pin-map", {
+        dragging: false, touchZoom: false, scrollWheelZoom: false,
+        doubleClickZoom: false, boxZoom: false, keyboard: false,
+        zoomControl: false, tapHold: false
+      });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(pinPreviewMap);
+      pinPreviewMap.setView(point, 16);
+      pinPreviewMarker = L.marker(point, { interactive: false, keyboard: false }).addTo(pinPreviewMap);
+    }
+    pinPreviewMap.invalidateSize({ pan: false });
+    pinPreviewMarker.setLatLng(point);
+    pinPreviewMap.setView(point, 16, { animate: false });
   };
 
   // Expose helpers for the existing checkout integration.

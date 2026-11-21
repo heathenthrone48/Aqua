@@ -1,4 +1,3 @@
-const DELIVERY_CENTRE = { latitude: 12.815047, longitude: 77.691037 };
 const MAX_DELIVERY_RADIUS_KM = 5.5;
 let cachedRoadDistanceKm = null;
 let cachedRouteKey = "";
@@ -85,20 +84,26 @@ function getHandlingFee(subtotal) {
 }
 const BISLERI_20L_NAME = 'Bisleri 20L Can';
 const BISLERI_CONTAINER_DEPOSIT = 150;
-const BISLERI_RETURN_STORAGE_KEY = 'neerbeku_bisleri_container_return_v1';
+const CHECKOUT_JAR_CHOICE_KEY = 'neerbeku_checkout_jar_choice';
+let bisleriReturnChoice = null;
+let checkoutAddressConfirmed = false;
 function getBisleriReturnState() {
   const canQty = Number(cart?.[BISLERI_20L_NAME]?.qty || 0);
-  try {
-    const saved = JSON.parse(localStorage.getItem(BISLERI_RETURN_STORAGE_KEY) || 'null');
-    if (!saved || Number(saved.cartQty) !== canQty) return { canQty, returnedContainers: 0, hasAnswer: true };
-    return { canQty, returnedContainers: Math.max(0, Math.min(canQty, Number(saved.returnedContainers) || 0)), hasAnswer: true };
-  } catch { return { canQty, returnedContainers: 0, hasAnswer: true }; }
+  if (bisleriReturnChoice?.cartQty !== canQty) bisleriReturnChoice = null;
+  return {
+    canQty,
+    returnedContainers: bisleriReturnChoice?.count ?? 0,
+    hasAnswer: canQty === 0 || bisleriReturnChoice !== null
+  };
 }
 function setBisleriReturnCount(value) {
-  const state = getBisleriReturnState();
-  const returned = Math.max(0, Math.min(state.canQty, Math.floor(Number(value) || 0)));
-  localStorage.setItem(BISLERI_RETURN_STORAGE_KEY, JSON.stringify({ cartQty: state.canQty, returnedContainers: returned, hasContainer: returned > 0 }));
+  const { canQty } = getBisleriReturnState();
+  const count = Number(value);
+  bisleriReturnChoice = value !== "" && Number.isInteger(count) && count >= 0 && count <= canQty
+    ? { cartQty: canQty, count }
+    : null;
   renderCart(false);
+  document.getElementById("bisleri-return-choice")?.focus();
 }
 function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
   const productSubtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -360,8 +365,35 @@ document.addEventListener('deliverylocationchange', () => {
 
           carousel.addEventListener('mouseenter', () => stopProductAutoPlay(carousel));
           carousel.addEventListener('mouseleave', () => startProductAutoPlay(carousel));
-          carousel.addEventListener('touchstart', () => stopProductAutoPlay(carousel), { passive: true });
-          carousel.addEventListener('touchend', () => startProductAutoPlay(carousel), { passive: true });
+          let startTouch = null;
+          let swipeTime = -Infinity;
+          carousel.addEventListener('touchstart', event => {
+            startTouch = event.touches.length === 1 && !event.target.closest('button') ? event.touches[0] : null;
+            stopProductAutoPlay(carousel);
+          }, { passive: true });
+          carousel.addEventListener('touchend', event => {
+            const touch = event.changedTouches[0];
+            if (startTouch && touch && startTouch.identifier === touch.identifier) {
+              const dx = touch.clientX - startTouch.clientX;
+              const dy = touch.clientY - startTouch.clientY;
+              if (Math.abs(dx) >= 30 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+                const { index } = getCarouselData(carousel);
+                renderCarousel(carousel, index + (dx < 0 ? 1 : -1));
+                swipeTime = performance.now();
+              }
+            }
+            startTouch = null;
+            startProductAutoPlay(carousel);
+          }, { passive: true });
+          carousel.addEventListener('touchcancel', () => {
+            startTouch = null;
+            startProductAutoPlay(carousel);
+          }, { passive: true });
+          carousel.addEventListener('click', event => {
+            if (performance.now() - swipeTime < 400 && !event.target.closest('button')) {
+              event.stopPropagation();
+            }
+          }, true);
         }
       });
     }
@@ -426,6 +458,7 @@ document.addEventListener('deliverylocationchange', () => {
     const CART_STORAGE_KEY = 'neerbeku_cart_v1';
     const catalog = window.NEER_CATALOG;
     let orderSubmitting = false;
+    let lastOrderAttempt = null;
     let priceRefreshInProgress = false;
     async function refreshLivePrices() {
       if (priceRefreshInProgress || orderSubmitting) return;
@@ -466,7 +499,7 @@ document.addEventListener('deliverylocationchange', () => {
             if (suffix) mainPrice.append(suffix);
           }
           const caseMeta = block.querySelector('.water-case-meta');
-          if (caseMeta && item.caseQty) caseMeta.textContent = 'Case of ' + item.caseQty + ' · ₹' + (item.price / item.caseQty).toFixed(2) + ' per bottle';
+          if (caseMeta && item.caseQty) caseMeta.textContent = item.caseQty + ' pcs · ₹' + (item.price / item.caseQty).toFixed(2) + ' each';
         });
         cart = normalizeCart(cart);
         renderCart(false);
@@ -493,6 +526,33 @@ document.addEventListener('deliverylocationchange', () => {
       catch { return {}; }
     }
     let cart = readCart();
+    const isDeliveryCheckout = document.body.classList.contains('delivery-checkout-page');
+    if (isDeliveryCheckout) {
+      try {
+        const choice = JSON.parse(sessionStorage.getItem(CHECKOUT_JAR_CHOICE_KEY));
+        if (Number.isInteger(choice?.count) && Number.isInteger(choice.cartQty) &&
+            choice.count >= 0 && choice.count <= choice.cartQty) bisleriReturnChoice = choice;
+      } catch {}
+      if (!Object.keys(cart).length || !getBisleriReturnState().hasAnswer) {
+        window.location.replace('cart.html#selected-items');
+      }
+    }
+
+    document.getElementById('continue-to-checkout')?.addEventListener('click', () => {
+      if (!Object.keys(cart).length) return;
+      if (!getBisleriReturnState().hasAnswer) {
+        document.getElementById('bisleri-return-choice')?.reportValidity();
+        return;
+      }
+      try {
+        sessionStorage.setItem(CHECKOUT_JAR_CHOICE_KEY, JSON.stringify(bisleriReturnChoice));
+      } catch {
+        const message = document.getElementById('cart-feedback');
+        if (message) message.textContent = 'Please enable site storage to continue to checkout.';
+        return;
+      }
+      window.location.href = 'checkout.html';
+    });
     const CART_NOTICE_CHANGE_KEY = 'neerbeku_cart_notice_change_v1';
     const CART_NOTICE_LAST_SHOWN_KEY = 'neerbeku_cart_notice_last_shown_v1';
     const CART_NOTICE_COUNT_KEY = 'neerbeku_cart_notice_count_v1';
@@ -667,19 +727,15 @@ document.addEventListener('deliverylocationchange', () => {
         const jarOptions = Array.from({ length: bisleriQty }, (_, index) => index + 1)
           .map(quantity => '<option value="' + quantity + '"' + (jarState.returnedContainers === quantity ? ' selected' : '') + '>' + quantity + ' empty jar' + (quantity === 1 ? '' : 's') + '</option>').join('');
         const jarExchange = bisleriQty ? (
-          '<section class="checkout-exchange-card">' +
-            '<div class="checkout-exchange-title">↻ &nbsp;20L CAN EXCHANGE</div>' +
-            '<label for="bisleri-return-choice">Do you have empty Bisleri 20L cans to return?</label>' +
-            '<select id="bisleri-return-choice" data-bisleri-return-choice>' +
-              '<option value="0"' + (jarState.returnedContainers === 0 ? ' selected' : '') + '>No, I don\'t have empty cans</option>' +
-              '<option value="1"' + (jarState.returnedContainers > 0 ? ' selected' : '') + '>Yes, I have empty cans to return</option>' +
+          '<section class="checkout-exchange-card' + (jarState.hasAnswer ? '' : ' needs-review') + '">' +
+            '<div class="checkout-exchange-title">20L jar return</div>' +
+            '<label for="bisleri-return-choice">How many empty Bisleri 20L jars will you return?</label>' +
+            '<select id="bisleri-return-choice" data-bisleri-return-choice required>' +
+              '<option value=""' + (jarState.hasAnswer ? '' : ' selected') + '>Choose how many</option>' +
+              '<option value="0"' + (jarState.hasAnswer && jarState.returnedContainers === 0 ? ' selected' : '') + '>None</option>' +
+              jarOptions +
             '</select>' +
-            '<div class="checkout-exchange-quantity"' + (jarState.returnedContainers > 0 ? '' : ' hidden') + '>' +
-              '<label for="bisleri-return-count-inline">How many empty cans will you return?</label>' +
-              '<select id="bisleri-return-count-inline" data-bisleri-return-count>' + jarOptions + '</select>' +
-            '</div>' +
-            '<small>₹150 refundable deposit is charged for each new can without an accepted empty-can return.</small>' +
-            '<div class="checkout-exchange-credit"><span>Refundable deposit</span><strong>' + money(additionalJarDeposit) + '</strong></div>' +
+            '<small>&#8377;150 refundable deposit per jar without an accepted empty return.</small>' +
           '</section>'
         ) : '';
         if (!items.length) {
@@ -688,16 +744,19 @@ document.addEventListener('deliverylocationchange', () => {
           list.innerHTML = items.map(item =>
             '<article class="checkout-item">' +
               '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '">' +
-              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + money(item.price) + ' per unit</p>' +
-                '<div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="' + escapeHtml(item.name) + '" aria-label="Decrease ' + escapeHtml(item.name) + ' quantity">−</button><span>' + item.qty + '</span><button type="button" data-cart-action="plus" data-product="' + escapeHtml(item.name) + '" aria-label="Increase ' + escapeHtml(item.name) + ' quantity">+</button></div>' +
-                '<button type="button" class="checkout-remove" data-cart-action="remove" data-product="' + escapeHtml(item.name) + '">Remove</button>' +
-              '</div><strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
+              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + money(item.price) + ' each</p><strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
+                '<div class="checkout-item-actions"><div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="' + escapeHtml(item.name) + '" aria-label="Decrease ' + escapeHtml(item.name) + ' quantity">−</button><span>' + item.qty + '</span><button type="button" data-cart-action="plus" data-product="' + escapeHtml(item.name) + '" aria-label="Increase ' + escapeHtml(item.name) + ' quantity">+</button></div>' +
+                '<button type="button" class="checkout-remove" data-cart-action="remove" data-product="' + escapeHtml(item.name) + '">Remove</button></div>' +
+              '</div>' +
             '</article>' + (item.name === BISLERI_20L_NAME ? jarExchange : '')
           ).join('');
         }
       }
+      const basketSummary = document.getElementById('basket-summary');
+      if (basketSummary) basketSummary.hidden = !items.length;
       const submit = document.getElementById('submit-order-btn');
-      if (submit) submit.disabled = !items.length || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
+      const hasDeliveryWindow = !!document.getElementById("preferred-time")?.value;
+      if (submit) submit.disabled = !items.length || !hasDeliveryWindow || !checkoutAddressConfirmed || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
         document.addEventListener('click', event => {
@@ -709,15 +768,16 @@ document.addEventListener('deliverylocationchange', () => {
     });
     document.addEventListener('change', event => {
       if (event.target.matches('[data-bisleri-return-choice]')) {
-        setBisleriReturnCount(Number(event.target.value) > 0 ? 1 : 0);
-      } else if (event.target.matches('[data-bisleri-return-count]')) {
         setBisleriReturnCount(event.target.value);
       }
     });
     window.addEventListener('storage', event => {
       if (event.key === CART_STORAGE_KEY && !orderSubmitting) { cart = readCart(); renderCart(false); }
     });
-    window.addEventListener('pageshow', () => { if (!orderSubmitting) { cart = readCart(); renderCart(false); } });
+    window.addEventListener('pageshow', event => {
+      if (event.persisted && !isDeliveryCheckout) bisleriReturnChoice = null;
+      if (!orderSubmitting) { cart = readCart(); renderCart(false); }
+    });
 
     function loadSavedCustomerData() {
       try {
@@ -731,7 +791,7 @@ document.addEventListener('deliverylocationchange', () => {
         }
 
         const savedOrder = localStorage.getItem(STORAGE_KEY_LAST_ORDER);
-        if (savedOrder && savedUser && document.getElementById('reorder-banner')) {
+        if (savedOrder && savedUser && document.querySelector('#reorder-banner:not([hidden])')) {
           const user = JSON.parse(savedUser);
           const lastOrder = JSON.parse(savedOrder);
           
@@ -791,7 +851,7 @@ document.addEventListener('deliverylocationchange', () => {
 
           markCartChangedForNotice();
           renderCart();
-          window.location.href = 'cart.html';
+          window.location.href = 'cart.html#selected-items';
         }
       } catch (e) {
         console.error('Quick reorder failed:', e);
@@ -806,19 +866,6 @@ document.addEventListener('deliverylocationchange', () => {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) refreshLivePrices();
     });
-
-    // Match the rendered media height to its actual width on narrow screens.
-    function syncMobileImageSquares() {
-      const mobile = window.matchMedia('(max-width: 620px)').matches;
-      document.querySelectorAll('.water-card .product-image-carousel').forEach(carousel => {
-        carousel.style.height = mobile ? `${carousel.getBoundingClientRect().width}px` : '';
-      });
-    }
-    syncMobileImageSquares();
-    window.addEventListener('resize', syncMobileImageSquares);
-    if (window.ResizeObserver && document.querySelector('.water-grid')) {
-      new ResizeObserver(syncMobileImageSquares).observe(document.querySelector('.water-grid'));
-    }
 
     loadSavedCustomerData();
 
@@ -887,6 +934,14 @@ document.addEventListener('deliverylocationchange', () => {
     form?.addEventListener('submit', async function(e) {
       e.preventDefault();
       if (orderSubmitting) return;
+      if (!getBisleriReturnState().hasAnswer) {
+        window.location.href = 'cart.html#selected-items';
+        return;
+      }
+      if (!checkoutAddressConfirmed) {
+        document.getElementById('open-address-sheet')?.click();
+        return;
+      }
       orderSubmitting = true;
       const checkingButton = form.querySelector('.submit-btn');
       checkingButton.disabled = true;
@@ -911,8 +966,6 @@ document.addEventListener('deliverylocationchange', () => {
       const submitBtn = form.querySelector('.submit-btn');
       submitBtn.innerText = 'SENDING ORDER...';
       submitBtn.disabled = true;
-
-      const orderRef = generateMemorableOrderId();
 
       const savedAccountAddress = window.getSelectedNeerBekuAddress?.();
       if (savedAccountAddress) {
@@ -991,7 +1044,6 @@ document.addEventListener('deliverylocationchange', () => {
       const totalBill = '₹' + orderTotals.total.toFixed(2);
 
       const payload = {
-        orderId: orderRef,
         name: customerName,
         phone: customerPhone,
         alternatePhone: alternatePhone || '',
@@ -1018,7 +1070,7 @@ document.addEventListener('deliverylocationchange', () => {
         bisleriReturnedContainers: orderTotals.returnedContainers,
         bisleriReturnCredit: orderTotals.returnCredit,
         cart: document.getElementById('cart-items-input').value,
-        qty: Number(document.getElementById('cart-count').textContent) || 0,
+        qty: Object.values(cart).reduce((count, item) => count + item.qty, 0),
         bill: totalBill,
         subtotal: orderTotals.subtotal,
         deliveryFee: orderTotals.deliveryFee,
@@ -1030,6 +1082,13 @@ document.addEventListener('deliverylocationchange', () => {
         longitude: longitude,
         addressSource: addressSource
       };
+
+      const signature = JSON.stringify(payload);
+      if (lastOrderAttempt?.signature !== signature) {
+        lastOrderAttempt = { signature, orderId: generateMemorableOrderId() };
+      }
+      const orderRef = lastOrderAttempt.orderId;
+      payload.orderId = orderRef;
 
       try {
         const response = await fetch('/api/orders', {
@@ -1068,6 +1127,9 @@ document.addEventListener('deliverylocationchange', () => {
 
           document.getElementById('order-screen').classList.add('hidden');
           document.getElementById('thankyou-screen').classList.remove('hidden');
+          lastOrderAttempt = null;
+          bisleriReturnChoice = null;
+          try { sessionStorage.removeItem(CHECKOUT_JAR_CHOICE_KEY); } catch {}
           cart = {};
           persistCart();
           renderCart(false);
@@ -1147,7 +1209,7 @@ const stockNotice = document.createElement('p');
 stockNotice.setAttribute('role', 'status');
 stockNotice.textContent = '';
 stockNotice.hidden = true;
-(document.querySelector('.water-grid') || document.querySelector('.cart-panel')).before(stockNotice);
+document.querySelector('.water-grid, .cart-panel, .reference-summary-card')?.before(stockNotice);
 applyLiveStock();
 refreshLiveStock();
 setInterval(() => { if (!document.hidden) refreshLiveStock(); }, 10000);
@@ -1165,9 +1227,6 @@ syncHeaderHeight();
 if (window.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe(siteHeader);
 window.addEventListener('resize', syncHeaderHeight);
 renderCart(false);
-if (document.body.classList.contains('cart-page') && !['neerbeku.com', 'www.neerbeku.com'].includes(location.hostname)) {
-  document.getElementById('cart-feedback').textContent = 'Staging checkout — orders are saved in staging and sent to the store notification channel.';
-}
 
 // Resolve requested delivery dates in the store's timezone, not the visitor's.
 function storeDateParts() {
@@ -1209,7 +1268,8 @@ function initDeliveryWindowPicker() {
 
   function summaryText() {
     const option = select.selectedOptions[0];
-    if (!option || option.value.startsWith('ASAP')) return 'ASAP · Within 1–2 hours';
+    if (!option?.value) return 'Choose a delivery window';
+    if (option.value.startsWith('ASAP')) return 'ASAP · Within 1–2 hours';
     if (option.value === 'scheduled') {
       const date = dateInput?.value;
       const time = timeSelect?.selectedOptions[0]?.textContent || '';
@@ -1224,6 +1284,9 @@ function initDeliveryWindowPicker() {
 
   function renderSummary() {
     selectedLabel.textContent = summaryText();
+    selectedLabel.closest(".delivery-window-summary").classList.toggle("needs-window", !select.value);
+    document.getElementById("change-delivery-window").textContent = select.value ? "Change" : "Choose";
+    renderCart(false);
   }
 
   function setTab(day) {
@@ -1246,7 +1309,7 @@ function initDeliveryWindowPicker() {
   function renderOptions() {
     refreshDeliveryChoices();
     optionsContainer.replaceChildren();
-    const choices = [select.options[0], ...Array.from(select.options).filter(option => option.dataset.day === activeDay)];
+    const choices = Array.from(select.options).filter(option => option.value.startsWith("ASAP") || option.dataset.day === activeDay);
     for (const option of choices) {
       const asap = !option.dataset.day;
       const match = option.textContent.match(/^(?:Today|Tomorrow) - ([^(]+)\s*\(([^)]+)\)/);
@@ -1318,9 +1381,13 @@ function getDeliveryWindow() {
   const select = document.getElementById('preferred-time');
   const now = storeDateParts();
   const option = select.selectedOptions[0];
-  if (!option || option.disabled) {
+  if (!option?.value) {
+    document.getElementById("change-delivery-window")?.click();
+    return null;
+  }
+  if (option.disabled) {
     alert('That delivery window has passed. Please choose another window.');
-    select.focus();
+    document.getElementById("change-delivery-window")?.click();
     return null;
   }
   if (select.value === 'scheduled') {
@@ -1360,18 +1427,22 @@ if (document.getElementById('preferred-time')) {
   const accountPanel = document.getElementById('account-address-panel');
   const activeAddressEl = document.getElementById('account-active-address');
   const addressListEl = document.getElementById('saved-address-list');
-  const chooseAddressButton = document.getElementById('choose-saved-address');
   const addAddressButton = document.getElementById('add-saved-address');
   const entryPanel = document.getElementById('delivery-entry-panel');
   const saveRow = document.getElementById('account-save-address-row');
   const saveButton = document.getElementById('save-address-to-account');
   const cancelButton = document.getElementById('cancel-address-entry');
   const addressMessage = document.getElementById('account-address-message');
+  const addressSheet = document.getElementById('checkout-address-sheet');
+  const addressTrigger = document.getElementById('open-address-sheet');
+  const confirmAddressButton = document.getElementById('confirm-checkout-address');
+  const addressPreview = document.getElementById('checkout-address-preview');
+  const addressError = document.getElementById('checkout-address-error');
+  let previousSheetAddress = null;
   const saveMessage = document.getElementById('save-address-message');
   let addresses = [];
   let selectedAddress = null;
   let accountUser = null;
-  let showingAddressList = false;
   let editingAddressId = null;
 
   const field = id => document.getElementById(id);
@@ -1380,11 +1451,65 @@ if (document.getElementById('preferred-time')) {
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
   }[char]));
 
+  function updateCheckoutAddress(confirmed) {
+    checkoutAddressConfirmed = confirmed && !!getDeliveryCoordinates();
+    setText(addressPreview, checkoutAddressConfirmed
+      ? savedAddressPreview(selectedAddress || {
+          house: field('address-house').value,
+          street: field('address-street').value
+        })
+      : 'Choose a delivery address');
+    window.updateCheckoutPinPreview?.(checkoutAddressConfirmed ? getDeliveryCoordinates() : null);
+    renderCart(false);
+  }
+
+  addressTrigger?.addEventListener('click', () => {
+    setText(addressError, '');
+    previousSheetAddress = selectedAddress;
+    if (!addressSheet.open) addressSheet.showModal();
+    addAddressButton.hidden = !accountUser || addresses.length >= 5;
+    addressListEl.hidden = addresses.length === 0;
+    confirmAddressButton.hidden = !!selectedAddress;
+    if (!selectedAddress) window.switchAddressMode?.('manual');
+  });
+  field('close-address-sheet')?.addEventListener('click', () => addressSheet.close());
+  addressSheet?.addEventListener('close', () => {
+    if (previousSheetAddress && !checkoutAddressConfirmed) {
+      populateCheckoutFields(previousSheetAddress);
+      showAccountAddress(previousSheetAddress);
+    }
+    previousSheetAddress = null;
+  });
+  addressSheet?.addEventListener('input', event => {
+    if (event.target.closest('#delivery-address-fields')) updateCheckoutAddress(false);
+  });
+  confirmAddressButton?.addEventListener('click', () => {
+    for (const id of ['address-house', 'address-street', 'address-area', 'address-city']) {
+      const input = field(id);
+      if (!input.value.trim()) {
+        setText(addressError, 'Complete the address fields before continuing.');
+        input.focus();
+        return;
+      }
+    }
+    if (!getDeliveryCoordinates()) {
+      setText(addressError, 'Choose a location on the map before continuing.');
+      return;
+    }
+    if (window.syncDeliveryAddress) window.syncDeliveryAddress();
+    updateCheckoutAddress(true);
+    addressSheet.close();
+  });
+  document.addEventListener('deliverylocationchange', () => {
+    if (addressSheet?.open && !selectedAddress) updateCheckoutAddress(false);
+  });
+
   function setEntryVisible(visible) {
     if (!entryPanel) return;
-    // Keep the saved map preview, contact details and route summary visible.
+    // Keep contact details editable when a saved delivery address is selected.
     entryPanel.hidden = false;
-    field('delivery-address-entry').classList.toggle('saved-address-preview', !visible);
+    field('delivery-address-entry').hidden = !visible;
+    confirmAddressButton.hidden = !visible;
     window.setDeliveryLocationEditable?.(visible);
     entryPanel.querySelectorAll('input, select, textarea, button').forEach(control => {
       // Contact details must remain editable even when a saved address is selected.
@@ -1395,21 +1520,23 @@ if (document.getElementById('preferred-time')) {
     });
   }
 
+  function savedAddressPreview(address) {
+    const firstParts = [address.house, address.street, address.area].filter(Boolean).slice(0, 2);
+    return firstParts.length ? firstParts.join(", ") : String(address.address || "").split(",").slice(0, 2).join(", ");
+  }
+
   function showAccountAddress(address) {
     selectedAddress = address || null;
     if (!accountPanel) return;
     accountPanel.hidden = false;
-    showingAddressList = false;
-    addressListEl.hidden = true;
-    chooseAddressButton.textContent = 'Manage saved addresses';
-    chooseAddressButton.setAttribute('aria-expanded', 'false');
-    chooseAddressButton.hidden = addresses.length === 0;
-    addAddressButton.hidden = addresses.length >= 5;
+    addressListEl.hidden = !addressSheet.open || addresses.length === 0;
+    addAddressButton.hidden = !accountUser || addresses.length >= 5;
+    updateCheckoutAddress(!!address);
     if (address) {
-      activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(address.address)}</span><span>${escape(address.name)} · ${escape(address.phone)}</span>${address.landmark ? `<small>${escape(address.landmark)}</small>` : ''}`;
+      activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(savedAddressPreview(address))}</span>`;
       setEntryVisible(false);
       saveRow.hidden = true;
-      setText(addressMessage, 'Selected for this order. Manage saved addresses to switch, edit or delete an address.');
+      setText(addressMessage, '');
     } else {
       activeAddressEl.innerHTML = '<strong>No saved delivery address yet</strong><span>Add your details once and NeerBeku can show them here next time.</span>';
       setEntryVisible(true);
@@ -1446,9 +1573,12 @@ if (document.getElementById('preferred-time')) {
     }
     addressListEl.innerHTML = addresses.map(address => `
       <article class="saved-address-option${selectedAddress?.id === address.id ? ' is-selected' : ''}">
-        <div><strong>${escape(address.label || 'Delivery address')}</strong><p>${escape(address.address)}</p><small>${escape(address.name)} · ${escape(address.phone)}</small></div>
+        <button class="delivery-window-option saved-address-select" type="button" data-use-address="${escape(address.id)}" aria-pressed="${selectedAddress?.id === address.id}">
+          <span class="delivery-window-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          <span class="delivery-window-option-copy"><strong>${escape(address.label || 'Delivery address')}</strong><small>${escape(savedAddressPreview(address))}</small></span>
+          <span class="delivery-window-radio-mark" aria-hidden="true"></span>
+        </button>
         <div class="saved-address-option-actions">
-          <button type="button" data-use-address="${escape(address.id)}">${selectedAddress?.id === address.id ? 'Selected' : 'Use this'}</button>
           <button type="button" data-edit-address="${escape(address.id)}">Edit</button>
           <button type="button" class="saved-address-delete" data-delete-address="${escape(address.id)}" aria-label="Delete ${escape(address.label || 'address')}">Delete</button>
         </div>
@@ -1465,11 +1595,8 @@ if (document.getElementById('preferred-time')) {
       field('account-address-label').value = address.label;
       saveButton.textContent = 'Update saved address';
       addressListEl.hidden = true;
-      showingAddressList = false;
-      chooseAddressButton.textContent = 'Manage saved addresses';
-      chooseAddressButton.setAttribute('aria-expanded', 'false');
       window.switchAddressMode?.('manual');
-      entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      field('delivery-address-entry').scrollIntoView({ block: 'start' });
       setText(saveMessage, 'Edit the details below and save your changes.');
     }));
     addressListEl.querySelectorAll('[data-use-address]').forEach(button => button.addEventListener('click', () => {
@@ -1488,6 +1615,7 @@ if (document.getElementById('preferred-time')) {
           populateCheckoutFields(chosen);
           showAccountAddress(chosen);
           renderAddressChoices();
+          addressSheet.close();
         } catch (error) { setText(addressMessage, error.message); }
       };
       choose();
@@ -1540,9 +1668,6 @@ if (document.getElementById('preferred-time')) {
     saveRow.hidden = false;
     cancelButton.hidden = addresses.length === 0;
     addressListEl.hidden = true;
-    showingAddressList = false;
-    chooseAddressButton.textContent = 'Manage saved addresses';
-    chooseAddressButton.setAttribute('aria-expanded', 'false');
     setText(saveMessage, '');
     field('customer-name').value ||= accountUser?.name || '';
     field('customer-phone').value = '';
@@ -1560,7 +1685,7 @@ if (document.getElementById('preferred-time')) {
     const savedLabels = addresses.map(item => item.label);
     field('account-address-label').value = ['Home', 'Work', 'Address 3', 'Address 4', 'Address 5'].find(label => !savedLabels.includes(label)) || '';
     window.switchAddressMode?.('manual');
-    entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    field('delivery-address-entry').scrollIntoView({ block: 'start' });
   }
 
   async function saveAddress() {
@@ -1616,6 +1741,7 @@ if (document.getElementById('preferred-time')) {
       showAccountAddress(saved || null);
       renderAddressChoices();
       setText(addressMessage, 'Address saved. It will be available the next time you sign in.');
+      if (addressSheet.open) addressSheet.close();
       return true;
     } catch (error) {
       setText(saveMessage, error.message || 'Could not save this address.');
@@ -1633,7 +1759,7 @@ if (document.getElementById('preferred-time')) {
     button.hidden = true;
     status.hidden = true;
     connectedIdentity.hidden = false;
-    setText(connectedUser, `${user.name || 'Customer'}${user.email ? ` · ${user.email}` : ''}`);
+    setText(connectedUser, user.email || "");
     signout.hidden = false;
     setText(accountTitle, 'Your NeerBeku account is connected');
     setText(status, `Signed in as ${user.name}${user.email ? ` (${user.email})` : ''}.`);
@@ -1642,17 +1768,12 @@ if (document.getElementById('preferred-time')) {
   }
 
   window.getSelectedNeerBekuAddress = () => selectedAddress;
-  chooseAddressButton.addEventListener('click', () => {
-    showingAddressList = !showingAddressList;
-    addressListEl.hidden = !showingAddressList;
-    chooseAddressButton.textContent = showingAddressList ? 'Close address list' : 'Manage saved addresses';
-    chooseAddressButton.setAttribute('aria-expanded', String(showingAddressList));
-  });
   addAddressButton.addEventListener('click', openAddressEntry);
   saveButton.addEventListener('click', saveAddress);
   cancelButton.addEventListener('click', () => {
     const preferred = addresses.find(item => item.is_default) || addresses[0] || null;
     if (preferred) { populateCheckoutFields(preferred); showAccountAddress(preferred); }
+    if (addressSheet.open) addressSheet.close();
   });
 
   window.handleGoogleCredential = async response => {
@@ -1685,7 +1806,7 @@ if (document.getElementById('preferred-time')) {
     status.hidden = false;
     button.hidden = false;
     setText(accountTitle, 'Faster checkout next time');
-    setText(status, 'Signed out. Guest checkout is still available.');
+    setText(status, '');
   });
 
   fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' })
@@ -1702,7 +1823,7 @@ if (document.getElementById('preferred-time')) {
   const renderButton = () => {
     if (window.google?.accounts?.id) {
       const availableWidth = button.parentElement?.getBoundingClientRect().width || 360;
-      const width = Math.max(200, Math.min(400, Math.floor(availableWidth)));
+      const width = Math.max(200, Math.min(280, Math.floor(availableWidth)));
       if (width === renderedWidth) return;
       renderedWidth = width;
       window.google.accounts.id.initialize({ client_id: clientId, callback: window.handleGoogleCredential });
