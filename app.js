@@ -199,9 +199,15 @@ document.addEventListener('deliverylocationchange', () => {
     }
 
     function setProductQuantity(valueEl, addButton, quantity) {
+      const changed = Number(valueEl.textContent) !== quantity;
       valueEl.textContent = quantity;
       if (quantity === 0) addButton.setAttribute('aria-disabled', 'true');
       else addButton.removeAttribute('aria-disabled');
+      const card = addButton.closest('.water-card');
+      if (card) {
+        if (changed) addButton.classList.remove('is-added');
+        updateCardAddLabel(card);
+      }
     }
 
     function changeModalQty(change) {
@@ -632,6 +638,7 @@ document.addEventListener('deliverylocationchange', () => {
     }
 
     function addToCart(button) {
+      if (button.getAttribute('aria-disabled') === 'true') return;
       const card = button.closest('.water-card');
       const name = card.dataset.name;
       if (!stockReady || liveStock[name] !== true) {
@@ -656,6 +663,7 @@ document.addEventListener('deliverylocationchange', () => {
         cart[name] = { ...catalog[name], price, qty };
       }
 
+      button.classList.add('is-added');
       renderCart();
     }
 
@@ -1198,10 +1206,16 @@ let stockRequest = null;
 
 function updateCardAddLabel(card) {
   const product = card.dataset.name;
-  const label = card.querySelector('.card-add-label');
+  const button = card.querySelector('.add-cart-btn');
+  const label = button.querySelector('.card-add-label');
+  if (!cart[product]) button.classList.remove('is-added');
+  const added = button.classList.contains('is-added');
+  const quantity = Number(button.querySelector('.card-qty-value').textContent);
+  if (added || quantity === 0) button.setAttribute('aria-disabled', 'true');
+  else button.removeAttribute('aria-disabled');
   if (!stockReady) label.textContent = 'Checking stock…';
   else if (liveStock[product] !== true) label.textContent = 'Out of stock';
-  else label.textContent = cart[product] ? 'Add more' : 'Add';
+  else label.textContent = added ? 'Added' : 'Add';
 }
 
 function applyLiveStock() {
