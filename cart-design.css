@@ -750,3 +750,22 @@ body.cart-page{background:#f2f8fc;color:#20384d}
     font-size: clamp(.58rem, 2.5vw, .75rem);
   }
 }
+
+.cart-page .reference-checkout-card.reference-summary-card { padding: 0; }
+.cart-page .reference-summary-card > .checkout-order-summary {
+  margin: 0 0 12px;
+  padding: 16px;
+}
+.reference-summary-card .checkout-summary-row { gap: 8px; padding-block: 6px; }
+.reference-summary-card .checkout-payment-note { margin-bottom: 12px; }
+.reference-summary-card .checkout-delivery-charges { margin-block: 12px; }
+.reference-summary-card .checkout-summary-total-card { margin-top: 12px; padding: 10px 12px; }
+.reference-summary-card .checkout-grand-total { margin-top: 0; padding-top: 3px; border-top: 0; }
+
+@media (max-width: 620px) {
+  .cart-page .reference-summary-card > .checkout-order-summary {
+    padding: 12px;
+    border-radius: 16px;
+  }
+  .reference-summary-card .checkout-summary-heading { gap: 6px; flex-wrap: wrap; }
+}
