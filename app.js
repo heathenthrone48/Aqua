@@ -1568,9 +1568,12 @@ if (document.getElementById('preferred-time')) {
     }
     addressListEl.innerHTML = addresses.map(address => `
       <article class="saved-address-option${selectedAddress?.id === address.id ? ' is-selected' : ''}">
-        <div><strong>${escape(address.label || 'Delivery address')}</strong><p>${escape(savedAddressPreview(address))}</p></div>
+        <button class="delivery-window-option saved-address-select" type="button" data-use-address="${escape(address.id)}" aria-pressed="${selectedAddress?.id === address.id}">
+          <span class="delivery-window-option-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+          <span class="delivery-window-option-copy"><strong>${escape(address.label || 'Delivery address')}</strong><small>${escape(savedAddressPreview(address))}</small></span>
+          <span class="delivery-window-radio-mark" aria-hidden="true"></span>
+        </button>
         <div class="saved-address-option-actions">
-          <button type="button" data-use-address="${escape(address.id)}">${selectedAddress?.id === address.id ? 'Selected' : 'Use this'}</button>
           <button type="button" data-edit-address="${escape(address.id)}">Edit</button>
           <button type="button" class="saved-address-delete" data-delete-address="${escape(address.id)}" aria-label="Delete ${escape(address.label || 'address')}">Delete</button>
         </div>

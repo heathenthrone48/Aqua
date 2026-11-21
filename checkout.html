@@ -45,7 +45,14 @@
     </div>
   </header>
 
-<div class="container" id="order-screen"><div class="checkout-page-heading"><h1 class="cart-page-title">Your checkout</h1><a class="continue-shopping" href="index.html">← Continue shopping</a></div><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm">
+<div class="container" id="order-screen">
+<nav class="checkout-progress" aria-label="Checkout progress">
+  <ol>
+    <li class="is-complete"><a href="cart.html#selected-items"><span>1</span> Cart</a></li>
+    <li aria-current="step"><span>2</span> Checkout</li>
+  </ol>
+</nav>
+<div class="checkout-page-heading"><h1 class="cart-page-title">Your checkout</h1><a class="continue-shopping" href="index.html">← Continue shopping</a></div><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm">
 <input id="cart-items-input" name="Cart_Items" type="hidden" value=""/>
 <input id="input-total-bill" name="Total_Estimated_Bill" type="hidden" value="₹0.00"/>
 
@@ -119,8 +126,10 @@
   <div id="checkout-pin-map" aria-hidden="true"></div>
   <figcaption>Confirm the pin matches where you want your order delivered.</figcaption>
 </figure>
-<dialog id="checkout-address-sheet" class="checkout-address-sheet" aria-labelledby="checkout-address-title">
-<div class="checkout-address-sheet-heading"><h2 id="checkout-address-title">Delivery address</h2><button type="button" id="close-address-sheet" aria-label="Close address sheet">&times;</button></div>
+<dialog id="checkout-address-sheet" class="delivery-window-dialog checkout-address-sheet" aria-labelledby="checkout-address-title">
+<div class="delivery-window-sheet">
+<div class="delivery-window-sheet-handle" aria-hidden="true"></div>
+<div class="delivery-window-sheet-header"><div><span class="delivery-window-eyebrow">DELIVERY LOCATION</span><h2 id="checkout-address-title">Choose an address</h2></div><button class="delivery-window-close" type="button" id="close-address-sheet" aria-label="Close address picker">&times;</button></div>
 <div class="account-address-actions">
     <button class="account-action-secondary" id="choose-saved-address" type="button" aria-expanded="false" aria-controls="saved-address-list" hidden>Saved addresses</button>
     <button class="account-action-primary" id="add-saved-address" type="button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Add address</button>
@@ -201,6 +210,7 @@
 </section>
 <p id="checkout-address-error" role="status"></p>
 <button type="button" id="confirm-checkout-address" class="account-action-primary">Use this address</button>
+</div>
 </dialog>
 </div>
 
