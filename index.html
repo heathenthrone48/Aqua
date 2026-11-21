@@ -505,7 +505,7 @@
   <!-- PRODUCT DETAIL POPUP MODAL VIEW -->
   <div class="product-modal-backdrop" id="productModalBackdrop" onclick="closeProductModal(event)">
     <div class="product-modal-card" onclick="event.stopPropagation()">
-      <button type="button" class="product-modal-close" onclick="closeProductModalDirect()">✕</button>
+      <button type="button" class="product-modal-close" onclick="closeProductModalDirect()" aria-label="Close product details"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 
       <span class="badge-type" id="modalBadge">PACKAGED WATER</span>
       <h2 class="water-title" id="modalTitle" style="font-size:1.4rem; margin-top: 4px;">Product Name</h2>

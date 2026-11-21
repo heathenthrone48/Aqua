@@ -52,7 +52,7 @@
     <li aria-current="step"><span>2</span> Checkout</li>
   </ol>
 </nav>
-<div class="checkout-page-heading"><h1 class="cart-page-title">Your checkout</h1><a class="continue-shopping" href="index.html">← Continue shopping</a></div><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm">
+<div class="checkout-page-heading"><h1 class="cart-page-title">Your checkout</h1><a class="continue-shopping" href="index.html"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg><span>Continue shopping</span></a></div><p aria-live="polite" id="cart-feedback" role="status"></p><form id="waterForm">
 <input id="cart-items-input" name="Cart_Items" type="hidden" value=""/>
 <input id="input-total-bill" name="Total_Estimated_Bill" type="hidden" value="₹0.00"/>
 
@@ -106,10 +106,10 @@
 <div class="form-group">
 <div class="delivery-window-summary" aria-live="polite">
   <div class="delivery-window-summary-icon" aria-hidden="true">◷</div>
-  <div class="delivery-window-summary-copy"><span>Selected delivery window</span><strong id="delivery-window-selected">ASAP · Within 1–2 hours</strong></div>
-  <button class="delivery-window-change" id="change-delivery-window" type="button" aria-haspopup="dialog" aria-controls="delivery-window-dialog">Change</button>
+  <div class="delivery-window-summary-copy"><span>Delivery window <span class="delivery-window-required">(required)</span></span><strong id="delivery-window-selected">Choose a delivery window</strong></div>
+  <button class="delivery-window-change" id="change-delivery-window" type="button" aria-haspopup="dialog" aria-controls="delivery-window-dialog">Choose</button>
 </div>
-<select class="delivery-window-native-select" id="preferred-time" name="Preferred_Time" aria-hidden="true" tabindex="-1"><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
+<select class="delivery-window-native-select" id="preferred-time" name="Preferred_Time" aria-hidden="true" tabindex="-1"><option value="" selected disabled>Choose a delivery window</option><option value="ASAP - Within 1-2 Hours">ASAP - Within 1-2 Hours</option>
 <option value="Today - Morning (8 AM–11 AM)" data-day="today" data-end="11">Today - Morning (8 AM–11 AM)</option>
 <option value="Today - Midday (11 AM–2 PM)" data-day="today" data-end="14">Today - Midday (11 AM–2 PM)</option>
 <option value="Today - Afternoon (2 PM–5 PM)" data-day="today" data-end="17">Today - Afternoon (2 PM–5 PM)</option>
@@ -132,7 +132,7 @@
 <dialog id="checkout-address-sheet" class="delivery-window-dialog checkout-address-sheet" aria-labelledby="checkout-address-title">
 <div class="delivery-window-sheet">
 <div class="delivery-window-sheet-handle" aria-hidden="true"></div>
-<div class="delivery-window-sheet-header"><div><span class="delivery-window-eyebrow">DELIVERY LOCATION</span><h2 id="checkout-address-title">Choose an address</h2></div><button class="delivery-window-close" type="button" id="close-address-sheet" aria-label="Close address picker">&times;</button></div>
+<div class="delivery-window-sheet-header"><div><span class="delivery-window-eyebrow">DELIVERY LOCATION</span><h2 id="checkout-address-title">Choose an address</h2></div><button class="delivery-window-close" type="button" id="close-address-sheet" aria-label="Close address picker"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
 <div class="account-address-actions">
     <button class="account-action-primary" id="add-saved-address" type="button"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Add address</button>
   </div>
@@ -242,7 +242,7 @@
     <div class="delivery-window-sheet-handle" aria-hidden="true"></div>
     <div class="delivery-window-sheet-header">
       <div><span class="delivery-window-eyebrow">DELIVERY PREFERENCE</span><h2 id="delivery-window-dialog-title">Choose a delivery window</h2></div>
-      <button class="delivery-window-close" id="close-delivery-window" type="button" aria-label="Close delivery window picker">×</button>
+      <button class="delivery-window-close" id="close-delivery-window" type="button" aria-label="Close delivery window picker"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="delivery-window-tabs" role="tablist" aria-label="Choose delivery date">
       <button class="delivery-window-tab active" type="button" role="tab" aria-selected="true" data-window-day="today">Today</button>
@@ -302,7 +302,7 @@
 </div>
 <div class="cart-notice-backdrop" id="cart-requirements-notice" role="dialog" aria-modal="true" aria-labelledby="cart-notice-title" aria-describedby="cart-notice-description" hidden>
   <div class="cart-notice-card">
-    <button class="cart-notice-close" type="button" aria-label="Close" onclick="closeCartRequirementsNotice()">×</button>
+    <button class="cart-notice-close" type="button" aria-label="Close" onclick="closeCartRequirementsNotice()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     <div class="cart-notice-icon" aria-hidden="true">!</div>
     <h2 id="cart-notice-title">Before you place your order</h2>
     <p id="cart-notice-description">Please make sure you provide all the required details to complete your order:</p>

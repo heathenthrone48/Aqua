@@ -1097,3 +1097,25 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .basket-page .checkout-exchange-card { border: 0; border-radius: 10px; }
 .basket-page .checkout-exchange-card.needs-review { border-inline-start: 3px solid #eab0aa; }
 .basket-page .basket-summary .submit-btn { margin-top: 4px; }
+
+.checkout-progress {
+  margin: 8px 0 10px;
+  padding: 11px;
+  border-radius: 12px;
+  background: #edf6fd;
+}
+.checkout-progress ol { gap: 13px; }
+.checkout-progress li, .checkout-progress a { gap: 8px; font-size: .875rem; }
+.checkout-progress a { text-decoration: none; }
+.checkout-progress a:hover { color: #0876ba; }
+.checkout-progress li span { width: 28px; height: 28px; }
+.checkout-progress li + li::before { background: #bcd8ec; }
+.cart-page .checkout-page-heading .continue-shopping { display: inline-flex; align-items: center; gap: 5px; }
+.cart-page .checkout-page-heading .continue-shopping svg { flex: none; }
+.delivery-window-summary.needs-window { border-color: #e9c99e; background: #fff9f1; }
+.delivery-window-required { font-weight: 600; }
+.checkout-address-card .checkout-pin-preview { margin-inline: -7px; }
+.checkout-address-card .checkout-pin-preview #checkout-pin-map { width: 100%; }
+.delivery-window-close, .cart-notice-close, .product-modal-close { display: grid; place-items: center; padding: 0; }
+.delivery-window-close svg, .cart-notice-close svg, .product-modal-close svg { display: block; }
+.cart-page .account-address-message:empty { display: none; }

@@ -754,7 +754,8 @@ document.addEventListener('deliverylocationchange', () => {
       const basketSummary = document.getElementById('basket-summary');
       if (basketSummary) basketSummary.hidden = !items.length;
       const submit = document.getElementById('submit-order-btn');
-      if (submit) submit.disabled = !items.length || !checkoutAddressConfirmed || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
+      const hasDeliveryWindow = !!document.getElementById("preferred-time")?.value;
+      if (submit) submit.disabled = !items.length || !hasDeliveryWindow || !checkoutAddressConfirmed || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
         document.addEventListener('click', event => {
@@ -1261,7 +1262,8 @@ function initDeliveryWindowPicker() {
 
   function summaryText() {
     const option = select.selectedOptions[0];
-    if (!option || option.value.startsWith('ASAP')) return 'ASAP · Within 1–2 hours';
+    if (!option?.value) return 'Choose a delivery window';
+    if (option.value.startsWith('ASAP')) return 'ASAP · Within 1–2 hours';
     if (option.value === 'scheduled') {
       const date = dateInput?.value;
       const time = timeSelect?.selectedOptions[0]?.textContent || '';
@@ -1276,6 +1278,9 @@ function initDeliveryWindowPicker() {
 
   function renderSummary() {
     selectedLabel.textContent = summaryText();
+    selectedLabel.closest(".delivery-window-summary").classList.toggle("needs-window", !select.value);
+    document.getElementById("change-delivery-window").textContent = select.value ? "Change" : "Choose";
+    renderCart(false);
   }
 
   function setTab(day) {
@@ -1298,7 +1303,7 @@ function initDeliveryWindowPicker() {
   function renderOptions() {
     refreshDeliveryChoices();
     optionsContainer.replaceChildren();
-    const choices = [select.options[0], ...Array.from(select.options).filter(option => option.dataset.day === activeDay)];
+    const choices = Array.from(select.options).filter(option => option.value.startsWith("ASAP") || option.dataset.day === activeDay);
     for (const option of choices) {
       const asap = !option.dataset.day;
       const match = option.textContent.match(/^(?:Today|Tomorrow) - ([^(]+)\s*\(([^)]+)\)/);
@@ -1370,9 +1375,13 @@ function getDeliveryWindow() {
   const select = document.getElementById('preferred-time');
   const now = storeDateParts();
   const option = select.selectedOptions[0];
-  if (!option || option.disabled) {
+  if (!option?.value) {
+    document.getElementById("change-delivery-window")?.click();
+    return null;
+  }
+  if (option.disabled) {
     alert('That delivery window has passed. Please choose another window.');
-    select.focus();
+    document.getElementById("change-delivery-window")?.click();
     return null;
   }
   if (select.value === 'scheduled') {
@@ -1521,7 +1530,7 @@ if (document.getElementById('preferred-time')) {
       activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(savedAddressPreview(address))}</span>`;
       setEntryVisible(false);
       saveRow.hidden = true;
-      setText(addressMessage, 'Selected for this order.');
+      setText(addressMessage, '');
     } else {
       activeAddressEl.innerHTML = '<strong>No saved delivery address yet</strong><span>Add your details once and NeerBeku can show them here next time.</span>';
       setEntryVisible(true);
