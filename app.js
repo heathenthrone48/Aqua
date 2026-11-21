@@ -1072,7 +1072,7 @@ document.addEventListener('deliverylocationchange', () => {
         bisleriReturnedContainers: orderTotals.returnedContainers,
         bisleriReturnCredit: orderTotals.returnCredit,
         cart: document.getElementById('cart-items-input').value,
-        qty: Number(document.getElementById('cart-count').textContent) || 0,
+        qty: Object.values(cart).reduce((count, item) => count + item.qty, 0),
         bill: totalBill,
         subtotal: orderTotals.subtotal,
         deliveryFee: orderTotals.deliveryFee,
