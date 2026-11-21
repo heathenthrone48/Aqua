@@ -1813,7 +1813,7 @@ if (document.getElementById('preferred-time')) {
     status.hidden = false;
     button.hidden = false;
     setText(accountTitle, 'Faster checkout next time');
-    setText(status, 'Signed out. Guest checkout is still available.');
+    setText(status, '');
   });
 
   fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' })
@@ -1830,7 +1830,7 @@ if (document.getElementById('preferred-time')) {
   const renderButton = () => {
     if (window.google?.accounts?.id) {
       const availableWidth = button.parentElement?.getBoundingClientRect().width || 360;
-      const width = Math.max(200, Math.min(400, Math.floor(availableWidth)));
+      const width = Math.max(200, Math.min(280, Math.floor(availableWidth)));
       if (width === renderedWidth) return;
       renderedWidth = width;
       window.google.accounts.id.initialize({ client_id: clientId, callback: window.handleGoogleCredential });

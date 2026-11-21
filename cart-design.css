@@ -1043,3 +1043,15 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .checkout-address-card .checkout-pin-preview { margin-top: 12px; }
 .checkout-address-card #delivery-route-status { color: #526b81; font-size: .8rem; line-height: 1.45; margin: 10px 0 0; }
 .checkout-address-card #delivery-route-status:empty { display: none; }
+
+.cart-page .reference-customer-card #google-signin-button {
+  justify-content: center;
+  width: 100%;
+}
+.cart-page .reference-customer-card #google-signin-button[hidden],
+.cart-page .reference-customer-card .google-account-status:empty,
+.account-card-controls:has(.account-connected-badge:not([hidden])) .google-signin-prompt { display: none; }
+.google-signin-prompt { margin: 2px 0 9px; text-align: center; color: #173b58; font-size: .85rem; }
+.google-signin-prompt p { margin: 2px 0 0; color: #526b81; font-size: .78rem; }
+.cart-page .reference-customer-card .google-account-status { text-align: center; }
+.cart-page .reference-customer-card .account-connected-badge small { color: #176044; font-size: .7rem; }
