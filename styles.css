@@ -1244,7 +1244,12 @@
   transform: translateY(1px);
   box-shadow: 0 1px 4px #1769c424;
 }
-.shop-page .water-card .add-cart-btn.added { background: #d6eafb; }
+.shop-page .water-card.in-cart .add-cart-btn:not(:disabled) {
+  background: #dcf5e9;
+  color: #176341;
+  box-shadow: 0 3px 8px #17634124;
+}
+.shop-page .water-card.in-cart .add-cart-btn:not(:disabled) .card-qty-value { color: #176341; }
 .shop-page .add-cart-btn[aria-disabled="true"]:not(:disabled) {
   opacity: .65;
   box-shadow: none;

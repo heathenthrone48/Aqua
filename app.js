@@ -656,11 +656,6 @@ document.addEventListener('deliverylocationchange', () => {
         cart[name] = { ...catalog[name], price, qty };
       }
 
-      button.classList.add('added');
-      card.classList.add('in-cart');
-
-      setTimeout(() => button.classList.remove('added'), 450);
-
       renderCart();
     }
 
