@@ -1350,3 +1350,16 @@
   width: 14px;
   background: #087fc2;
 }
+
+
+/* SEO content sections: match the existing NeerBeku blue-and-white storefront */
+.seo-intro{max-width:1180px;margin:24px auto 18px;padding:0 20px;color:var(--text-color,#18344f)}
+.seo-intro h1{margin:0 0 9px;font-size:clamp(1.35rem,2.5vw,2rem);line-height:1.25;font-weight:800;letter-spacing:-.035em}
+.seo-intro p{max-width:850px;margin:0;color:var(--text-muted,#64748b);font-size:.96rem;line-height:1.7}
+.seo-faq{margin:34px auto 42px;padding:0 20px}
+.seo-faq-inner{max-width:1180px;margin:auto;padding:24px;background:#f5faff;border:1px solid #dcecf8;border-radius:18px}
+.seo-faq h2{margin:0 0 14px;color:#123b60;font-size:1.35rem}
+.seo-faq details{padding:13px 0;border-top:1px solid #dce8f2}
+.seo-faq summary{cursor:pointer;color:#173d60;font-weight:700;line-height:1.5}
+.seo-faq details p{margin:8px 0 0;color:#536b80;line-height:1.65}
+@media(max-width:600px){.seo-intro{margin:18px auto 14px;padding:0 14px}.seo-faq{padding:0 14px}.seo-faq-inner{padding:18px 15px}}
