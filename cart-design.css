@@ -1051,3 +1051,32 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .google-signin-prompt p { margin: 2px 0 0; color: #526b81; font-size: .78rem; }
 .cart-page .reference-customer-card .google-account-status { text-align: center; }
 .cart-page .reference-customer-card .account-connected-badge small { color: #176044; font-size: .7rem; }
+
+.delivery-checkout-page .reference-checkout-card:is(.reference-customer-card, .reference-delivery-card),
+.delivery-checkout-page .reference-summary-card > .checkout-order-summary {
+  padding: 14px 0;
+  border: 0;
+  border-top: 1px solid #dce7ee;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.delivery-checkout-page .reference-customer-card > .google-signin-panel {
+  margin: 0 0 12px;
+  padding: 8px 4px 12px;
+  border: 0;
+  border-bottom: 1px solid #e0eaf1;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.delivery-checkout-page .reference-customer-card .account-address-panel {
+  margin: 0 0 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.delivery-checkout-page .checkout-address-card { border: 0; border-radius: 10px; }
+.delivery-checkout-page .checkout-pin-preview { border: 0; }
+.delivery-checkout-page .checkout-summary-total-card { border-radius: 10px; }

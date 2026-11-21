@@ -95,7 +95,7 @@
       dashArray: "7 7"
     }).addTo(map);
     L.marker(dispatchLocation).addTo(map)
-      .bindPopup("NeerBeku godown (delivery route starts here)");
+      .bindPopup("NeerBeku distribution center (delivery route starts here)");
     map.fitBounds(serviceBoundary.getBounds(), { padding: [18, 18] });
 
     map.on("click", event => {
@@ -137,7 +137,7 @@
       map.removeLayer(routeLine);
       routeLine = null;
     }
-    routeStatus.textContent = "Calculating driving route from the NeerBeku godown…";
+    routeStatus.textContent = "Calculating driving route from the NeerBeku distribution center…";
     try {
       const response = await fetch("/api/delivery/route", {
         method: "POST",
@@ -158,8 +158,8 @@
       }).addTo(map);
       const km = Number(result.distanceKm).toFixed(2);
       routeStatus.textContent = result.withinServiceArea
-        ? `Driving route: ${km} km from the godown. This location is within the 5.5 km service limit.`
-        : `Driving route: ${km} km from the godown. This location is outside the 5.5 km service limit.`;
+        ? `Driving route: ${km} km from the distribution center. This location is within the 5.5 km service limit.`
+        : `Driving route: ${km} km from the distribution center. This location is outside the 5.5 km service limit.`;
       if (routeLine.getBounds().isValid()) {
         map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
       }
