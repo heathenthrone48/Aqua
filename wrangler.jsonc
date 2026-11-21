@@ -1,6 +1,7 @@
 {
   "name": "neerbeku",
   "main": "worker.js",
+  "secrets": { "required": ["ORS_API_KEY"] },
   "compatibility_date": "2026-09-22",
   "assets": {
     "directory": ".",
@@ -17,6 +18,7 @@
   "env": {
     "staging": {
       "name": "neerbeku-staging",
+      "secrets": { "required": ["ORS_API_KEY"] },
       "workers_dev": true,
       "routes": [],
       "d1_databases": [
