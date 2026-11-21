@@ -1240,11 +1240,17 @@
   color: #15548a;
   box-shadow: 0 3px 8px #1769c424;
 }
-.shop-page .water-card .add-cart-btn:active:not(:disabled) {
+.shop-page .water-card .add-cart-btn:active:not(:disabled):not([aria-disabled="true"]) {
   transform: translateY(1px);
   box-shadow: 0 1px 4px #1769c424;
 }
 .shop-page .water-card .add-cart-btn.added { background: #d6eafb; }
+.shop-page .add-cart-btn[aria-disabled="true"]:not(:disabled) {
+  opacity: .65;
+  box-shadow: none;
+  transform: none;
+  cursor: default;
+}
 .shop-page .water-card .card-qty-value {
   display: grid;
   place-items: center;
