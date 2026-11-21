@@ -97,7 +97,6 @@ header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);bor
   .store-header .store-header-inner { padding-block: 7px; }
   .store-header .store-logo { height: 44px; }
   .store-header .store-brand { align-items: center; }
-  .store-header .store-logo { object-position: center; }
   .store-header .store-header-inner > .store-tagline {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -716,9 +715,11 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .checkout-order-summary .checkout-deposit-summary strong { color: #176044; white-space: nowrap; }
 .checkout-deposit-summary p { grid-column: 1 / -1; margin: 0; font-size: .75rem; }
 
-.store-header .store-brand { gap: 1px; }
+.store-header .store-brand { gap: 1px; align-items: center; }
+.store-header .store-logo { object-position: center; }
 .store-header .store-brand > .store-tagline {
   display: block;
+  text-align: center;
   width: 100%;
   max-width: none;
   margin: 0;
