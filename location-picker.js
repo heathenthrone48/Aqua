@@ -22,6 +22,9 @@
   const routeStatus = $("delivery-route-status") || status;
   const gpsButton = $("use-current-location");
 
+  const DISPATCH_LOCATION = [12.8097082, 77.6789059];
+  const SERVICE_RADIUS_METRES = 5500;
+
   let map;
   let marker;
   let routeLine;
@@ -64,19 +67,43 @@
     heading.textContent = "Confirm your delivery address";
     initMap();
     setTimeout(() => {
-      if (map) map.invalidateSize();
+      if (map) fitServiceArea(map, serviceBoundary, marker);
       $("delivery-map").scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 150);
   }
 
   locationTab.addEventListener("click", switchMode);
 
+  function addServiceBoundary(target) {
+    // This circle is a guide. Serviceability is based on driving distance.
+    return L.circle(DISPATCH_LOCATION, {
+      radius: SERVICE_RADIUS_METRES,
+      color: "#087eaf",
+      weight: 2,
+      fillColor: "#38a9d6",
+      fillOpacity: 0.07,
+      dashArray: "7 7"
+    }).addTo(target);
+  }
+
+  function fitServiceArea(target, boundary, pin) {
+    const container = target.getContainer();
+    if (!container.clientWidth || !container.clientHeight) return;
+    target.invalidateSize({ pan: false });
+    const bounds = boundary.getBounds();
+    if (pin) bounds.extend(pin.getLatLng());
+    target.fitBounds(bounds, { padding: [12, 12], animate: false });
+  }
+
+  function observeMapSize(target, fit) {
+    fit();
+    new ResizeObserver(fit).observe(target.getContainer());
+  }
+
   function initMap() {
     if (map || !window.L) return;
 
-    // General map view only, not the customer's actual location.
-    const BASE_LOCATION = [12.8115, 77.6970];
-    map = L.map("delivery-map").setView(BASE_LOCATION, 14);
+    map = L.map("delivery-map").setView(DISPATCH_LOCATION, 12);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -84,19 +111,10 @@
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    // The circle is a visual guide only; eligibility is based on actual road distance.
-    const dispatchLocation = [12.8097082, 77.6789059];
-    serviceBoundary = L.circle(dispatchLocation, {
-      radius: 5500,
-      color: "#087eaf",
-      weight: 2,
-      fillColor: "#38a9d6",
-      fillOpacity: 0.07,
-      dashArray: "7 7"
-    }).addTo(map);
-    L.marker(dispatchLocation).addTo(map)
+    serviceBoundary = addServiceBoundary(map);
+    L.marker(DISPATCH_LOCATION).addTo(map)
       .bindPopup("NeerBeku distribution center (delivery route starts here)");
-    map.fitBounds(serviceBoundary.getBounds(), { padding: [18, 18] });
+    observeMapSize(map, () => fitServiceArea(map, serviceBoundary, marker));
 
     map.on("click", event => {
       selectCoordinates(
@@ -124,7 +142,7 @@
       marker.setLatLng(point);
     }
 
-    map.setView(point, 17);
+    fitServiceArea(map, serviceBoundary, marker);
     drawRoadRoute(lat, lon);
   }
 
@@ -160,9 +178,6 @@
       routeStatus.textContent = result.withinServiceArea
         ? `Driving route: ${km} km from the distribution center. This location is within the 5.5 km service limit.`
         : `Driving route: ${km} km from the distribution center. This location is outside the 5.5 km service limit.`;
-      if (routeLine.getBounds().isValid()) {
-        map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
-      }
     } catch (error) {
       if (error.name !== "AbortError") {
         routeStatus.textContent = error.message || "Road route unavailable. Please try another pin.";
@@ -409,7 +424,7 @@
 
   // Show the confirmed delivery pin without making the main checkout map editable.
   const pinPreview = $("checkout-pin-preview");
-  let pinPreviewMap, pinPreviewMarker;
+  let pinPreviewMap, pinPreviewMarker, pinPreviewBoundary;
   window.updateCheckoutPinPreview = coordinates => {
     if (!pinPreview) return;
     pinPreview.hidden = !coordinates || !window.L;
@@ -425,12 +440,14 @@
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(pinPreviewMap);
-      pinPreviewMap.setView(point, 16);
+      pinPreviewMap.setView(DISPATCH_LOCATION, 12);
+      pinPreviewBoundary = addServiceBoundary(pinPreviewMap);
       pinPreviewMarker = L.marker(point, { interactive: false, keyboard: false }).addTo(pinPreviewMap);
+      observeMapSize(pinPreviewMap, () => fitServiceArea(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker));
+    } else {
+      pinPreviewMarker.setLatLng(point);
+      fitServiceArea(pinPreviewMap, pinPreviewBoundary, pinPreviewMarker);
     }
-    pinPreviewMap.invalidateSize({ pan: false });
-    pinPreviewMarker.setLatLng(point);
-    pinPreviewMap.setView(point, 16, { animate: false });
   };
 
   // Expose helpers for the existing checkout integration.
@@ -441,6 +458,7 @@
     if (marker) map.removeLayer(marker);
     if (routeLine) map.removeLayer(routeLine);
     marker = routeLine = null;
+    if (map) fitServiceArea(map, serviceBoundary);
     routeStatus.textContent = '';
     setStatus('Select a location for your new delivery address.');
   };

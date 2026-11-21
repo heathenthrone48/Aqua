@@ -54,7 +54,7 @@ async function refreshDeliveryQuote() {
     if (distanceKm > MAX_DELIVERY_RADIUS_KM) {
       if (feeEl) feeEl.textContent = 'Outside 5.5 km service area';
     } else if (feeEl) {
-      feeEl.textContent = '₹' + getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)).toFixed(2);
+      feeEl.textContent = formatDeliveryFee(getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)));
     }
     if (typeof renderCart === 'function') renderCart(false);
   } catch (error) {
@@ -75,6 +75,9 @@ function getDeliveryFee(distanceKm, subtotal) {
     [{ max: 400, fee: 55 }, { max: 700, fee: 45 }, { max: 1000, fee: 35 }, { max: 1200, fee: 15 }, { max: Infinity, fee: 0 }]
   ];
   return tiers[band].find(t => subtotal <= t.max).fee;
+}
+function formatDeliveryFee(amount) {
+  return amount === 0 ? 'Free delivery' : '₹' + amount.toFixed(2);
 }
 function getHandlingFee(subtotal) {
   if (subtotal <= 200) return 5;
@@ -711,7 +714,7 @@ document.addEventListener('deliverylocationchange', () => {
         : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
 
       const deliveryEl = document.getElementById('delivery-fee');
-      if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : money(totals.deliveryFee);
+      if (deliveryEl && cachedRoadDistanceKm !== null) deliveryEl.textContent = cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM ? 'Outside 5.5 km service area' : formatDeliveryFee(totals.deliveryFee);
       else if (deliveryEl && !getDeliveryCoordinates()) deliveryEl.textContent = 'Choose location';
       const handlingEl = document.getElementById('handling-fee');
       if (handlingEl) handlingEl.textContent = money(totals.handlingFee);
@@ -919,7 +922,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('confirm-exchange-note').textContent = returnedContainers > 0
         ? 'Please hand over your empty Bisleri 20L jars to our delivery partner during delivery.'
         : 'A refundable ₹150 container deposit applies to each new Bisleri 20L can.';
-      document.getElementById('confirm-delivery-fee').textContent = '₹' + breakdown.deliveryFee.toFixed(2);
+      document.getElementById('confirm-delivery-fee').textContent = formatDeliveryFee(breakdown.deliveryFee);
       document.getElementById('confirm-handling-fee').textContent = '₹' + breakdown.handlingFee.toFixed(2);
       document.getElementById('confirm-additional-charges').textContent = '₹' + additionalCharges.toFixed(2);
       document.getElementById('confirm-total').textContent = order.total;
