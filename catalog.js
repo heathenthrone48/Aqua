@@ -7,7 +7,7 @@ window.NEER_CATALOG = {
 "Bisleri 2L Case": { "name": "Bisleri 2L Case", "price": 250.0, "image": "images/bisleri-2l-1.png" , "mrp": 270, "caseQty": 9},
 "Bailey 2L Case": { "name": "Bailey 2L Case", "price": 240.0, "image": "images/bailley-2l-1.png" , "mrp": 315, "caseQty": 9},
 "Kinley 2L Case": { "name": "Kinley 2L Case", "price": 240.0, "image": "images/kinley-2l-1.png" , "mrp": 315, "caseQty": 9},
-"Bisleri 500ml Case": { "name": "Bisleri 500ml Case", "price": 200.0, "image": "images/bisleri-500ml-1.png" , "mrp": 240, "caseQty": 24},
+"Bisleri 500ml Case": { "name": "Bisleri 500ml Case", "price": 135.0, "image": "images/bisleri-500ml-1.png" , "mrp": 144, "caseQty": 24},
 "Bisleri 10L Can": { "name": "Bisleri 10L Can", "price": 130.0, "image": "images/bisleri-10l-1.png" , "mrp": 130},
 "Bailey 10L Can": { "name": "Bailey 10L Can", "price": 120.0, "image": "images/bailley-10l-1.png" , "mrp": 120},
 "Bisleri 5L Bottle": { "name": "Bisleri 5L Bottle", "price": 80.0, "image": "images/bisleri-5l-1.png" , "mrp": 80},
