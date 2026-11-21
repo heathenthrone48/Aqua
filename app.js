@@ -1412,7 +1412,6 @@ if (document.getElementById('preferred-time')) {
   const accountPanel = document.getElementById('account-address-panel');
   const activeAddressEl = document.getElementById('account-active-address');
   const addressListEl = document.getElementById('saved-address-list');
-  const chooseAddressButton = document.getElementById('choose-saved-address');
   const addAddressButton = document.getElementById('add-saved-address');
   const entryPanel = document.getElementById('delivery-entry-panel');
   const saveRow = document.getElementById('account-save-address-row');
@@ -1429,7 +1428,6 @@ if (document.getElementById('preferred-time')) {
   let addresses = [];
   let selectedAddress = null;
   let accountUser = null;
-  let showingAddressList = false;
   let editingAddressId = null;
 
   const field = id => document.getElementById(id);
@@ -1454,12 +1452,8 @@ if (document.getElementById('preferred-time')) {
     setText(addressError, '');
     previousSheetAddress = selectedAddress;
     if (!addressSheet.open) addressSheet.showModal();
-    chooseAddressButton.hidden = addresses.length === 0;
     addAddressButton.hidden = !accountUser || addresses.length >= 5;
-    showingAddressList = addresses.length > 0;
-    addressListEl.hidden = !showingAddressList;
-    chooseAddressButton.textContent = showingAddressList ? 'Hide addresses' : 'Saved addresses';
-    chooseAddressButton.setAttribute('aria-expanded', String(showingAddressList));
+    addressListEl.hidden = addresses.length === 0;
     confirmAddressButton.hidden = !!selectedAddress;
     if (!selectedAddress) window.switchAddressMode?.('manual');
   });
@@ -1520,11 +1514,7 @@ if (document.getElementById('preferred-time')) {
     selectedAddress = address || null;
     if (!accountPanel) return;
     accountPanel.hidden = false;
-    showingAddressList = false;
-    addressListEl.hidden = true;
-    chooseAddressButton.textContent = 'Saved addresses';
-    chooseAddressButton.setAttribute('aria-expanded', 'false');
-    chooseAddressButton.hidden = addresses.length === 0;
+    addressListEl.hidden = !addressSheet.open || addresses.length === 0;
     addAddressButton.hidden = !accountUser || addresses.length >= 5;
     updateCheckoutAddress(!!address);
     if (address) {
@@ -1590,9 +1580,6 @@ if (document.getElementById('preferred-time')) {
       field('account-address-label').value = address.label;
       saveButton.textContent = 'Update saved address';
       addressListEl.hidden = true;
-      showingAddressList = false;
-      chooseAddressButton.textContent = 'Saved addresses';
-      chooseAddressButton.setAttribute('aria-expanded', 'false');
       window.switchAddressMode?.('manual');
       field('delivery-address-entry').scrollIntoView({ block: 'start' });
       setText(saveMessage, 'Edit the details below and save your changes.');
@@ -1666,9 +1653,6 @@ if (document.getElementById('preferred-time')) {
     saveRow.hidden = false;
     cancelButton.hidden = addresses.length === 0;
     addressListEl.hidden = true;
-    showingAddressList = false;
-    chooseAddressButton.textContent = 'Saved addresses';
-    chooseAddressButton.setAttribute('aria-expanded', 'false');
     setText(saveMessage, '');
     field('customer-name').value ||= accountUser?.name || '';
     field('customer-phone').value = '';
@@ -1769,12 +1753,6 @@ if (document.getElementById('preferred-time')) {
   }
 
   window.getSelectedNeerBekuAddress = () => selectedAddress;
-  chooseAddressButton.addEventListener('click', () => {
-    showingAddressList = !showingAddressList;
-    addressListEl.hidden = !showingAddressList;
-    chooseAddressButton.textContent = showingAddressList ? 'Hide addresses' : 'Saved addresses';
-    chooseAddressButton.setAttribute('aria-expanded', String(showingAddressList));
-  });
   addAddressButton.addEventListener('click', openAddressEntry);
   saveButton.addEventListener('click', saveAddress);
   cancelButton.addEventListener('click', () => {

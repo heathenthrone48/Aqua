@@ -643,9 +643,6 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(4){grid-column:1}
 .cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(5){grid-column:2}
 .cart-page .reference-delivery-card #delivery-address-fields>.form-group:nth-of-type(6){grid-column:1/-1}
-#choose-saved-address { background: #087eaf; color: #fff; border-color: #087eaf; font-weight: 800; box-shadow: 0 3px 10px #087eaf26; }
-#choose-saved-address:hover { background: #06658d; }
-#choose-saved-address:focus-visible { outline: 3px solid #80ccea; outline-offset: 3px; }
 .saved-address-preview .account-address-label-field,
 .saved-address-preview > .location-help,
 .saved-address-preview .address-mode,
@@ -871,8 +868,6 @@ body.cart-page{background:#f2f8fc;color:#20384d}
   border-radius: 8px;
   box-shadow: none;
 }
-.cart-page #choose-saved-address { background: #eaf5fc; border-color: #c9e2f2; color: #15567d; }
-.cart-page #choose-saved-address:hover { background: #dfedf8; }
 .cart-page .saved-address-option-actions button[data-edit-address] { color: #135c90; background: #f3f8fc; }
 
 @media (max-width: 620px) {
@@ -909,12 +904,6 @@ body.cart-page{background:#f2f8fc;color:#20384d}
   font-size: .85rem;
 }
 .cart-page .account-address-actions button[hidden] { display: none; }
-.cart-page .account-address-actions #choose-saved-address {
-  background: #fff;
-  border-color: #c8dfef;
-  color: #145782;
-}
-.cart-page .account-address-actions #choose-saved-address[aria-expanded="true"] { background: #eaf5fc; }
 .cart-page .saved-address-option {
   border-radius: 12px;
   background: #f7fbfe;
@@ -1022,7 +1011,14 @@ body.cart-page{background:#f2f8fc;color:#20384d}
   box-shadow: 0 0 0 1px #1687cf inset;
 }
 .checkout-address-sheet .saved-address-select[aria-pressed="true"] .delivery-window-radio-mark { border: 6px solid #087bc1; }
-.checkout-address-sheet .saved-address-option-actions { justify-content: flex-end; margin: 3px 0 5px; }
+.checkout-address-sheet .saved-address-option-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 5px 0 9px;
+}
+.checkout-address-sheet .saved-address-option-actions button { min-height: 38px; text-align: center; }
+.checkout-address-sheet .saved-address-option-actions .saved-address-delete { border-color: #efd0ce; background: #fff4f3; color: #963731; }
 
 .checkout-address-card {
   margin: 18px 0 4px;
