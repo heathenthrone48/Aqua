@@ -270,7 +270,7 @@ document.addEventListener('deliverylocationchange', () => {
       track.innerHTML = images.map((src, index) => `
         <div class="hero-carousel-slide">
           <img src="${escapeHtml(src)}"
-               alt="NEER BEKUUU Banner ${index + 1}"
+               alt="NeerBeku banner ${index + 1}"
                loading="${index === 0 ? 'eager' : 'lazy'}"
                onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-weight:700;&quot;>Banner image ${index + 1}</div>';">
         </div>
@@ -342,6 +342,7 @@ document.addEventListener('deliverylocationchange', () => {
     function initProductCarousels() {
       document.querySelectorAll('.product-image-carousel').forEach(carousel => {
         const images = JSON.parse(carousel.dataset.images || '[]');
+        const productTitle = carousel.closest('.water-card')?.querySelector('.water-title')?.textContent.trim() || 'Packaged drinking water';
         const track = carousel.querySelector('.product-image-track');
         const dots = carousel.querySelector('.product-carousel-dots');
         const count = carousel.querySelector('.product-image-count');
@@ -362,7 +363,7 @@ document.addEventListener('deliverylocationchange', () => {
         track.innerHTML = images.map((src, index) => `
           <div class="product-image-slide">
             <img src="${escapeHtml(src)}"
-                 alt="Product image ${index + 1}"
+                 alt="${escapeHtml(productTitle)} product photo ${index + 1}"
                  loading="${index === 0 ? 'eager' : 'lazy'}"
                  onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=&quot;color:var(--text-muted);font-size:.78rem;padding:20px;text-align:center;&quot;>Image unavailable</div>';">
           </div>
