@@ -1204,8 +1204,7 @@
   background: var(--shop-cart-control-bg);
 }
 .shop-page .water-card .card-qty-btn {
-  display: grid;
-  place-items: center;
+  position: relative;
   padding: 0;
   font-size: 0;
   width: 100%;
@@ -1221,7 +1220,9 @@
 .shop-page .water-card .card-qty-btn::before,
 .shop-page .water-card .card-qty-btn:last-child::after {
   content: "";
-  grid-area: 1 / 1;
+  position: absolute;
+  inset: 0;
+  margin: auto;
   width: 12px;
   height: 2px;
   border-radius: 1px;
