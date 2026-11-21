@@ -1446,6 +1446,7 @@ if (document.getElementById('preferred-time')) {
           street: field('address-street').value
         })
       : 'Choose a delivery address');
+    window.updateCheckoutPinPreview?.(checkoutAddressConfirmed ? getDeliveryCoordinates() : null);
     renderCart(false);
   }
 

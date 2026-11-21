@@ -115,6 +115,10 @@
 </div>
 <p id="delivery-route-status" aria-live="polite" role="status"></p>
 <div class="checkout-address-trigger"><div><strong>Delivery address</strong><p id="checkout-address-preview">Choose a delivery address</p></div><button type="button" id="open-address-sheet" aria-haspopup="dialog" aria-controls="checkout-address-sheet">Change address</button></div>
+<figure class="checkout-pin-preview" id="checkout-pin-preview" hidden>
+  <div id="checkout-pin-map" aria-hidden="true"></div>
+  <figcaption>Confirm the pin matches where you want your order delivered.</figcaption>
+</figure>
 <dialog id="checkout-address-sheet" class="checkout-address-sheet" aria-labelledby="checkout-address-title">
 <div class="checkout-address-sheet-heading"><h2 id="checkout-address-title">Delivery address</h2><button type="button" id="close-address-sheet" aria-label="Close address sheet">&times;</button></div>
 <div class="account-address-actions">

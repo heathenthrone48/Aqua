@@ -989,3 +989,14 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 @media (max-width: 620px) {
   .checkout-address-sheet { width: 100%; max-width: none; margin: auto 0 0; border-radius: 18px 18px 0 0; }
 }
+
+.checkout-pin-preview {
+  margin: 8px 0 0;
+  border: 1px solid #d7e7f1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f7fbff;
+}
+.checkout-pin-preview[hidden] { display: none; }
+.checkout-pin-preview #checkout-pin-map { height: clamp(130px, 38vw, 180px); }
+.checkout-pin-preview figcaption { padding: 6px 9px; color: #526b81; font-size: .75rem; }

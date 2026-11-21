@@ -407,6 +407,32 @@
     document.dispatchEvent(new Event("deliverylocationchange"));
   };
 
+  // Show the confirmed delivery pin without making the main checkout map editable.
+  const pinPreview = $("checkout-pin-preview");
+  let pinPreviewMap, pinPreviewMarker;
+  window.updateCheckoutPinPreview = coordinates => {
+    if (!pinPreview) return;
+    pinPreview.hidden = !coordinates || !window.L;
+    if (pinPreview.hidden) return;
+    const point = [coordinates.latitude, coordinates.longitude];
+    if (!pinPreviewMap) {
+      pinPreviewMap = L.map("checkout-pin-map", {
+        dragging: false, touchZoom: false, scrollWheelZoom: false,
+        doubleClickZoom: false, boxZoom: false, keyboard: false,
+        zoomControl: false, tapHold: false
+      });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(pinPreviewMap);
+      pinPreviewMap.setView(point, 16);
+      pinPreviewMarker = L.marker(point, { interactive: false, keyboard: false }).addTo(pinPreviewMap);
+    }
+    pinPreviewMap.invalidateSize({ pan: false });
+    pinPreviewMarker.setLatLng(point);
+    pinPreviewMap.setView(point, 16, { animate: false });
+  };
+
   // Expose helpers for the existing checkout integration.
   window.clearDeliveryLocation = () => {
     routeController?.abort();
