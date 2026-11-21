@@ -838,10 +838,12 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .cart-page .checkout-exchange-card { margin: 8px 0 4px; padding: 10px; gap: 5px; }
 .cart-page .checkout-exchange-card.needs-review { background: #fff3f2; border-color: #eab0aa; }
 .cart-page .checkout-exchange-card.needs-review .checkout-exchange-title { color: #9d3029; }
+.cart-page #delivery-address-fields .form-group:has(input[required]:not(:placeholder-shown)) .required-address-label,
 .cart-page #delivery-entry-panel .form-group:has(input:valid) .required-address-label,
 .cart-page #delivery-entry-panel .form-group:has(input:valid) .required-address-label span {
   color: #163355 !important;
 }
+.cart-page #delivery-address-fields .form-group:has(input[required]:not(:placeholder-shown)) .required-address-label span { display: none; }
 .cart-page .reference-customer-card .account-card-controls:has(.account-connected-badge:not([hidden])) {
   display: flex;
   align-items: center;
