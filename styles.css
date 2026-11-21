@@ -1236,7 +1236,16 @@
 .shop-page .water-card .add-cart-btn::after { content: none; }
 
 @media (max-width: 620px) {
-  .shop-page .water-card .product-image-carousel { margin-bottom: 4px; }
+  .shop-page .water-card .product-clickable-area { flex: none; }
+  .shop-page .water-card .product-image-carousel {
+    width: calc(100% + 6px);
+    margin-inline: -3px;
+    margin-bottom: 2px;
+    aspect-ratio: 1.08 / 1;
+  }
+  .shop-page .water-card .product-image-carousel .product-image-slide img {
+    object-position: center bottom;
+  }
   .shop-page .water-card .water-title { font-size: clamp(.78rem, 3.6vw, 1rem); line-height: 1.2; }
   .shop-page .water-card .water-price { font-size: clamp(.84rem, 3.8vw, 1.2rem); }
   .shop-page .water-card .water-price span { font-size: .58rem !important; }

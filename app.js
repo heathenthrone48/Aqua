@@ -833,19 +833,6 @@ document.addEventListener('deliverylocationchange', () => {
       if (!document.hidden) refreshLivePrices();
     });
 
-    // Match the rendered media height to its actual width on narrow screens.
-    function syncMobileImageSquares() {
-      const mobile = window.matchMedia('(max-width: 620px)').matches;
-      document.querySelectorAll('.water-card .product-image-carousel').forEach(carousel => {
-        carousel.style.height = mobile ? `${carousel.getBoundingClientRect().width}px` : '';
-      });
-    }
-    syncMobileImageSquares();
-    window.addEventListener('resize', syncMobileImageSquares);
-    if (window.ResizeObserver && document.querySelector('.water-grid')) {
-      new ResizeObserver(syncMobileImageSquares).observe(document.querySelector('.water-grid'));
-    }
-
     loadSavedCustomerData();
 
     function escapeHtml(value) {
