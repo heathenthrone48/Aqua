@@ -1,3 +1,9 @@
+:root {
+  --public-page-blue: #e7f4ff;
+  --public-page-background: linear-gradient(165deg, var(--public-page-blue), #f8fcff 46%, #eaf5ff);
+  --public-header-background: linear-gradient(180deg, #c5e6ff, #dbf0ff 58%, var(--public-page-blue));
+}
+
 /* Footer shared by storefront, cart and supplied policies. */
 .nb-footer{margin-top:64px;padding:42px 28px 22px;background:linear-gradient(130deg,#f6fbff,#eef8ff);border-top:1px solid #deebf4;color:#163553;font-family:'Plus Jakarta Sans',Arial,sans-serif;font-size:13px;line-height:1.75}
 .nb-footer *{box-sizing:border-box}.nb-footer a{color:inherit;text-decoration:none}.nb-footer a:hover{color:#087bbb;text-decoration:underline}.nb-footer a:focus-visible{outline:3px solid #087bbb;outline-offset:4px}

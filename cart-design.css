@@ -1,12 +1,12 @@
 /* Shared storefront and separate checkout. Loaded after styles.css. */
-:root{--shop-blue:#0079f2;--shop-navy:#0b254d;--shop-header-height:84px;--shop-surface:#f3f9fd}
-body.shop-page,body.cart-page{background:var(--shop-surface);color:var(--shop-navy)}
+:root{--shop-blue:#0079f2;--shop-navy:#0b254d;--shop-header-height:84px}
+body.shop-page,body.cart-page{background:var(--public-page-background) fixed;color:var(--shop-navy)}
 body.shop-page{padding-bottom:110px}
 header{background:rgba(255,255,255,.97);border-bottom:1px solid #e0eaf4;box-shadow:0 4px 18px #16466b06;gap:12px}
 .header-actions{flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .header-cart{display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--shop-navy);padding:8px;border-radius:12px;min-height:44px}
 .header-cart span{background:var(--shop-blue);color:#fff;border-radius:20px;padding:3px 7px;font-size:11px}
-.category-filter-wrapper{position:sticky;top:var(--shop-header-height);z-index:150;background:rgba(243,249,253,.97);padding:12px 0;margin:0 0 18px;backdrop-filter:blur(12px);border:0;box-shadow:none}
+.category-filter-wrapper{position:sticky;top:var(--shop-header-height);z-index:150;background:rgba(231,244,255,.95);padding:12px 0;margin:0 0 18px;backdrop-filter:blur(12px);border:0;box-shadow:none}
 .category-tabs{display:flex;justify-content:center;align-items:center;gap:10px;padding:0;overflow:visible;border:0;background:transparent;box-shadow:none;border-radius:0}
 .category-tab{flex:0 1 auto;min-width:0;min-height:44px;padding:11px 24px;border:1px solid transparent;border-radius:999px;background:#e8f1fc;color:var(--shop-navy);font-size:14px;font-weight:700;white-space:nowrap;box-shadow:none}
 .category-tab.active{background:var(--shop-blue);color:white;box-shadow:none;border-color:var(--shop-blue)}
@@ -72,12 +72,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 
 
 /* Refined shared header: logo + support links + live cart count. */
-header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);border-bottom:1px solid #dfeaf2;box-shadow:0 4px 20px #12365005}
-.shop-page header.store-header {
-  background: linear-gradient(180deg, #e7f3fc, var(--shop-surface));
-  border-bottom: 0;
-  box-shadow: none;
-}
+header.store-header{display:block;padding:0;background:var(--public-header-background);border-bottom:0;box-shadow:none}
 .store-header-inner{max-width:1120px;margin:0 auto;padding:16px 28px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px}
 .store-brand{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-decoration:none;min-width:0}
 .store-logo{display:block;width:154px;height:48px;object-fit:contain;object-position:left center}
@@ -462,7 +457,7 @@ body.cart-notice-open { overflow: hidden; }
 
 /* Checkout layout aligned with the supplied NEERBEKU checkout reference.
    Existing live cart, account, map, jar-return and order logic remains in app.js. */
-body.cart-page{background:#f2f8fc;color:#20384d}
+body.cart-page{color:#20384d}
 .cart-page .container{max-width:900px;padding-left:16px;padding-right:16px}
 .cart-page .cart-page-title{color:#12365b;font-size:28px;letter-spacing:-.6px}
 .cart-page .panel,.cart-page .cart-panel,.cart-page .checkout-order-summary{
@@ -514,7 +509,6 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 
 
 /* Reference checkout refinements: dynamic items, jar exchange, customer and delivery steps. */
-.cart-page{background:#f2f8fc;color:#20384d}
 .cart-page .container{max-width:850px}
 .cart-page .cart-page-title{color:#12365b;font-size:28px;letter-spacing:-.6px;margin-bottom:3px}
 .cart-page .checkout-intro{margin:4px 0 18px;color:#718293;font-size:14px}
