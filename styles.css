@@ -487,11 +487,6 @@
       box-shadow: 0 16px 40px 0 rgba(2, 132, 199, 0.15);
     }
 
-    .water-card.in-cart {
-      border-color: var(--accent-cyan);
-      background: rgba(224, 242, 254, 0.6);
-    }
-
     .water-card .badge-type {
       font-size: 0.68rem;
       text-transform: uppercase;
@@ -1148,7 +1143,7 @@
 .shop-page .water-card .water-case-meta{
   display:block;margin-top:5px;color:#718293;font-size:12px;line-height:1.4;
 }
-.shop-page .water-card .product-clickable-area{display:flex;flex-direction:column;align-items:stretch}
+.shop-page .water-card .product-clickable-area { display: flex; flex: 1; flex-direction: column; align-items: stretch; }
 .shop-page .water-card .product-image-carousel{flex:none}
 @media(max-width:560px){
   .shop-page .water-card .water-title{font-size:17px}
@@ -1160,7 +1155,7 @@
 
 .shop-page .water-card:hover { transform: none; }
 .shop-page .water-card .water-desc { display: none; }
-.shop-page .water-card .water-title { margin-bottom: 4px; }
+.shop-page .water-card .water-title { margin-top: auto; margin-bottom: 4px; }
 .shop-page .water-card .water-price-block {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -1198,7 +1193,7 @@
 .shop-page .water-card .card-bottom {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
-  align-items: stretch;
+  align-items: center;
   gap: 6px;
   padding-top: 7px;
 }
