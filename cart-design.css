@@ -687,3 +687,18 @@ body.cart-page{background:#f2f8fc;color:#20384d}
  .cart-page .reference-customer-card .account-connected-badge{flex-wrap:wrap}
  .cart-page .reference-customer-card .account-connected-badge:after{margin-left:auto}
 }
+
+.checkout-order-summary .checkout-deposit-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 10px;
+  padding: 10px 12px;
+  border: 1px solid #bfe3d2;
+  border-radius: 12px;
+  background: #eefaf4;
+  color: #176044;
+}
+.checkout-order-summary .checkout-deposit-summary[hidden] { display: none; }
+.checkout-deposit-summary span { font-weight: 800; }
+.checkout-order-summary .checkout-deposit-summary strong { color: #176044; white-space: nowrap; }
+.checkout-deposit-summary p { grid-column: 1 / -1; margin: 0; font-size: .75rem; }
