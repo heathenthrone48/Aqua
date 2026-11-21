@@ -465,7 +465,7 @@ document.addEventListener('deliverylocationchange', () => {
             if (suffix) mainPrice.append(suffix);
           }
           const caseMeta = block.querySelector('.water-case-meta');
-          if (caseMeta && item.caseQty) caseMeta.textContent = 'Case of ' + item.caseQty + ' · ₹' + (item.price / item.caseQty).toFixed(2) + ' per bottle';
+          if (caseMeta && item.caseQty) caseMeta.textContent = item.caseQty + ' pcs · ₹' + (item.price / item.caseQty).toFixed(2) + ' each';
         });
         cart = normalizeCart(cart);
         renderCart(false);
