@@ -931,3 +931,61 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 }
 
 .cart-page #selected-items { scroll-margin-top: calc(var(--shop-header-height, 64px) + 8px); }
+
+.basket-page .basket-summary {
+  width: 100%;
+  padding: 12px 14px;
+  margin: 0 0 16px;
+  background: #fff;
+  border: 1px solid #dce7ee;
+  border-radius: 16px;
+}
+.basket-page .basket-summary[hidden], .basket-page #checkout-deposit-summary-row[hidden] { display: none; }
+.basket-summary p, .checkout-address-trigger p { margin: 4px 0 10px; color: #526b81; font-size: .85rem; }
+.basket-summary .submit-btn { margin: 0; }
+.checkout-address-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #d7e7f1;
+  border-radius: 12px;
+  background: #f7fbff;
+}
+.checkout-address-trigger p { margin: 2px 0 0; overflow-wrap: anywhere; }
+.checkout-address-trigger button, .checkout-address-sheet-heading button {
+  border: 1px solid #c9e2f2;
+  border-radius: 9px;
+  padding: 7px 9px;
+  background: #fff;
+  color: #15567d;
+  font: inherit;
+  font-weight: 700;
+  font-size: .8rem;
+  cursor: pointer;
+}
+.checkout-address-trigger button { flex-shrink: 0; }
+.checkout-address-sheet {
+  box-sizing: border-box;
+  width: min(100% - 24px, 620px);
+  max-height: 88dvh;
+  padding: 14px;
+  color: #17324a;
+  border: 1px solid #dce7ee;
+  border-radius: 18px;
+  overflow: auto;
+}
+.checkout-address-sheet::backdrop { background: #102b4e77; }
+.checkout-address-sheet-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.checkout-address-sheet-heading h2 { margin: 0; font-size: 1.15rem; }
+.checkout-address-sheet-heading button { min-width: 36px; min-height: 36px; font-size: 1.1rem; }
+.checkout-address-sheet .saved-address-list { margin-bottom: 12px; }
+.checkout-address-sheet #confirm-checkout-address { width: 100%; margin-top: 8px; }
+.checkout-address-sheet #checkout-address-error { color: #9d3029; font-size: .85rem; }
+.checkout-address-sheet #checkout-address-error:empty { display: none; }
+.checkout-address-sheet #delivery-address-entry[hidden],
+.checkout-address-sheet #confirm-checkout-address[hidden] { display: none; }
+@media (max-width: 620px) {
+  .checkout-address-sheet { width: 100%; max-width: none; margin: auto 0 0; border-radius: 18px 18px 0 0; }
+}
