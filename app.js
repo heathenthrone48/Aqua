@@ -36,7 +36,6 @@ async function fetchRoadDistance(force = false) {
 }
 async function refreshDeliveryQuote() {
   const feeEl = document.getElementById('delivery-fee');
-  const submit = document.getElementById('submit-order-btn');
   const coordinates = getDeliveryCoordinates();
   cachedRoadDistanceKm = null;
   cachedRouteKey = '';
@@ -47,12 +46,12 @@ async function refreshDeliveryQuote() {
     return;
   }
   if (feeEl) feeEl.textContent = 'Calculating road distance…';
+  updateOrderButton();
   try {
     const distanceKm = await fetchRoadDistance();
     if (getDeliveryCoordinates()?.key !== coordinates.key) return;
     if (distanceKm > MAX_DELIVERY_RADIUS_KM) {
       if (feeEl) feeEl.textContent = 'Outside 5.5 km service area';
-      if (submit) submit.disabled = true;
     } else if (feeEl) {
       feeEl.textContent = '₹' + getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)).toFixed(2);
     }
@@ -60,7 +59,7 @@ async function refreshDeliveryQuote() {
   } catch (error) {
     if (error.name === 'AbortError') return;
     if (feeEl) feeEl.textContent = 'Unable to calculate — retry location';
-    if (submit) submit.disabled = true;
+    updateOrderButton();
   }
 }
 document.addEventListener('deliverylocationchange', refreshDeliveryQuote);
@@ -754,9 +753,7 @@ document.addEventListener('deliverylocationchange', () => {
       }
       const basketSummary = document.getElementById('basket-summary');
       if (basketSummary) basketSummary.hidden = !items.length;
-      const submit = document.getElementById('submit-order-btn');
-      const hasDeliveryWindow = !!document.getElementById("preferred-time")?.value;
-      if (submit) submit.disabled = !items.length || !hasDeliveryWindow || !checkoutAddressConfirmed || orderSubmitting || !getDeliveryCoordinates() || cachedRoadDistanceKm === null || cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM;
+      updateOrderButton();
       document.querySelectorAll('.water-card').forEach(card => card.classList.toggle('in-cart', !!cart[card.dataset.name]));
     }
         document.addEventListener('click', event => {
@@ -921,6 +918,51 @@ document.addEventListener('deliverylocationchange', () => {
     }
 
 
+    function checkoutBlocker() {
+      if (!Object.keys(cart).length) return 'empty';
+      if (!getBisleriReturnState().hasAnswer) return 'jars';
+      if (!checkoutAddressConfirmed || !getDeliveryCoordinates()) return 'address';
+      if (!document.getElementById('preferred-time')?.value) return 'window';
+      if (cachedRoadDistanceKm === null) return 'route';
+      if (cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM) return 'outside';
+      return '';
+    }
+
+    function updateOrderButton() {
+      const button = document.getElementById('submit-order-btn');
+      if (!button) return;
+      const blocker = checkoutBlocker();
+      button.disabled = orderSubmitting;
+      button.toggleAttribute('data-checkout-incomplete', !!blocker);
+      button.setAttribute('aria-busy', String(orderSubmitting));
+      if (!blocker) document.getElementById('place-order-feedback').textContent = '';
+    }
+
+    function guideToCheckoutRequirement() {
+      const blocker = checkoutBlocker();
+      if (!blocker) return false;
+      const feedback = document.getElementById('place-order-feedback');
+      feedback.textContent = '';
+      if (blocker === 'jars') {
+        window.location.href = 'cart.html#selected-items';
+      } else if (blocker === 'address') {
+        document.getElementById('open-address-sheet').click();
+      } else if (blocker === 'window') {
+        document.getElementById('change-delivery-window').click();
+      } else if (blocker === 'empty') {
+        feedback.textContent = 'Add at least one item to your cart.';
+      } else if (blocker === 'outside') {
+        feedback.textContent = 'This address is outside our delivery area. Choose another address.';
+      } else {
+        feedback.textContent = 'Delivery distance is unavailable. Please check your address or try again.';
+      }
+      return true;
+    }
+
+    document.getElementById('submit-order-btn')?.addEventListener('click', event => {
+      if (guideToCheckoutRequirement()) event.preventDefault();
+    });
+
     const form = document.getElementById('waterForm');
     // Indian mobile numbers: accept digits only and cap both fields at 10 digits.
     ['customer-phone', 'customer-alt-phone'].forEach(id => {
@@ -933,19 +975,10 @@ document.addEventListener('deliverylocationchange', () => {
     });
     form?.addEventListener('submit', async function(e) {
       e.preventDefault();
-      if (orderSubmitting) return;
-      if (!getBisleriReturnState().hasAnswer) {
-        window.location.href = 'cart.html#selected-items';
-        return;
-      }
-      if (!checkoutAddressConfirmed) {
-        document.getElementById('open-address-sheet')?.click();
-        return;
-      }
+      if (orderSubmitting || guideToCheckoutRequirement()) return;
       orderSubmitting = true;
-      const checkingButton = form.querySelector('.submit-btn');
-      checkingButton.disabled = true;
-      checkingButton.innerText = 'CHECKING STOCK...';
+      const submissionStartedAt = performance.now();
+      updateOrderButton();
       try {
         if (!(await refreshLiveStock())) {
           alert('Cannot check stock right now. Please try again.');
@@ -962,10 +995,6 @@ document.addEventListener('deliverylocationchange', () => {
         alert('Please add at least one product to your cart.');
         return;
       }
-
-      const submitBtn = form.querySelector('.submit-btn');
-      submitBtn.innerText = 'SENDING ORDER...';
-      submitBtn.disabled = true;
 
       const savedAccountAddress = window.getSelectedNeerBekuAddress?.();
       if (savedAccountAddress) {
@@ -1099,6 +1128,8 @@ document.addEventListener('deliverylocationchange', () => {
         const result = await response.json();
 
         if (response.ok && result.success) {
+          const remainingPause = 350 - (performance.now() - submissionStartedAt);
+          if (remainingPause > 0) await new Promise(resolve => setTimeout(resolve, remainingPause));
           const telegramSent = result.telegramSent === true;
           const confirmationLead = document.querySelector('#thankyou-screen .confirm-lead');
           if (confirmationLead) {
@@ -1136,19 +1167,14 @@ document.addEventListener('deliverylocationchange', () => {
           window.scrollTo(0, 0);
         } else {
           alert(result.error || "We could not save your order. Please try again or call us before placing another order.");
-          submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
-          submitBtn.disabled = false;
         }
       } catch (error) {
         console.error("Error:", error);
         alert("We could not confirm that your order was saved. Please try again or call us before placing another order.");
-        submitBtn.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
-        submitBtn.disabled = false;
       }
       } finally {
         orderSubmitting = false;
-        checkingButton.disabled = Object.keys(cart).length === 0;
-        checkingButton.innerText = 'PLACE ORDER (PAY ON DELIVERY)';
+        updateOrderButton();
       }
     });
 
