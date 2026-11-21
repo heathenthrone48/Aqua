@@ -27,7 +27,6 @@
   let routeLine;
   let routeController;
   let serviceBoundary;
-  let shopMarker;
   let searchTimer;
   let searchController;
   let reverseController;
@@ -86,7 +85,8 @@
     }).addTo(map);
 
     // The circle is a visual guide only; eligibility is based on actual road distance.
-    serviceBoundary = L.circle([12.8097082, 77.6789059], {
+    const dispatchLocation = [12.8097082, 77.6789059];
+    serviceBoundary = L.circle(dispatchLocation, {
       radius: 5500,
       color: "#087eaf",
       weight: 2,
@@ -94,8 +94,8 @@
       fillOpacity: 0.07,
       dashArray: "7 7"
     }).addTo(map);
-    shopMarker = L.marker([12.815047, 77.691037]).addTo(map)
-      .bindPopup("NeerBeku shop — delivery route starts here");
+    L.marker(dispatchLocation).addTo(map)
+      .bindPopup("NeerBeku godown (delivery route starts here)");
     map.fitBounds(serviceBoundary.getBounds(), { padding: [18, 18] });
 
     map.on("click", event => {
