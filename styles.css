@@ -1135,24 +1135,7 @@
 
 
 /* Consistent NEERBEKU storefront product-card typography */
-.shop-page .water-card .badge-type {
-  position: absolute;
-  z-index: 3;
-  top: 24px;
-  right: 24px;
-  max-width: 52%;
-  margin: 0;
-  padding: 3px 7px;
-  border-radius: 10px;
-  background: #edf5fc;
-  color: #31516e;
-  font-size: .68rem;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: right;
-  text-transform: uppercase;
-  pointer-events: none;
-}
+.shop-page .water-card .badge-type { display: none; }
 .shop-page .water-card .water-title{
   margin:0 0 7px;color:#102f50;font-size:18px;line-height:1.35;font-weight:700;
 }
@@ -1214,25 +1197,56 @@
 }
 .shop-page .water-card .card-bottom {
   display: grid;
-  gap: 4px;
-  padding-top: 5px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: stretch;
+  gap: 6px;
+  padding-top: 7px;
 }
-.shop-page .water-card .card-qty-row { justify-content: space-between; margin: 0; }
-.shop-page .water-card .card-qty-label { display: inline; }
-.shop-page .water-card .add-cart-btn { width: 100%; min-height: 38px; }
+.shop-page .water-card .card-qty-row { margin: 0; }
+.shop-page .water-card .card-qty-controls {
+  display: grid;
+  grid-template-columns: 30px minmax(18px, auto) 30px;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  border-radius: 10px;
+  background: #f5f9fd;
+}
+.shop-page .water-card .card-qty-btn {
+  width: 100%;
+  height: 100%;
+  min-height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+}
+.shop-page .water-card .card-qty-btn:hover { background: #dcecf9; color: #102f50; }
+.shop-page .water-card .card-qty-value {
+  align-self: center;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.shop-page .water-card .add-cart-btn {
+  width: 100%;
+  min-height: 38px;
+  padding: 4px;
+  border-radius: 10px;
+  letter-spacing: 0;
+}
+@media (max-width: 620px) {
+  .shop-page .water-card .card-bottom { gap: 4px; }
+  .shop-page .water-card .card-qty-controls { grid-template-columns: 24px 14px 24px; }
+  .shop-page .water-card .add-cart-btn { font-size: clamp(.58rem, 2.35vw, .72rem); }
+}
 .shop-page .water-card .add-cart-btn::after { content: none; }
 
 @media (max-width: 620px) {
   .shop-page .water-card .product-image-carousel { margin-bottom: 4px; }
-  .shop-page .water-card .badge-type { top: 11px; right: 11px; padding: 3px 4px; font-size: .54rem; }
   .shop-page .water-card .water-title { font-size: clamp(.78rem, 3.6vw, 1rem); line-height: 1.2; }
   .shop-page .water-card .water-price { font-size: clamp(.84rem, 3.8vw, 1.2rem); }
   .shop-page .water-card .water-price span { font-size: .58rem !important; }
   .shop-page .water-card .water-savings { top: 11px; left: 11px; font-size: .65rem; }
   .shop-page .water-card .water-case-meta { font-size: clamp(.55rem, 2.55vw, .7rem); overflow-wrap: anywhere; }
-  .shop-page .water-card .card-qty-label { font-size: .62rem; }
-  .shop-page .water-card .card-qty-controls { padding: 1px 3px; }
-  .shop-page .water-card .add-cart-btn { font-size: .72rem; }
 }
 
 .shop-page .water-card .product-image-count { display: none; }
