@@ -1023,3 +1023,23 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 }
 .checkout-address-sheet .saved-address-select[aria-pressed="true"] .delivery-window-radio-mark { border: 6px solid #087bc1; }
 .checkout-address-sheet .saved-address-option-actions { justify-content: flex-end; margin: 3px 0 5px; }
+
+.checkout-address-card {
+  margin: 18px 0 4px;
+  padding: 14px;
+  border: 1px solid #beddef;
+  background: #f0f8fe;
+  border-radius: 16px;
+}
+.checkout-address-card .checkout-address-trigger {
+  padding: 0;
+  gap: 12px;
+  background: transparent;
+  border: 0;
+}
+.checkout-address-card .checkout-address-trigger h3 { margin: 0 0 4px; color: #12365b; font-size: 1rem; }
+.checkout-address-card #checkout-address-preview { color: #244d70; font-size: .9rem; }
+.checkout-address-card .checkout-address-trigger button { min-height: 40px; }
+.checkout-address-card .checkout-pin-preview { margin-top: 12px; }
+.checkout-address-card #delivery-route-status { color: #526b81; font-size: .8rem; line-height: 1.45; margin: 10px 0 0; }
+.checkout-address-card #delivery-route-status:empty { display: none; }

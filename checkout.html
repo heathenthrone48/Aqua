@@ -120,12 +120,14 @@
 <option value="scheduled">Schedule for Another Date</option></select>
 <p class="delivery-help">Times are in Bengaluru time (IST). Delivery is subject to serviceability and confirmation. <a href="policies.html#delivery">Delivery policy</a></p>
 </div>
-<p id="delivery-route-status" aria-live="polite" role="status"></p>
-<div class="checkout-address-trigger"><div><strong>Delivery address</strong><p id="checkout-address-preview">Choose a delivery address</p></div><button type="button" id="open-address-sheet" aria-haspopup="dialog" aria-controls="checkout-address-sheet">Change address</button></div>
+<section class="checkout-address-card" aria-labelledby="checkout-address-card-title">
+<div class="checkout-address-trigger"><div><h3 id="checkout-address-card-title">Delivery address</h3><p id="checkout-address-preview">Choose a delivery address</p></div><button type="button" id="open-address-sheet" aria-haspopup="dialog" aria-controls="checkout-address-sheet">Change address</button></div>
 <figure class="checkout-pin-preview" id="checkout-pin-preview" hidden>
   <div id="checkout-pin-map" aria-hidden="true"></div>
   <figcaption>Confirm the pin matches where you want your order delivered.</figcaption>
 </figure>
+<p id="delivery-route-status" aria-live="polite" role="status"></p>
+</section>
 <dialog id="checkout-address-sheet" class="delivery-window-dialog checkout-address-sheet" aria-labelledby="checkout-address-title">
 <div class="delivery-window-sheet">
 <div class="delivery-window-sheet-handle" aria-hidden="true"></div>

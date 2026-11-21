@@ -137,7 +137,7 @@
       map.removeLayer(routeLine);
       routeLine = null;
     }
-    routeStatus.textContent = "Calculating driving route from the NeerBeku shop…";
+    routeStatus.textContent = "Calculating driving route from the NeerBeku godown…";
     try {
       const response = await fetch("/api/delivery/route", {
         method: "POST",
@@ -158,8 +158,8 @@
       }).addTo(map);
       const km = Number(result.distanceKm).toFixed(2);
       routeStatus.textContent = result.withinServiceArea
-        ? `Driving route: ${km} km from the shop. This location is within the 5.5 km service limit.`
-        : `Driving route: ${km} km from the shop. This location is outside the 5.5 km service limit.`;
+        ? `Driving route: ${km} km from the godown. This location is within the 5.5 km service limit.`
+        : `Driving route: ${km} km from the godown. This location is outside the 5.5 km service limit.`;
       if (routeLine.getBounds().isValid()) {
         map.fitBounds(routeLine.getBounds().pad(0.18), { maxZoom: 16 });
       }
