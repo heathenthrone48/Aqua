@@ -37,7 +37,21 @@ ul{padding-left:20px;margin:14px 0 0}li{padding:5px 0;color:#43566c;font-size:14
 .contact h2{color:#fff;margin-bottom:5px}.contact p{margin:0;color:#c9d9e9;font-size:13px}
 .contact-links{display:grid;gap:7px;font-size:13px;color:#fff}
 .footer{text-align:center;color:#8a9bad;font-size:12px;padding:0 20px 35px}
-@media(max-width:800px){.wrap{grid-template-columns:1fr;margin-top:-30px}.side{position:static}.side nav{display:flex;gap:5px;overflow:auto}.side a{white-space:nowrap}.hero{padding:48px 20px 65px}.nav{padding:15px 20px}.wrap{padding:0 15px}.content-card{padding:23px 20px}.contact{display:block}.contact-links{margin-top:18px}.facts{grid-template-columns:1fr 1fr}}
+@media (max-width: 800px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); margin-top: -30px; padding: 0 15px; }
+  .side { position: static; min-width: 0; padding: 16px; }
+  .side nav { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .side a { padding: 7px 8px; }
+  .content { grid-template-columns: minmax(0, 1fr); }
+  .section-head > div:last-child { min-width: 0; }
+  .hero { padding: 40px 18px 60px; }
+  .nav { gap: 12px; }
+  .nav small { text-align: right; }
+  .content-card { padding: 20px 16px; }
+  .contact { display: block; padding: 20px 16px; scroll-margin-top: 20px; }
+  .contact-links { margin-top: 14px; overflow-wrap: anywhere; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media(max-width:430px){.facts{grid-template-columns:1fr}.hours{align-items:flex-start;flex-direction:column}}
 html{scroll-behavior:smooth}.side a:focus-visible,a:focus-visible{outline:3px solid #1479c9;outline-offset:3px}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}</style>
 <link rel="stylesheet" href="footer.css">
