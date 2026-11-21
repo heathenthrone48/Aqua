@@ -240,7 +240,38 @@ header.store-header{position:sticky;top:0;z-index:200}
 .account-action-primary { background:#087fba; color:#fff; }
 .account-action-primary:hover { background:#066b9e; }
 .account-action-secondary,.saved-address-option-actions button { border:1px solid #d5e3eb; background:#fff; color:#24465c; }
-.account-save-address-row { margin-top:14px; padding-top:14px; border-top:1px solid #e2edf2; }
+.account-save-address-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 8px 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e2edf2;
+}
+.account-save-address-row > button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: clamp(.75rem, 3vw, .9rem);
+  line-height: 1.2;
+}
+.account-save-address-row > .account-action-secondary {
+  border-color: #cbdde9;
+  background: #f7fbfe;
+  color: #24465c;
+}
+.account-save-address-row > .account-action-secondary:hover { background: #edf5fb; }
+.account-save-address-row > button:focus-visible { outline: 2px solid #087eaf; outline-offset: 2px; }
+.account-save-address-row > button[hidden],
+.account-save-address-row > .account-address-message:empty { display: none; }
+.account-save-address-row > .account-address-message {
+  grid-column: 1 / -1;
+  margin: 0;
+  min-height: 0;
+}
 .account-address-message { min-height:1.3em; margin:9px 0 0; color:#557080; font-size:.88rem; }
 .saved-address-list { display:grid; gap:10px; margin-top:14px; }
 .saved-address-option { padding:13px; border:1px solid #d8e7ee; border-radius:12px; background:#fff; }
