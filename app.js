@@ -1654,7 +1654,7 @@ if (document.getElementById('preferred-time')) {
     button.hidden = true;
     status.hidden = true;
     connectedIdentity.hidden = false;
-    setText(connectedUser, `${user.name || 'Customer'}${user.email ? ` · ${user.email}` : ''}`);
+    setText(connectedUser, user.email || "");
     signout.hidden = false;
     setText(accountTitle, 'Your NeerBeku account is connected');
     setText(status, `Signed in as ${user.name}${user.email ? ` (${user.email})` : ''}.`);

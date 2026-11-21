@@ -850,3 +850,51 @@ body.cart-page{background:#f2f8fc;color:#20384d}
   .cart-page .reference-summary-card .checkout-summary-total-card { padding-inline: 8px; }
   .cart-page .cart-panel { padding-inline: 10px; }
 }
+
+.cart-page .reference-customer-card .google-signin-panel { padding: 8px 10px; }
+.cart-page .reference-customer-card .account-card-controls:has(.account-connected-badge:not([hidden])) { gap: 6px; }
+.cart-page .reference-customer-card .account-connected-badge {
+  justify-content: center;
+  text-align: center;
+}
+.cart-page .reference-customer-card .google-brand-mark { width: 24px; height: 24px; flex-basis: 24px; }
+.cart-page .reference-customer-card #google-connected-user { overflow-wrap: anywhere; }
+.cart-page .reference-customer-card .google-signout {
+  min-height: 34px;
+  padding: 4px 8px;
+  background: transparent;
+  border-color: #b9dacf;
+  color: #176044;
+  font-size: .75rem;
+}
+.cart-page .account-address-actions { display: flex; }
+.cart-page .account-address-actions button {
+  display: inline-flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+  font-size: .85rem;
+}
+.cart-page .account-address-actions button[hidden] { display: none; }
+.cart-page .account-address-actions #choose-saved-address {
+  background: #fff;
+  border-color: #c8dfef;
+  color: #145782;
+}
+.cart-page .account-address-actions #choose-saved-address[aria-expanded="true"] { background: #eaf5fc; }
+.cart-page .saved-address-option {
+  border-radius: 12px;
+  background: #f7fbfe;
+}
+.cart-page .saved-address-option.is-selected { border-color: #95c4de; box-shadow: none; }
+.cart-page .saved-address-option-actions button {
+  background: #fff;
+  font-size: .78rem;
+}
+.cart-page .saved-address-option-actions button[data-use-address] {
+  background: #e8f5fc;
+  color: #15567d;
+  border-color: #c8dfef;
+}
