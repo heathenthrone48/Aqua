@@ -551,9 +551,6 @@ body.cart-page{background:#f2f8fc;color:#20384d}
   min-height:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;
   display:flex;align-items:center;gap:12px;
 }
-.cart-page .reference-customer-card .account-connected-badge:after{
-  content:"SYNCED ✓";margin-left:auto;color:#07845f;font-size:12px;font-weight:900;white-space:nowrap;
-}
 .cart-page .reference-customer-card .account-connected-badge strong{font-size:16px;color:#087b58}
 .cart-page .reference-customer-card .account-connected-badge small{font-size:13px;color:#607c91}
 .cart-page .reference-customer-card .google-brand-mark{width:30px;height:30px;flex-basis:30px}
@@ -702,7 +699,6 @@ body.cart-page{background:#f2f8fc;color:#20384d}
  .cart-page .reference-delivery-card #delivery-address-fields>.form-group{grid-column:1/-1!important}
  .cart-page .reference-delivery-card .address-mode{grid-template-columns:1fr}
  .cart-page .reference-customer-card .account-connected-badge{flex-wrap:wrap}
- .cart-page .reference-customer-card .account-connected-badge:after{margin-left:auto}
 }
 
 .checkout-order-summary .checkout-deposit-summary {
@@ -720,34 +716,19 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .checkout-order-summary .checkout-deposit-summary strong { color: #176044; white-space: nowrap; }
 .checkout-deposit-summary p { grid-column: 1 / -1; margin: 0; font-size: .75rem; }
 
-.store-header .store-header-inner {
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto auto;
-}
-.store-header .store-brand { grid-column: 1; grid-row: 1; }
-.store-header .store-header-inner > .store-tagline {
-  grid-column: 2;
-  grid-row: 1;
-  min-width: 0;
-  width: auto;
+.store-header .store-brand { gap: 1px; }
+.store-header .store-brand > .store-tagline {
+  display: block;
+  width: 100%;
+  max-width: none;
   margin: 0;
+  font-size: .65rem;
   white-space: nowrap;
 }
-.store-header .store-help { grid-column: 3; grid-row: 1; }
-.store-header .store-cart { grid-column: 4; grid-row: 1; }
-.store-tagline-short { display: none; }
-
-@media (max-width: 1000px) {
-  .store-tagline-full { display: none; }
-  .store-tagline-short { display: inline; }
-}
 @media (max-width: 580px) {
-  .store-header .store-header-inner {
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
-    gap: 5px;
-  }
-  .store-header .store-header-inner > .store-tagline {
-    color: #173a61;
-    font-size: clamp(.58rem, 2.5vw, .75rem);
+  .store-header .store-brand > .store-tagline {
+    font-size: clamp(.455rem, 2.05vw, .65rem);
+    white-space: normal;
   }
 }
 

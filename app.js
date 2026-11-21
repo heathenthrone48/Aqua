@@ -1421,6 +1421,11 @@ if (document.getElementById('preferred-time')) {
     });
   }
 
+  function savedAddressPreview(address) {
+    const firstParts = [address.house, address.street, address.area].filter(Boolean).slice(0, 2);
+    return firstParts.length ? firstParts.join(", ") : String(address.address || "").split(",").slice(0, 2).join(", ");
+  }
+
   function showAccountAddress(address) {
     selectedAddress = address || null;
     if (!accountPanel) return;
@@ -1432,7 +1437,7 @@ if (document.getElementById('preferred-time')) {
     chooseAddressButton.hidden = addresses.length === 0;
     addAddressButton.hidden = addresses.length >= 5;
     if (address) {
-      activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(address.address)}</span><span>${escape(address.name)} · ${escape(address.phone)}</span>${address.landmark ? `<small>${escape(address.landmark)}</small>` : ''}`;
+      activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(savedAddressPreview(address))}</span>`;
       setEntryVisible(false);
       saveRow.hidden = true;
       setText(addressMessage, 'Selected for this order. Manage saved addresses to switch, edit or delete an address.');
@@ -1472,7 +1477,7 @@ if (document.getElementById('preferred-time')) {
     }
     addressListEl.innerHTML = addresses.map(address => `
       <article class="saved-address-option${selectedAddress?.id === address.id ? ' is-selected' : ''}">
-        <div><strong>${escape(address.label || 'Delivery address')}</strong><p>${escape(address.address)}</p><small>${escape(address.name)} · ${escape(address.phone)}</small></div>
+        <div><strong>${escape(address.label || 'Delivery address')}</strong><p>${escape(savedAddressPreview(address))}</p></div>
         <div class="saved-address-option-actions">
           <button type="button" data-use-address="${escape(address.id)}">${selectedAddress?.id === address.id ? 'Selected' : 'Use this'}</button>
           <button type="button" data-edit-address="${escape(address.id)}">Edit</button>
