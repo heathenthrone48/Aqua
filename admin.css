@@ -211,3 +211,16 @@
 .add-product-form input,.add-product-form select,.add-product-form textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:7px;font:inherit;color:#0f172a;background:#fff}
 .add-product-form small{font-size:.75rem;color:#64748b;font-weight:400}
 @media(max-width:600px){.add-product-form{grid-template-columns:1fr}}
+
+.telegram-retry-button {
+  margin: 4px 0;
+  padding: 5px 8px;
+  border: 1px solid #bdd8ed;
+  border-radius: 7px;
+  background: #f0f8ff;
+  color: #145782;
+  font: inherit;
+  font-size: .75rem;
+  cursor: pointer;
+}
+.telegram-retry-button:disabled { opacity: .6; cursor: wait; }

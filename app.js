@@ -458,6 +458,7 @@ document.addEventListener('deliverylocationchange', () => {
     const CART_STORAGE_KEY = 'neerbeku_cart_v1';
     const catalog = window.NEER_CATALOG;
     let orderSubmitting = false;
+    let lastOrderAttempt = null;
     let priceRefreshInProgress = false;
     async function refreshLivePrices() {
       if (priceRefreshInProgress || orderSubmitting) return;
@@ -966,8 +967,6 @@ document.addEventListener('deliverylocationchange', () => {
       submitBtn.innerText = 'SENDING ORDER...';
       submitBtn.disabled = true;
 
-      const orderRef = generateMemorableOrderId();
-
       const savedAccountAddress = window.getSelectedNeerBekuAddress?.();
       if (savedAccountAddress) {
         document.getElementById('customer-address').value = savedAccountAddress.address;
@@ -1045,7 +1044,6 @@ document.addEventListener('deliverylocationchange', () => {
       const totalBill = '₹' + orderTotals.total.toFixed(2);
 
       const payload = {
-        orderId: orderRef,
         name: customerName,
         phone: customerPhone,
         alternatePhone: alternatePhone || '',
@@ -1085,6 +1083,13 @@ document.addEventListener('deliverylocationchange', () => {
         addressSource: addressSource
       };
 
+      const signature = JSON.stringify(payload);
+      if (lastOrderAttempt?.signature !== signature) {
+        lastOrderAttempt = { signature, orderId: generateMemorableOrderId() };
+      }
+      const orderRef = lastOrderAttempt.orderId;
+      payload.orderId = orderRef;
+
       try {
         const response = await fetch('/api/orders', {
           method: "POST",
@@ -1122,6 +1127,7 @@ document.addEventListener('deliverylocationchange', () => {
 
           document.getElementById('order-screen').classList.add('hidden');
           document.getElementById('thankyou-screen').classList.remove('hidden');
+          lastOrderAttempt = null;
           bisleriReturnChoice = null;
           try { sessionStorage.removeItem(CHECKOUT_JAR_CHOICE_KEY); } catch {}
           cart = {};
