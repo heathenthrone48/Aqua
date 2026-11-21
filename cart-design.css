@@ -6,7 +6,7 @@ header{background:rgba(255,255,255,.97);border-bottom:1px solid #e0eaf4;box-shad
 .header-actions{flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .header-cart{display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:var(--shop-navy);padding:8px;border-radius:12px;min-height:44px}
 .header-cart span{background:var(--shop-blue);color:#fff;border-radius:20px;padding:3px 7px;font-size:11px}
-.category-filter-wrapper{position:sticky;top:var(--shop-header-height);z-index:150;background:transparent;padding:12px 0;margin:0 0 18px;border:0;box-shadow:none}
+.category-filter-wrapper{background:transparent;padding:12px 0;margin:0 0 18px;border:0;box-shadow:none}
 .category-tabs{display:flex;justify-content:center;align-items:center;gap:10px;padding:0;overflow:visible;border:0;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-radius:0}
 .category-tab{flex:0 1 auto;min-width:0;min-height:44px;padding:11px 24px;border:1px solid transparent;border-radius:999px;background:#e8f1fc;color:var(--shop-navy);font-size:14px;font-weight:700;white-space:nowrap;box-shadow:none}
 .category-tab.active{background:var(--shop-blue);color:white;box-shadow:none;border-color:var(--shop-blue)}
