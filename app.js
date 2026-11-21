@@ -648,7 +648,7 @@ document.addEventListener('deliverylocationchange', () => {
       }
 
       button.classList.add('added');
-      button.innerText = '✓ ADDED TO CART';
+      button.innerText = '✓ Added';
       card.classList.add('in-cart');
 
       setTimeout(() => {
@@ -1200,7 +1200,7 @@ function applyLiveStock() {
     button.disabled = !available;
     button.style.opacity = available ? '' : '0.6';
     button.style.cursor = available ? '' : 'not-allowed';
-    button.textContent = !stockReady ? 'CHECKING STOCK…' : available ? 'ADD TO CART' : 'OUT OF STOCK';
+    button.textContent = !stockReady ? 'CHECKING STOCK…' : available ? 'Add' : 'OUT OF STOCK';
   });
   if (activeModalCardRef) {
     const button = document.getElementById('modalAddToCartBtn');
