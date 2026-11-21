@@ -1,7 +1,7 @@
 :root {
   --public-page-blue: #e7f4ff;
   --public-page-background: linear-gradient(165deg, var(--public-page-blue), #f8fcff 46%, #eaf5ff);
-  --public-header-background: linear-gradient(180deg, #c5e6ff, #dbf0ff 58%, var(--public-page-blue));
+  --public-header-background: linear-gradient(180deg, #c5e6ff, #dbf0ff 58%, transparent);
 }
 
 /* Footer shared by storefront, cart and supplied policies. */
