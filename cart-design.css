@@ -11,7 +11,24 @@ header{background:rgba(255,255,255,.97);border-bottom:1px solid #e0eaf4;box-shad
 .category-tab{flex:0 1 auto;min-width:0;min-height:44px;padding:11px 24px;border:1px solid transparent;border-radius:999px;background:#e8f1fc;color:var(--shop-navy);font-size:14px;font-weight:700;white-space:nowrap;box-shadow:none}
 .category-tab.active{background:var(--shop-blue);color:white;box-shadow:none;border-color:var(--shop-blue)}
 .category-tab:hover:not(.active){background:#dcecff}
-.water-card{background:white;border:1px solid #dce7f2;border-radius:18px;box-shadow:none}
+.shop-page .water-card {
+  background: linear-gradient(180deg, #ffffffdf, #e4f2fd9c 65%, #e4f2fd26);
+  border: 1px solid transparent;
+  border-radius: 18px;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.shop-page .water-card:hover {
+  background: linear-gradient(180deg, #fffffff0, #dcedfbb8 65%, #dcedfb33);
+  border-color: transparent;
+  box-shadow: none;
+}
+.shop-page .water-card .product-image-carousel {
+  background: transparent;
+  border-color: transparent;
+}
+.shop-page .water-card .product-image-slide { background: transparent; }
 .water-title{color:var(--shop-navy)}
 .add-cart-btn{background:#e9f6ff;color:#0070df;border:0;border-radius:14px}
 .cart-dock{position:fixed;bottom:0;left:0;right:0;z-index:210;padding:0 16px env(safe-area-inset-bottom);pointer-events:none}
