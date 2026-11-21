@@ -751,3 +751,102 @@ body.cart-page{background:#f2f8fc;color:#20384d}
   }
   .reference-summary-card .checkout-summary-heading { gap: 6px; flex-wrap: wrap; }
 }
+
+.cart-page .checkout-page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.cart-page .checkout-page-heading .cart-page-title { margin: 0; font-size: clamp(1.25rem, 5vw, 1.875rem); }
+.cart-page .checkout-page-heading .continue-shopping {
+  margin: 0;
+  padding: 6px 9px;
+  border: 1px solid #cfdfed;
+  border-radius: 8px;
+  font-size: .75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cart-page #cart-feedback:empty { display: none; }
+.cart-page .checkout-item {
+  grid-template-columns: clamp(76px, 22vw, 105px) minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+}
+.cart-page .checkout-item > img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  padding: 2px;
+}
+.cart-page .checkout-item-info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 6px;
+  row-gap: 4px;
+  min-width: 0;
+}
+.cart-page .checkout-item-info h3, .checkout-item-actions { grid-column: 1 / -1; }
+.cart-page .checkout-item-info h3 { line-height: 1.25; }
+.cart-page .checkout-item-info p, .cart-page .checkout-line-total { margin: 0; padding: 0; }
+.cart-page .checkout-line-total { justify-self: end; }
+.checkout-item-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+.cart-page .checkout-item-actions .checkout-qty button { width: 28px; height: 32px; }
+.cart-page .checkout-item-actions .checkout-qty span { min-width: 22px; }
+.cart-page .checkout-item-actions .checkout-remove {
+  margin: 0;
+  padding: 4px 7px;
+  min-height: 30px;
+  border-radius: 7px;
+  background: #fff1f0;
+  color: #963731;
+  text-decoration: none;
+}
+.cart-page .checkout-item-actions .checkout-remove:hover { background: #fce1df; }
+.cart-page .checkout-exchange-card { margin: 8px 0 4px; padding: 10px; gap: 5px; }
+.cart-page .checkout-exchange-card.needs-review { background: #fff3f2; border-color: #eab0aa; }
+.cart-page .checkout-exchange-card.needs-review .checkout-exchange-title { color: #9d3029; }
+.cart-page #delivery-entry-panel .form-group:has(input:valid) .required-address-label,
+.cart-page #delivery-entry-panel .form-group:has(input:valid) .required-address-label span {
+  color: #163355 !important;
+}
+.cart-page .reference-customer-card .account-card-controls:has(.account-connected-badge:not([hidden])) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cart-page .reference-customer-card .account-connected-badge {
+  flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
+  gap: 7px;
+}
+.cart-page .reference-customer-card .account-connected-badge strong { font-size: .875rem; }
+.cart-page .reference-customer-card .account-connected-badge small { font-size: .72rem; }
+.cart-page .reference-customer-card .google-signout { margin: 0; white-space: nowrap; }
+.cart-page .reference-customer-card .account-address-panel { padding: 8px; }
+.cart-page .account-address-top { margin-bottom: 6px; }
+.cart-page .account-active-address { padding: 8px; }
+.cart-page .saved-address-list { margin-top: 8px; }
+.cart-page .saved-address-option { padding: 8px; }
+.cart-page .account-address-actions, .cart-page .saved-address-option-actions { margin-top: 6px; gap: 5px; }
+.cart-page .account-address-actions button, .cart-page .saved-address-option-actions button {
+  min-height: 34px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.cart-page #choose-saved-address { background: #eaf5fc; border-color: #c9e2f2; color: #15567d; }
+.cart-page #choose-saved-address:hover { background: #dfedf8; }
+.cart-page .saved-address-option-actions button[data-edit-address] { color: #135c90; background: #f3f8fc; }
+
+@media (max-width: 620px) {
+  .cart-page .reference-checkout-card.reference-customer-card { padding-inline: 8px; }
+  .cart-page .reference-summary-card > .checkout-order-summary { padding-inline: 8px; }
+  .cart-page .reference-summary-card .checkout-summary-total-card { padding-inline: 8px; }
+  .cart-page .cart-panel { padding-inline: 10px; }
+}

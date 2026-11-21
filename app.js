@@ -84,20 +84,24 @@ function getHandlingFee(subtotal) {
 }
 const BISLERI_20L_NAME = 'Bisleri 20L Can';
 const BISLERI_CONTAINER_DEPOSIT = 150;
-const BISLERI_RETURN_STORAGE_KEY = 'neerbeku_bisleri_container_return_v1';
+let bisleriReturnChoice = null;
 function getBisleriReturnState() {
   const canQty = Number(cart?.[BISLERI_20L_NAME]?.qty || 0);
-  try {
-    const saved = JSON.parse(localStorage.getItem(BISLERI_RETURN_STORAGE_KEY) || 'null');
-    if (!saved || Number(saved.cartQty) !== canQty) return { canQty, returnedContainers: 0, hasAnswer: true };
-    return { canQty, returnedContainers: Math.max(0, Math.min(canQty, Number(saved.returnedContainers) || 0)), hasAnswer: true };
-  } catch { return { canQty, returnedContainers: 0, hasAnswer: true }; }
+  if (bisleriReturnChoice?.cartQty !== canQty) bisleriReturnChoice = null;
+  return {
+    canQty,
+    returnedContainers: bisleriReturnChoice?.count ?? 0,
+    hasAnswer: canQty === 0 || bisleriReturnChoice !== null
+  };
 }
 function setBisleriReturnCount(value) {
-  const state = getBisleriReturnState();
-  const returned = Math.max(0, Math.min(state.canQty, Math.floor(Number(value) || 0)));
-  localStorage.setItem(BISLERI_RETURN_STORAGE_KEY, JSON.stringify({ cartQty: state.canQty, returnedContainers: returned, hasContainer: returned > 0 }));
+  const { canQty } = getBisleriReturnState();
+  const count = Number(value);
+  bisleriReturnChoice = value !== "" && Number.isInteger(count) && count >= 0 && count <= canQty
+    ? { cartQty: canQty, count }
+    : null;
   renderCart(false);
+  document.getElementById("bisleri-return-choice")?.focus();
 }
 function calculateOrderTotals(items, distanceKm = cachedRoadDistanceKm) {
   const productSubtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -693,19 +697,15 @@ document.addEventListener('deliverylocationchange', () => {
         const jarOptions = Array.from({ length: bisleriQty }, (_, index) => index + 1)
           .map(quantity => '<option value="' + quantity + '"' + (jarState.returnedContainers === quantity ? ' selected' : '') + '>' + quantity + ' empty jar' + (quantity === 1 ? '' : 's') + '</option>').join('');
         const jarExchange = bisleriQty ? (
-          '<section class="checkout-exchange-card">' +
-            '<div class="checkout-exchange-title">↻ &nbsp;20L CAN EXCHANGE</div>' +
-            '<label for="bisleri-return-choice">Do you have empty Bisleri 20L cans to return?</label>' +
-            '<select id="bisleri-return-choice" data-bisleri-return-choice>' +
-              '<option value="0"' + (jarState.returnedContainers === 0 ? ' selected' : '') + '>No, I don\'t have empty cans</option>' +
-              '<option value="1"' + (jarState.returnedContainers > 0 ? ' selected' : '') + '>Yes, I have empty cans to return</option>' +
+          '<section class="checkout-exchange-card' + (jarState.hasAnswer ? '' : ' needs-review') + '">' +
+            '<div class="checkout-exchange-title">20L jar return</div>' +
+            '<label for="bisleri-return-choice">How many empty Bisleri 20L jars will you return?</label>' +
+            '<select id="bisleri-return-choice" data-bisleri-return-choice required>' +
+              '<option value=""' + (jarState.hasAnswer ? '' : ' selected') + '>Choose how many</option>' +
+              '<option value="0"' + (jarState.hasAnswer && jarState.returnedContainers === 0 ? ' selected' : '') + '>None</option>' +
+              jarOptions +
             '</select>' +
-            '<div class="checkout-exchange-quantity"' + (jarState.returnedContainers > 0 ? '' : ' hidden') + '>' +
-              '<label for="bisleri-return-count-inline">How many empty cans will you return?</label>' +
-              '<select id="bisleri-return-count-inline" data-bisleri-return-count>' + jarOptions + '</select>' +
-            '</div>' +
-            '<small>₹150 refundable deposit is charged for each new can without an accepted empty-can return.</small>' +
-            '<div class="checkout-exchange-credit"><span>Refundable deposit</span><strong>' + money(additionalJarDeposit) + '</strong></div>' +
+            '<small>&#8377;150 refundable deposit per jar without an accepted empty return.</small>' +
           '</section>'
         ) : '';
         if (!items.length) {
@@ -714,10 +714,10 @@ document.addEventListener('deliverylocationchange', () => {
           list.innerHTML = items.map(item =>
             '<article class="checkout-item">' +
               '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '">' +
-              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + money(item.price) + ' per unit</p>' +
-                '<div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="' + escapeHtml(item.name) + '" aria-label="Decrease ' + escapeHtml(item.name) + ' quantity">−</button><span>' + item.qty + '</span><button type="button" data-cart-action="plus" data-product="' + escapeHtml(item.name) + '" aria-label="Increase ' + escapeHtml(item.name) + ' quantity">+</button></div>' +
-                '<button type="button" class="checkout-remove" data-cart-action="remove" data-product="' + escapeHtml(item.name) + '">Remove</button>' +
-              '</div><strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
+              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + money(item.price) + ' each</p><strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
+                '<div class="checkout-item-actions"><div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="' + escapeHtml(item.name) + '" aria-label="Decrease ' + escapeHtml(item.name) + ' quantity">−</button><span>' + item.qty + '</span><button type="button" data-cart-action="plus" data-product="' + escapeHtml(item.name) + '" aria-label="Increase ' + escapeHtml(item.name) + ' quantity">+</button></div>' +
+                '<button type="button" class="checkout-remove" data-cart-action="remove" data-product="' + escapeHtml(item.name) + '">Remove</button></div>' +
+              '</div>' +
             '</article>' + (item.name === BISLERI_20L_NAME ? jarExchange : '')
           ).join('');
         }
@@ -735,15 +735,16 @@ document.addEventListener('deliverylocationchange', () => {
     });
     document.addEventListener('change', event => {
       if (event.target.matches('[data-bisleri-return-choice]')) {
-        setBisleriReturnCount(Number(event.target.value) > 0 ? 1 : 0);
-      } else if (event.target.matches('[data-bisleri-return-count]')) {
         setBisleriReturnCount(event.target.value);
       }
     });
     window.addEventListener('storage', event => {
       if (event.key === CART_STORAGE_KEY && !orderSubmitting) { cart = readCart(); renderCart(false); }
     });
-    window.addEventListener('pageshow', () => { if (!orderSubmitting) { cart = readCart(); renderCart(false); } });
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) bisleriReturnChoice = null;
+      if (!orderSubmitting) { cart = readCart(); renderCart(false); }
+    });
 
     function loadSavedCustomerData() {
       try {
@@ -900,6 +901,10 @@ document.addEventListener('deliverylocationchange', () => {
     form?.addEventListener('submit', async function(e) {
       e.preventDefault();
       if (orderSubmitting) return;
+      if (!getBisleriReturnState().hasAnswer) {
+        document.getElementById("bisleri-return-choice")?.reportValidity();
+        return;
+      }
       orderSubmitting = true;
       const checkingButton = form.querySelector('.submit-btn');
       checkingButton.disabled = true;
@@ -1081,6 +1086,7 @@ document.addEventListener('deliverylocationchange', () => {
 
           document.getElementById('order-screen').classList.add('hidden');
           document.getElementById('thankyou-screen').classList.remove('hidden');
+          bisleriReturnChoice = null;
           cart = {};
           persistCart();
           renderCart(false);
@@ -1178,9 +1184,6 @@ syncHeaderHeight();
 if (window.ResizeObserver) new ResizeObserver(syncHeaderHeight).observe(siteHeader);
 window.addEventListener('resize', syncHeaderHeight);
 renderCart(false);
-if (document.body.classList.contains('cart-page') && !['neerbeku.com', 'www.neerbeku.com'].includes(location.hostname)) {
-  document.getElementById('cart-feedback').textContent = 'Staging checkout — orders are saved in staging and sent to the store notification channel.';
-}
 
 // Resolve requested delivery dates in the store's timezone, not the visitor's.
 function storeDateParts() {
@@ -1419,7 +1422,7 @@ if (document.getElementById('preferred-time')) {
     accountPanel.hidden = false;
     showingAddressList = false;
     addressListEl.hidden = true;
-    chooseAddressButton.textContent = 'Manage saved addresses';
+    chooseAddressButton.textContent = 'Saved addresses';
     chooseAddressButton.setAttribute('aria-expanded', 'false');
     chooseAddressButton.hidden = addresses.length === 0;
     addAddressButton.hidden = addresses.length >= 5;
@@ -1427,7 +1430,7 @@ if (document.getElementById('preferred-time')) {
       activeAddressEl.innerHTML = `<strong class="saved-address-label">${escape(address.label || 'Delivery address')}</strong><span>${escape(savedAddressPreview(address))}</span>`;
       setEntryVisible(false);
       saveRow.hidden = true;
-      setText(addressMessage, 'Selected for this order. Manage saved addresses to switch, edit or delete an address.');
+      setText(addressMessage, 'Selected for this order.');
     } else {
       activeAddressEl.innerHTML = '<strong>No saved delivery address yet</strong><span>Add your details once and NeerBeku can show them here next time.</span>';
       setEntryVisible(true);
@@ -1484,7 +1487,7 @@ if (document.getElementById('preferred-time')) {
       saveButton.textContent = 'Update saved address';
       addressListEl.hidden = true;
       showingAddressList = false;
-      chooseAddressButton.textContent = 'Manage saved addresses';
+      chooseAddressButton.textContent = 'Saved addresses';
       chooseAddressButton.setAttribute('aria-expanded', 'false');
       window.switchAddressMode?.('manual');
       entryPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1559,7 +1562,7 @@ if (document.getElementById('preferred-time')) {
     cancelButton.hidden = addresses.length === 0;
     addressListEl.hidden = true;
     showingAddressList = false;
-    chooseAddressButton.textContent = 'Manage saved addresses';
+    chooseAddressButton.textContent = 'Saved addresses';
     chooseAddressButton.setAttribute('aria-expanded', 'false');
     setText(saveMessage, '');
     field('customer-name').value ||= accountUser?.name || '';
@@ -1663,7 +1666,7 @@ if (document.getElementById('preferred-time')) {
   chooseAddressButton.addEventListener('click', () => {
     showingAddressList = !showingAddressList;
     addressListEl.hidden = !showingAddressList;
-    chooseAddressButton.textContent = showingAddressList ? 'Close address list' : 'Manage saved addresses';
+    chooseAddressButton.textContent = showingAddressList ? 'Hide addresses' : 'Saved addresses';
     chooseAddressButton.setAttribute('aria-expanded', String(showingAddressList));
   });
   addAddressButton.addEventListener('click', openAddressEntry);
