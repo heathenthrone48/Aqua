@@ -1249,7 +1249,8 @@
 .shop-page .water-card .product-carousel-arrow { display: none; }
 .shop-page .water-card .product-image-carousel .product-image-slide img {
   box-sizing: border-box;
-  padding: 2px;
+  padding: 0;
+  scale: 1.08;
 }
 .shop-page .water-card .product-image-carousel { touch-action: pan-y pinch-zoom; }
 .shop-page .water-card .product-carousel-dots { gap: 0; padding: 0 4px; bottom: 4px; }
@@ -1271,14 +1272,4 @@
 .shop-page .water-card .product-carousel-dot.active::before {
   width: 14px;
   background: #087fc2;
-}
-@media (pointer: coarse) {
-  .shop-page .water-card .product-carousel-dots:not(:empty)::before {
-    content: "Swipe";
-    align-self: center;
-    padding-left: 4px;
-    font-size: .6rem;
-    font-weight: 700;
-    color: #31516e;
-  }
 }
