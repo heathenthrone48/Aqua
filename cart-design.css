@@ -719,3 +719,34 @@ body.cart-page{background:#f2f8fc;color:#20384d}
 .checkout-deposit-summary span { font-weight: 800; }
 .checkout-order-summary .checkout-deposit-summary strong { color: #176044; white-space: nowrap; }
 .checkout-deposit-summary p { grid-column: 1 / -1; margin: 0; font-size: .75rem; }
+
+.store-header .store-header-inner {
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto auto;
+}
+.store-header .store-brand { grid-column: 1; grid-row: 1; }
+.store-header .store-header-inner > .store-tagline {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  width: auto;
+  margin: 0;
+  white-space: nowrap;
+}
+.store-header .store-help { grid-column: 3; grid-row: 1; }
+.store-header .store-cart { grid-column: 4; grid-row: 1; }
+.store-tagline-short { display: none; }
+
+@media (max-width: 1000px) {
+  .store-tagline-full { display: none; }
+  .store-tagline-short { display: inline; }
+}
+@media (max-width: 580px) {
+  .store-header .store-header-inner {
+    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    gap: 5px;
+  }
+  .store-header .store-header-inner > .store-tagline {
+    color: #173a61;
+    font-size: clamp(.58rem, 2.5vw, .75rem);
+  }
+}
