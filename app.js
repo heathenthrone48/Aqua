@@ -359,8 +359,35 @@ document.addEventListener('deliverylocationchange', () => {
 
           carousel.addEventListener('mouseenter', () => stopProductAutoPlay(carousel));
           carousel.addEventListener('mouseleave', () => startProductAutoPlay(carousel));
-          carousel.addEventListener('touchstart', () => stopProductAutoPlay(carousel), { passive: true });
-          carousel.addEventListener('touchend', () => startProductAutoPlay(carousel), { passive: true });
+          let startTouch = null;
+          let swipeTime = -Infinity;
+          carousel.addEventListener('touchstart', event => {
+            startTouch = event.touches.length === 1 && !event.target.closest('button') ? event.touches[0] : null;
+            stopProductAutoPlay(carousel);
+          }, { passive: true });
+          carousel.addEventListener('touchend', event => {
+            const touch = event.changedTouches[0];
+            if (startTouch && touch && startTouch.identifier === touch.identifier) {
+              const dx = touch.clientX - startTouch.clientX;
+              const dy = touch.clientY - startTouch.clientY;
+              if (Math.abs(dx) >= 30 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+                const { index } = getCarouselData(carousel);
+                renderCarousel(carousel, index + (dx < 0 ? 1 : -1));
+                swipeTime = performance.now();
+              }
+            }
+            startTouch = null;
+            startProductAutoPlay(carousel);
+          }, { passive: true });
+          carousel.addEventListener('touchcancel', () => {
+            startTouch = null;
+            startProductAutoPlay(carousel);
+          }, { passive: true });
+          carousel.addEventListener('click', event => {
+            if (performance.now() - swipeTime < 400 && !event.target.closest('button')) {
+              event.stopPropagation();
+            }
+          }, true);
         }
       });
     }
