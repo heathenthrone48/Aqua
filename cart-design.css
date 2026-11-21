@@ -1,6 +1,6 @@
 /* Shared storefront and separate checkout. Loaded after styles.css. */
-:root{--shop-blue:#0079f2;--shop-navy:#0b254d;--shop-header-height:84px}
-body.shop-page,body.cart-page{background:#f3f9fd;color:var(--shop-navy)}
+:root{--shop-blue:#0079f2;--shop-navy:#0b254d;--shop-header-height:84px;--shop-surface:#f3f9fd}
+body.shop-page,body.cart-page{background:var(--shop-surface);color:var(--shop-navy)}
 body.shop-page{padding-bottom:110px}
 header{background:rgba(255,255,255,.97);border-bottom:1px solid #e0eaf4;box-shadow:0 4px 18px #16466b06;gap:12px}
 .header-actions{flex-wrap:wrap;justify-content:flex-end;gap:8px}
@@ -73,6 +73,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 
 /* Refined shared header: logo + support links + live cart count. */
 header.store-header{display:block;padding:0;background:rgba(255,255,255,.98);border-bottom:1px solid #dfeaf2;box-shadow:0 4px 20px #12365005}
+.shop-page header.store-header {
+  background: linear-gradient(180deg, #e7f3fc, var(--shop-surface));
+  border-bottom: 0;
+  box-shadow: none;
+}
 .store-header-inner{max-width:1120px;margin:0 auto;padding:16px 28px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px}
 .store-brand{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-decoration:none;min-width:0}
 .store-logo{display:block;width:154px;height:48px;object-fit:contain;object-position:left center}
