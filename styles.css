@@ -1253,7 +1253,7 @@
   scale: 1.08;
 }
 .shop-page .water-card .product-image-carousel { touch-action: pan-y pinch-zoom; }
-.shop-page .water-card .product-carousel-dots { gap: 0; padding: 0 4px; bottom: 4px; }
+.shop-page .water-card .product-carousel-dots { display: none; }
 .shop-page .water-card .product-carousel-dot {
   display: grid;
   place-items: center;
