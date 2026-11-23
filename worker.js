@@ -2,13 +2,13 @@ const MAINTENANCE_HTML = "<!doctype html>\n<html lang=\"en\"><head><meta charset
 
 const DEFAULT_PRODUCT_PRICES = {
   "Bisleri 20L Can": { sellingPrice: 100, mrp: 100 },
-  "Bisleri 10L Can": { sellingPrice: 130, mrp: 130 },
-  "Bisleri 5L Bottle": { sellingPrice: 80, mrp: 80 },
+  "Bisleri 10L Can": { sellingPrice: 125, mrp: 130 },
+  "Bisleri 5L Bottle": { sellingPrice: 75, mrp: 80 },
   "Bisleri 2L Case": { sellingPrice: 250, mrp: 270 },
   "Bisleri 1L Case": { sellingPrice: 180, mrp: 240 },
   "Bisleri 500ml Case": { sellingPrice: 200, mrp: 240 },
-  "Bailey 10L Can": { sellingPrice: 120, mrp: 120 },
-  "Bailey 5L Can": { sellingPrice: 70, mrp: 70 },
+  "Bailey 10L Can": { sellingPrice: 115, mrp: 120 },
+  "Bailey 5L Can": { sellingPrice: 75, mrp: 70 },
   "Bailey 2L Case": { sellingPrice: 240, mrp: 315 },
   "Bailey 1L Case": { sellingPrice: 230, mrp: 230 },
   "Kinley 2L Case": { sellingPrice: 240, mrp: 315 },
