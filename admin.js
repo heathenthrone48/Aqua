@@ -17,6 +17,8 @@ const PRODUCTS = [
 
 // Availability is shared through Cloudflare D1. The password stays in memory only.
 let adminPassword = "";
+let adminAuthenticated = false;
+let adminGoogleEnabled = false;
 let stockState = {};
 let savingStock = false;
 let loadingStock = false;
@@ -41,7 +43,7 @@ function stockMessage(text) {
 
 async function stockApi(path, method = 'GET', data, timeout = 10000) {
   const headers = {};
-  if (method !== 'GET' || path.startsWith('/api/admin/')) headers.Authorization = `Bearer ${adminPassword}`;
+  if (adminPassword && (method !== 'GET' || path.startsWith('/api/admin/'))) headers.Authorization = `Bearer ${adminPassword}`;
   if (data) headers['Content-Type'] = 'application/json';
   const response = await fetch(path, {
     method, headers, cache: 'no-store',
@@ -50,7 +52,10 @@ async function stockApi(path, method = 'GET', data, timeout = 10000) {
   });
   const result = await response.json();
   if (!response.ok) {
-    if (response.status === 401) logoutAdmin();
+    if (response.status === 401 && adminAuthenticated) {
+      clearAdminSession();
+      if (adminGoogleEnabled) initializeAdminLogin().catch(showAdminError);
+    }
     throw new Error(result.error || 'Request failed. Please try again.');
   }
   return result;
@@ -58,10 +63,60 @@ async function stockApi(path, method = 'GET', data, timeout = 10000) {
 
 document.addEventListener('DOMContentLoaded', () => {
   hideDashboard();
+  initializeAdminLogin().catch(showAdminError);
   // Existing order records are local; dispatcher health is not monitored here.
   const dispatcher = document.getElementById('telegramStatus');
   if (dispatcher) dispatcher.textContent = 'Not monitored';
 });
+
+function showAdminError(problem) {
+  const error = document.getElementById('authError');
+  error.textContent = problem.message;
+  error.style.display = 'block';
+}
+
+async function initializeAdminLogin() {
+  const session = await stockApi('/api/admin/session');
+  adminGoogleEnabled = session.googleEnabled;
+  const message = document.getElementById('adminLoginMessage');
+  if (!adminGoogleEnabled) {
+    message.textContent = 'Enter your staff password.';
+    document.getElementById('adminPasswordLogin').hidden = false;
+    return;
+  }
+  message.textContent = 'Sign in with an approved staff Google account.';
+  if (session.signedIn) {
+    await showDashboard();
+    return;
+  }
+  if (!session.clientId) throw new Error('Staff Google sign-in is unavailable.');
+  const container = document.getElementById('adminGoogleLogin');
+  container.hidden = false;
+  if (container.childElementCount) return;
+  const script = document.createElement('script');
+  script.src = 'https://accounts.google.com/gsi/client';
+  script.onload = () => {
+    google.accounts.id.initialize({ client_id: session.clientId, callback: signInAdminWithGoogle });
+    google.accounts.id.renderButton(container, { theme: 'outline', size: 'large', shape: 'pill', text: 'signin_with', width: Math.min(container.clientWidth, 320) });
+  };
+  script.onerror = () => showAdminError(new Error('Google sign-in could not load. Refresh and try again.'));
+  document.head.append(script);
+}
+
+async function signInAdminWithGoogle({ credential }) {
+  if (loginPending) return;
+  loginPending = true;
+  try {
+    await stockApi('/api/auth/google', 'POST', { credential });
+    const session = await stockApi('/api/admin/session');
+    if (!session.signedIn) throw new Error('This Google account does not have staff access.');
+    await showDashboard();
+  } catch (problem) {
+    showAdminError(problem);
+  } finally {
+    loginPending = false;
+  }
+}
 
 async function verifyPassword() {
   if (loginPending) return;
@@ -81,12 +136,28 @@ async function verifyPassword() {
   } finally { loginPending = false; }
 }
 
-function logoutAdmin() {
+function clearAdminSession() {
   adminPassword = '';
+  adminAuthenticated = false;
   hideDashboard();
 }
 
+async function logoutAdmin() {
+  if (adminGoogleEnabled) {
+    try {
+      await stockApi('/api/auth/logout', 'POST');
+    } catch (problem) {
+      window.alert(problem.message);
+      return;
+    }
+    window.location.reload();
+  } else {
+    clearAdminSession();
+  }
+}
+
 async function showDashboard() {
+  adminAuthenticated = true;
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('adminDashboard').style.display = 'block';
   loadLogs();
@@ -165,7 +236,7 @@ function renderPriceTable() {
 }
 
 async function saveProductPrice(id, sellingInput, mrpInput, button) {
-  if (!adminPassword || savingPriceId) return;
+  if (!adminAuthenticated || savingPriceId) return;
   const sellingPrice = Number(sellingInput.value);
   const mrp = Number(mrpInput.value);
   if (!sellingInput.value.trim() || !mrpInput.value.trim() ||
@@ -197,7 +268,7 @@ async function saveProductPrice(id, sellingInput, mrpInput, button) {
 }
 
 async function refreshAdminStock() {
-  if (savingStock || loadingStock || !adminPassword) return;
+  if (savingStock || loadingStock || !adminAuthenticated) return;
   loadingStock = true;
   try {
     const data = await stockApi('/api/stock');
@@ -239,7 +310,7 @@ function renderProductControls() {
 }
 
 async function toggleProductStock(productId, available) {
-  if (savingStock || loadingStock || !adminPassword) return;
+  if (savingStock || loadingStock || !adminAuthenticated) return;
   savingStock = true;
   renderProductControls();
   stockMessage('Saving…');
@@ -256,7 +327,7 @@ async function toggleProductStock(productId, available) {
 }
 
 setInterval(() => {
-  if (adminPassword && !document.hidden) refreshAdminStock();
+  if (adminAuthenticated && !document.hidden) refreshAdminStock();
 }, 10000);
 window.addEventListener('focus', refreshAdminStock);
 
@@ -268,7 +339,7 @@ window.addEventListener('focus', refreshAdminStock);
       const countDisplay = document.getElementById('totalOrdersCount');
       const resultCount = document.getElementById('orderResultCount');
       const loadMore = document.getElementById('loadMoreOrders');
-      if (!tbody || !adminPassword) return;
+      if (!tbody || !adminAuthenticated) return;
       if (reset) {
         orderOffset = 0;
         orderTotal = 0;
@@ -374,7 +445,7 @@ window.addEventListener('focus', refreshAdminStock);
 document.addEventListener('DOMContentLoaded', () => {
  const form=document.getElementById('addProductForm'); if(!form)return;
  form.addEventListener('submit',event=>{
-  event.preventDefault(); if(!adminPassword)return;
+  event.preventDefault(); if(!adminAuthenticated)return;
   const status=document.getElementById('addProductStatus'),button=document.getElementById('addProductSubmit'),file=document.getElementById('newProductImage').files[0];
   if(!file||!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>1024*1024){status.textContent='Choose a PNG, JPG or WebP image no larger than 1 MB.';return;}
   const reader=new FileReader();reader.onerror=()=>status.textContent='Could not read image.';
