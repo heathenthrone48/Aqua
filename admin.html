@@ -9,19 +9,21 @@
 </head>
 <body>
 
-  <!-- Staff sign-in -->
-  <div id="authOverlay">
-    <div class="card auth-card">
-      <h2>Admin Login</h2>
-      <p id="adminLoginMessage" style="color: #64748b; font-size: 0.9rem; margin-top: 4px;">Checking staff sign-in…</p>
-      <div id="adminGoogleLogin" hidden></div>
+  <main id="authOverlay" aria-labelledby="adminLoginTitle">
+    <section class="auth-card">
+      <img class="auth-logo" src="images/logo.png" alt="NeerBeku" width="176" height="56">
+      <h1 id="adminLoginTitle">Staff sign-in</h1>
+      <p id="adminLoginMessage" class="auth-message" role="status">Checking staff sign-in…</p>
+      <div id="adminGoogleLogin" class="auth-google" hidden></div>
       <div id="adminPasswordLogin" hidden>
-        <input type="password" id="adminPasswordInput" class="input-field" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter') verifyPassword()">
-        <button class="btn" style="width: 100%;" onclick="verifyPassword()">Login</button>
+        <label for="adminPasswordInput" class="auth-password-label">Staff password</label>
+        <input type="password" id="adminPasswordInput" class="input-field" autocomplete="current-password" onkeydown="if(event.key==='Enter') verifyPassword()">
+        <button class="btn auth-password-button" type="button" onclick="verifyPassword()">Sign in</button>
       </div>
-      <div id="authError" class="error-msg" style="margin-top: 10px;">Incorrect password.</div>
-    </div>
-  </div>
+      <div id="authError" class="error-msg auth-error" role="alert"></div>
+      <a class="auth-back" href="index.html">Back to NeerBeku</a>
+    </section>
+  </main>
 
   <!-- Main Dashboard View (Hidden by default in CSS) -->
   <div class="container" id="adminDashboard">

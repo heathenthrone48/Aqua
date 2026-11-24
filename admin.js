@@ -97,7 +97,7 @@ async function initializeAdminLogin() {
   script.src = 'https://accounts.google.com/gsi/client';
   script.onload = () => {
     google.accounts.id.initialize({ client_id: session.clientId, callback: signInAdminWithGoogle });
-    google.accounts.id.renderButton(container, { theme: 'outline', size: 'large', text: 'signin_with' });
+    google.accounts.id.renderButton(container, { theme: 'outline', size: 'large', shape: 'pill', text: 'signin_with', width: Math.min(container.clientWidth, 320) });
   };
   script.onerror = () => showAdminError(new Error('Google sign-in could not load. Refresh and try again.'));
   document.head.append(script);
