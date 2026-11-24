@@ -9,13 +9,16 @@
 </head>
 <body>
 
-  <!-- Password Authentication Screen -->
+  <!-- Staff sign-in -->
   <div id="authOverlay">
     <div class="card auth-card">
       <h2>Admin Login</h2>
-      <p style="color: #64748b; font-size: 0.9rem; margin-top: 4px;">Enter key to access system panel</p>
-      <input type="password" id="adminPasswordInput" class="input-field" placeholder="Enter password" autocomplete="off" onkeydown="if(event.key==='Enter') verifyPassword()">
-      <button class="btn" style="width: 100%;" onclick="verifyPassword()">Login</button>
+      <p id="adminLoginMessage" style="color: #64748b; font-size: 0.9rem; margin-top: 4px;">Checking staff sign-in…</p>
+      <div id="adminGoogleLogin" hidden></div>
+      <div id="adminPasswordLogin" hidden>
+        <input type="password" id="adminPasswordInput" class="input-field" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter') verifyPassword()">
+        <button class="btn" style="width: 100%;" onclick="verifyPassword()">Login</button>
+      </div>
       <div id="authError" class="error-msg" style="margin-top: 10px;">Incorrect password.</div>
     </div>
   </div>

@@ -123,6 +123,18 @@ async function getCurrentUser(request, env) {
   return row || null;
 }
 
+function adminGoogleEmails(env) {
+  return new Set((env.ADMIN_GOOGLE_EMAILS || "").split(",").map(email => email.trim().toLowerCase()).filter(Boolean));
+}
+
+async function hasAdminAccess(request, env) {
+  const approved = adminGoogleEmails(env);
+  if (env.ADMIN_AUTH_MODE !== "google") return validPassword(request, env);
+  const user = await getCurrentUser(request, env);
+  const email = user?.email?.toLowerCase();
+  return !!(user?.google_sub && email?.endsWith("@gmail.com") && approved.has(email));
+}
+
 function normalizeOrder(data) {
   const orderId = String(data.orderId || data.orderID || "").trim();
   const name = String(data.name || "").trim();
@@ -575,11 +587,20 @@ export default {
         return Response.json({ success: true }, { headers: { "Cache-Control": "no-store", "Set-Cookie": sessionCookie("", 0) } });
       }
 
+      if (url.pathname === "/api/admin/session" && request.method === "GET") {
+        const googleEnabled = env.ADMIN_AUTH_MODE === "google";
+        return json({
+          googleEnabled,
+          clientId: googleEnabled ? env.GOOGLE_CLIENT_ID : undefined,
+          signedIn: googleEnabled && await hasAdminAccess(request, env)
+        });
+      }
+
       if (
         url.pathname === "/api/admin/login" &&
         request.method === "POST"
       ) {
-        return await validPassword(request, env)
+        return await hasAdminAccess(request, env)
           ? json({ success: true })
           : json({ error: "Incorrect password" }, 401);
       }
@@ -621,7 +642,7 @@ export default {
       }
 
       if (url.pathname === "/api/admin/orders/retry-telegram" && request.method === "POST") {
-        if (!(await validPassword(request, env))) return json({ error: "Please log in again" }, 401);
+        if (!(await hasAdminAccess(request, env))) return json({ error: "Please log in again" }, 401);
         let data;
         try { data = await request.json(); } catch { return json({ error: "Invalid retry request" }, 400); }
         const orderId = data?.orderId;
@@ -643,7 +664,7 @@ export default {
       }
 
       if (url.pathname === "/api/admin/orders" && request.method === "GET") {
-        if (!(await validPassword(request, env))) return json({ error: "Please log in again" }, 401);
+        if (!(await hasAdminAccess(request, env))) return json({ error: "Please log in again" }, 401);
         const query = String(url.searchParams.get("q") || "").trim().slice(0, 120);
         const from = Number(url.searchParams.get("from"));
         const to = Number(url.searchParams.get("to"));
@@ -707,12 +728,12 @@ export default {
         return new Response(Uint8Array.from(atob(row.image_data),c=>c.charCodeAt(0)),{headers:{"Content-Type":row.image_mime,"Cache-Control":"public,max-age=3600","X-Content-Type-Options":"nosniff"}});
       }
       if(url.pathname==="/api/admin/products"&&request.method==="GET"){
-        if(!(await validPassword(request,env)))return json({error:"Please log in again"},401);
+        if(!(await hasAdminAccess(request,env)))return json({error:"Please log in again"},401);
         const {results}=await env.DB.prepare("SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty,available FROM custom_products ORDER BY sort_order,created_at").all();
         return json({products:results.map(r=>({id:r.id,name:r.name,brand:r.brand,description:r.description,category:r.category,unitLabel:r.unit_label,price:Number(r.selling_price),mrp:Number(r.mrp),caseQty:r.case_qty==null?null:Number(r.case_qty),available:r.available===1}))});
       }
       if(url.pathname==="/api/admin/products"&&request.method==="POST"){
-        if(!(await validPassword(request,env)))return json({error:"Please log in again"},401);
+        if(!(await hasAdminAccess(request,env)))return json({error:"Please log in again"},401);
         let d;try{d=await request.json();}catch{return json({error:"Invalid request"},400);}
         const name=String(d.name||"").trim(),brand=String(d.brand||"").trim(),description=String(d.description||"").trim(),category=String(d.category||""),unit=String(d.unitLabel||"").trim();
         const price=Number(d.sellingPrice),mrp=Number(d.mrp),caseQty=d.caseQty==null||d.caseQty===""?null:Number(d.caseQty),mime=String(d.imageMime||""),image=String(d.imageData||"");
@@ -743,7 +764,7 @@ export default {
       }
 
       if (url.pathname === "/api/prices" && request.method === "PUT") {
-        if (!(await validPassword(request, env))) {
+        if (!(await hasAdminAccess(request, env))) {
           return json({ error: "Please log in again" }, 401);
         }
         let data;
@@ -787,7 +808,7 @@ export default {
         url.pathname === "/api/stock" &&
         request.method === "PUT"
       ) {
-        if (!(await validPassword(request, env))) {
+        if (!(await hasAdminAccess(request, env))) {
           return json({ error: "Please log in again" }, 401);
         }
 
