@@ -149,7 +149,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('modalBadge').innerText = badge;
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalSubtitle').innerText = desc;
-      document.getElementById('modalPrice').innerHTML = `₹${price} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ unit</span><small style="display:block;color:#087eaf;font-weight:700;margin-top:6px;">Buy 5+ of this product and save ₹5 per unit</small>`;
+      document.getElementById('modalPrice').innerHTML = `₹${price} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ unit</span><small style="display:block;color:#087eaf;font-weight:700;margin-top:6px;">Buy 5+ of this product and save ₹${getBulkDiscount(name)} per unit</small>`;
       document.getElementById('modalImg').src = img;
       setProductQuantity(document.getElementById('modalQtyVal'), document.getElementById('modalAddToCartBtn'), Number(card.querySelector('.card-qty-value').textContent));
 
@@ -541,9 +541,16 @@ document.addEventListener('deliverylocationchange', () => {
     ]);
     const BULK_DISCOUNT_MIN_QTY = 5;
     const BULK_DISCOUNT_PER_UNIT = 5;
+    const BULK_DISCOUNT_BY_PRODUCT = {
+      'Bisleri 5L Bottle': 3,
+      'Bailey 5L Can': 3
+    };
+    function getBulkDiscount(name) {
+      return BULK_DISCOUNT_BY_PRODUCT[name] ?? BULK_DISCOUNT_PER_UNIT;
+    }
     function getCartUnitPrice(name, quantity) {
       const basePrice = Number(catalog[name]?.price || 0);
-      return BULK_DISCOUNT_PRODUCTS.has(name) && quantity >= BULK_DISCOUNT_MIN_QTY ? Math.max(0, basePrice - BULK_DISCOUNT_PER_UNIT) : basePrice;
+      return BULK_DISCOUNT_PRODUCTS.has(name) && quantity >= BULK_DISCOUNT_MIN_QTY ? Math.max(0, basePrice - getBulkDiscount(name)) : basePrice;
     }
     function updateBulkPriceNotes() {
       document.querySelectorAll('.water-card').forEach(card => {
@@ -551,7 +558,7 @@ document.addEventListener('deliverylocationchange', () => {
         if (card.querySelector('.bulk-price-note')) return;
         const note = document.createElement('small');
         note.className = 'bulk-price-note';
-        note.textContent = 'Buy 5+ of this product and save ₹5 per unit';
+        note.textContent = 'Buy 5+ of this product and save ₹' + getBulkDiscount(card.dataset.name) + ' per unit';
         card.querySelector('.water-price-block')?.appendChild(note);
       });
     }
@@ -787,11 +794,12 @@ document.addEventListener('deliverylocationchange', () => {
             const regularPrice = Number(catalog[item.name]?.price ?? item.price);
             const hasBulkDeal = BULK_DISCOUNT_PRODUCTS.has(item.name);
             const bulkUnlocked = hasBulkDeal && item.qty >= BULK_DISCOUNT_MIN_QTY;
-            const bulkPrice = hasBulkDeal ? Math.max(0, regularPrice - BULK_DISCOUNT_PER_UNIT) : regularPrice;
+            const bulkDiscount = hasBulkDeal ? getBulkDiscount(item.name) : 0;
+            const bulkPrice = hasBulkDeal ? Math.max(0, regularPrice - bulkDiscount) : regularPrice;
             const bulkMessage = bulkUnlocked
-              ? '<div class="cart-bulk-deal cart-bulk-unlocked"><strong>✓ Bulk price unlocked</strong><span><s>' + money(regularPrice) + '</s> <b>' + money(item.price) + ' each</b> · You save ' + money(BULK_DISCOUNT_PER_UNIT) + ' per case</span></div>'
+              ? '<div class="cart-bulk-deal cart-bulk-unlocked"><strong>✓ Bulk price unlocked</strong><span><s>' + money(regularPrice) + '</s> <b>' + money(item.price) + ' each</b> · You save ' + money(bulkDiscount) + ' per unit</span></div>'
               : hasBulkDeal
-                ? '<div class="cart-bulk-deal cart-bulk-progress"><strong>Buy ' + BULK_DISCOUNT_MIN_QTY + '+ and save ₹5 per case</strong><span>Add ' + (BULK_DISCOUNT_MIN_QTY - item.qty) + ' more to unlock <b>' + money(bulkPrice) + ' each</b></span></div>'
+                ? '<div class="cart-bulk-deal cart-bulk-progress"><strong>Buy ' + BULK_DISCOUNT_MIN_QTY + '+ and save ₹' + bulkDiscount + ' per unit</strong><span>Add ' + (BULK_DISCOUNT_MIN_QTY - item.qty) + ' more to unlock <b>' + money(bulkPrice) + ' each</b></span></div>'
                 : '';
             return '<article class="checkout-item">' +
               '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '">' +
