@@ -504,6 +504,61 @@ document.addEventListener('deliverylocationchange', () => {
 
     const CART_STORAGE_KEY = 'neerbeku_cart_v1';
     const catalog = window.NEER_CATALOG;
+
+    async function loadCustomStorefrontProducts() {
+      const grid = document.querySelector('.water-grid');
+      if (!grid) return;
+      try {
+        const response = await fetch('/api/products', { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+        if (!response.ok) throw new Error('Could not load additional products');
+        const data = await response.json();
+        for (const product of (Array.isArray(data.products) ? data.products : [])) {
+          if (!product?.id || !product.name || Object.hasOwn(catalog, product.name)) continue;
+          const item = {
+            id: product.id, name: product.name, brand: product.brand || 'NEERBEKU • WATER',
+            description: product.description || '', category: product.category || 'water',
+            unitLabel: product.unitLabel || '/ unit', price: Number(product.price) || 0,
+            mrp: Number(product.mrp) || 0, caseQty: product.caseQty || null,
+            image: product.image
+          };
+          catalog[product.name] = item;
+          const card = document.createElement('div');
+          card.className = 'water-card';
+          card.dataset.category = item.category;
+          card.dataset.name = item.name;
+          card.dataset.price = String(item.price);
+          card.dataset.mrp = String(item.mrp);
+          if (item.caseQty) card.dataset.caseQty = String(item.caseQty);
+          const imageUrl = item.image || '';
+          const title = item.caseQty ? item.name + ' (' + item.caseQty + ' pcs)' : item.name;
+          card.innerHTML = `
+            <div class="product-clickable-area" onclick="openProductModal(this)">
+              <div class="product-image-carousel" data-images='${escapeHtml(JSON.stringify(imageUrl ? [imageUrl] : []))}'>
+                <div class="product-image-track"></div>
+                <button type="button" class="product-carousel-arrow prev is-hidden" aria-label="Previous image" onclick="event.stopPropagation(); changeProductImage(this, -1)">‹</button>
+                <button type="button" class="product-carousel-arrow next is-hidden" aria-label="Next image" onclick="event.stopPropagation(); changeProductImage(this, 1)">›</button>
+                <div class="product-carousel-dots"></div><div class="product-image-count"></div>
+              </div>
+              <span class="badge-type">${escapeHtml(item.brand)}</span>
+              <div class="water-title">${escapeHtml(title)}</div>
+              <div class="water-desc">${escapeHtml(item.description)}</div>
+            </div>
+            <div class="water-price-block">
+              <div class="water-price-top"><span class="water-mrp">₹${item.mrp.toFixed(2)}</span><span class="water-savings" ${item.mrp > item.price ? '' : 'hidden'}>Save ₹${Math.max(0,item.mrp-item.price).toFixed(2)}</span></div>
+              <div class="water-price">₹${item.price.toFixed(2)} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">${escapeHtml(item.unitLabel)}</span></div>
+              ${item.caseQty ? '<span class="water-case-meta">' + item.caseQty + ' pcs · ₹' + (item.price/item.caseQty).toFixed(2) + ' each</span>' : ''}
+            </div>
+            <div class="card-bottom">
+              <button type="button" class="card-qty-btn" aria-label="Decrease quantity" onclick="changeCardQty(this, -1)">−</button>
+              <button type="button" class="add-cart-btn" onclick="addToCart(this)"><span class="card-add-label">Add</span><span class="card-qty-value" aria-live="polite">1</span></button>
+              <button type="button" class="card-qty-btn" aria-label="Increase quantity" onclick="changeCardQty(this, 1)">+</button>
+            </div>`;
+          grid.appendChild(card);
+        }
+      } catch (error) {
+        console.error('Could not load custom products:', error);
+      }
+    }
     let orderSubmitting = false;
     let lastOrderAttempt = null;
     let priceRefreshInProgress = false;
@@ -945,7 +1000,6 @@ document.addEventListener('deliverylocationchange', () => {
     }
 
     if (document.getElementById('heroCarousel')) initHeroCarousel();
-    initProductCarousels();
     refreshLivePrices();
     setInterval(() => { if (!document.hidden) refreshLivePrices(); }, 10000);
     window.addEventListener('focus', refreshLivePrices);
@@ -1349,8 +1403,11 @@ stockNotice.setAttribute('role', 'status');
 stockNotice.textContent = '';
 stockNotice.hidden = true;
 document.querySelector('.water-grid, .cart-panel, .reference-summary-card')?.before(stockNotice);
-applyLiveStock();
-refreshLiveStock();
+loadCustomStorefrontProducts().finally(() => {
+  initProductCarousels();
+  applyLiveStock();
+  refreshLiveStock();
+});
 setInterval(() => { if (!document.hidden) refreshLiveStock(); }, 10000);
 window.addEventListener('focus', refreshLiveStock);
 document.addEventListener('visibilitychange', () => {
