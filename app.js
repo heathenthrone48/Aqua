@@ -783,15 +783,26 @@ document.addEventListener('deliverylocationchange', () => {
         if (!items.length) {
           list.innerHTML = '<div class="cart-empty"><h3>Your cart is empty</h3><p>Add some water or accessories to get started.</p><a href="index.html" class="view-cart-button">Browse products →</a></div>';
         } else {
-          list.innerHTML = items.map(item =>
-            '<article class="checkout-item">' +
+          list.innerHTML = items.map(item => {
+            const regularPrice = Number(catalog[item.name]?.price ?? item.price);
+            const hasBulkDeal = BULK_DISCOUNT_PRODUCTS.has(item.name);
+            const bulkUnlocked = hasBulkDeal && item.qty >= BULK_DISCOUNT_MIN_QTY;
+            const bulkPrice = hasBulkDeal ? Math.max(0, regularPrice - BULK_DISCOUNT_PER_UNIT) : regularPrice;
+            const bulkMessage = bulkUnlocked
+              ? '<div class="cart-bulk-deal cart-bulk-unlocked"><strong>✓ Bulk price unlocked</strong><span><s>' + money(regularPrice) + '</s> <b>' + money(item.price) + ' each</b> · You save ' + money(BULK_DISCOUNT_PER_UNIT) + ' per case</span></div>'
+              : hasBulkDeal
+                ? '<div class="cart-bulk-deal cart-bulk-progress"><strong>Buy ' + BULK_DISCOUNT_MIN_QTY + '+ and save ₹5 per case</strong><span>Add ' + (BULK_DISCOUNT_MIN_QTY - item.qty) + ' more to unlock <b>' + money(bulkPrice) + ' each</b></span></div>'
+                : '';
+            return '<article class="checkout-item">' +
               '<img src="' + escapeHtml(item.image) + '" alt="' + escapeHtml(item.name) + '">' +
-              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + money(item.price) + ' each</p><strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
+              '<div class="checkout-item-info"><h3>' + escapeHtml(item.name) + '</h3><p>' + (bulkUnlocked ? '<s style="color:#8797a8;margin-right:6px;">' + money(regularPrice) + '</s><strong style="color:#087eaf;">' + money(item.price) + ' each</strong>' : money(item.price) + ' each') + '</p>' +
+                bulkMessage +
+                '<strong class="checkout-line-total">' + money(item.price * item.qty) + '</strong>' +
                 '<div class="checkout-item-actions"><div class="checkout-qty"><button type="button" data-cart-action="minus" data-product="' + escapeHtml(item.name) + '" aria-label="Decrease ' + escapeHtml(item.name) + ' quantity">−</button><span>' + item.qty + '</span><button type="button" data-cart-action="plus" data-product="' + escapeHtml(item.name) + '" aria-label="Increase ' + escapeHtml(item.name) + ' quantity">+</button></div>' +
                 '<button type="button" class="checkout-remove" data-cart-action="remove" data-product="' + escapeHtml(item.name) + '">Remove</button></div>' +
               '</div>' +
-            '</article>' + (item.name === BISLERI_20L_NAME ? jarExchange : '')
-          ).join('');
+            '</article>' + (item.name === BISLERI_20L_NAME ? jarExchange : '');
+          }).join('');
         }
       }
       const basketSummary = document.getElementById('basket-summary');
