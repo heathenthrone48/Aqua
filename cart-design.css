@@ -1142,3 +1142,11 @@ body.cart-page{color:#20384d}
 .cart-page .submit-btn[aria-busy="true"] { cursor: wait; }
 .place-order-feedback { color: #9e2b26; font-size: .875rem; margin: 0 0 .5rem; }
 .place-order-feedback:empty { margin: 0; }
+
+/* Bulk quantity offer in cart */
+.cart-bulk-deal{display:flex;flex-direction:column;gap:3px;margin:7px 0 9px;padding:8px 10px;border-radius:9px;font-size:12px;line-height:1.4}
+.cart-bulk-deal strong{font-size:12px;font-weight:800}
+.cart-bulk-deal span{display:block}
+.cart-bulk-unlocked{background:#eaf8f1;border:1px solid #b8e7ce;color:#176b43}
+.cart-bulk-progress{background:#eef7ff;border:1px solid #c8e4fa;color:#155b8c}
+.cart-bulk-deal b{font-weight:800}
