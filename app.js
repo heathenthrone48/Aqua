@@ -23,7 +23,11 @@ async function fetchRoadDistance(force = false) {
   const response = await fetch('/api/delivery/route', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ latitude: coordinates.latitude, longitude: coordinates.longitude }),
+    body: JSON.stringify({
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+      productNames: Object.values(cart || {}).map(item => item.name)
+    }),
     signal: controller.signal,
     cache: 'no-store'
   });
