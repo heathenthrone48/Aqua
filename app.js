@@ -1,5 +1,5 @@
 const MAX_DELIVERY_RADIUS_KM = 5.5;
-const MAX_PRODUCT_QUANTITY = 20;
+const MAX_PRODUCT_QUANTITY = 15;
 let cachedRoadDistanceKm = null;
 let cachedRouteResult = null;
 let cachedRouteKey = "";
