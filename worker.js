@@ -277,6 +277,13 @@ const BULK_DISCOUNT_PRODUCTS = new Set([
 ]);
 const BULK_DISCOUNT_MIN_QTY = 5;
 const BULK_DISCOUNT_PER_UNIT = 5;
+const BULK_DISCOUNT_BY_PRODUCT = {
+  'Bisleri 5L Bottle': 3,
+  'Bailey 5L Can': 3
+};
+function getBulkDiscount(productId) {
+  return BULK_DISCOUNT_BY_PRODUCT[productId] ?? BULK_DISCOUNT_PER_UNIT;
+}
 async function validateOrderPricing(order, totalAmount, env) {
   const { results: overrides } = await env.DB.prepare("SELECT product_id, selling_price FROM product_prices").all();
   const { results: custom } = await env.DB.prepare("SELECT id, name, selling_price, available FROM custom_products").all();
@@ -302,7 +309,7 @@ async function validateOrderPricing(order, totalAmount, env) {
       return json({ error: "An item in your cart is no longer available. Please update your cart." }, 409);
     }
     const unitPrice = BULK_DISCOUNT_PRODUCTS.has(item.productId) && item.quantity >= BULK_DISCOUNT_MIN_QTY
-      ? Math.max(0, price - BULK_DISCOUNT_PER_UNIT)
+      ? Math.max(0, price - getBulkDiscount(item.productId))
       : price;
     const lineCents = cents(unitPrice) * item.quantity;
     if (cents(item.unitPrice) !== cents(unitPrice) || cents(item.lineTotal) !== lineCents) {
