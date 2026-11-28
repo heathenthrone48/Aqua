@@ -228,68 +228,46 @@ function getHandlingFee(subtotal) {
 }
 
 async function deliveryRoute(data, env) {
-  if (!env.ORS_API_KEY) {
-    return json({ error: "Road distance service is not configured yet." }, 503);
-  }
-
+  if (!env.ORS_API_KEY) return json({ error: "Road distance service is not configured yet." }, 503);
+  const latitude = Number(data.latitude), longitude = Number(data.longitude);
   if (data.latitude === undefined || data.latitude === null || data.latitude === "" ||
-      data.longitude === undefined || data.longitude === null || data.longitude === "") {
-    return json({ error: "Choose a valid GPS or map location." }, 400);
-  }
-
-  const latitude = Number(data.latitude);
-  const longitude = Number(data.longitude);
-  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+      data.longitude === undefined || data.longitude === "" ||
+      !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
       !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
     return json({ error: "Choose a valid GPS or map location." }, 400);
   }
 
-  let routeResponse;
-  try {
-    routeResponse = await fetch("https://api.heigit.org/openrouteservice/v2/directions/driving-car/geojson", {
-      method: "POST",
-      headers: {
-        "Authorization": env.ORS_API_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        coordinates: [[77.6789059, 12.8097082], [longitude, latitude]],
-        instructions: false
-      })
-    });
-  } catch {
-    return json({ error: "The road distance service is temporarily unavailable. Please try again." }, 502);
+  const hubs = [
+    { id: "hub1", name: "Main Hub", latitude: 12.8097082, longitude: 77.6789059, products: "all" },
+    { id: "hub2", name: "Amrutha Supermarket Hub", latitude: 12.8151065, longitude: 77.6908506, products: "bisleri20l" }
+  ];
+  const results = await Promise.all(hubs.map(async hub => {
+    try {
+      const response = await fetch("https://api.heigit.org/openrouteservice/v2/directions/driving-car/geojson", {
+        method: "POST",
+        headers: { "Authorization": env.ORS_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ coordinates: [[hub.longitude, hub.latitude], [longitude, latitude]], instructions: false })
+      });
+      const data = await response.json();
+      const summary = data.features?.[0]?.properties?.summary;
+      const geometry = data.features?.[0]?.geometry;
+      if (!response.ok || !Number.isFinite(summary?.distance) || summary.distance <= 0 ||
+          geometry?.type !== "LineString" || !Array.isArray(geometry.coordinates)) return null;
+      return { id: hub.id, name: hub.name, distanceKm: Number((summary.distance / 1000).toFixed(3)),
+        distanceMeters: summary.distance, durationSeconds: Number.isFinite(summary.duration) ? summary.duration : null,
+        geometry: geometry.coordinates, withinServiceArea: summary.distance <= 5500, products: hub.products };
+    } catch { return null; }
+  }));
+  if (results.some(result => result === null)) {
+    return json({ error: "Could not calculate road distance from both delivery hubs. Please try again." }, 502);
   }
-
-  let routeData;
-  try {
-    routeData = await routeResponse.json();
-  } catch {
-    return json({ error: "Invalid response from road distance service." }, 502);
-  }
-
-  const feature = routeData.features?.[0];
-  const summary = feature?.properties?.summary;
-  const geometry = feature?.geometry;
-  if (!routeResponse.ok || !Number.isFinite(summary?.distance) ||
-      summary.distance <= 0 || geometry?.type !== "LineString" ||
-      !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) {
-    return json({
-      error: "Could not calculate a road route for this location. Please adjust the map pin and try again."
-    }, 422);
-  }
-
-  const distanceMeters = summary.distance;
-  const distanceKm = distanceMeters / 1000;
-  return json({
-    distanceKm: Number(distanceKm.toFixed(3)),
-    distanceMeters,
-    durationSeconds: Number.isFinite(summary.duration) ? summary.duration : null,
-    geometry: geometry.coordinates,
-    withinServiceArea: distanceKm <= 5.5
-  });
+  const hub1 = results[0], hub2 = results[1];
+  const selected = hub1.withinServiceArea ? hub1 : hub2.withinServiceArea ? hub2 : null;
+  return json({ hubs: results, selectedHub: selected?.id || null,
+    distanceKm: selected?.distanceKm ?? Math.min(hub1.distanceKm, hub2.distanceKm),
+    distanceMeters: selected?.distanceMeters ?? null, durationSeconds: selected?.durationSeconds ?? null,
+    geometry: selected?.geometry ?? [], withinServiceArea: !!selected });
 }
-
 const BULK_DISCOUNT_PRODUCTS = new Set([
   'Bisleri 20L Can', 'Bisleri 5L Bottle',
   'Bisleri 1L Case', 'Bisleri 2L Case', 'Bisleri 500ml Case',
