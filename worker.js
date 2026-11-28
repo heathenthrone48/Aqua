@@ -195,6 +195,7 @@ function normalizeOrder(data) {
     deliveryFee: Number(data.deliveryFee) || 0,
     handlingFee: Number(data.handlingFee) || 0,
     distanceKm,
+    selectedHub: String(data.selectedHub || ""),
     deliveryWindow,
     time: deliveryWindow,
     latitude,
@@ -604,6 +605,10 @@ export default {
         if (!validated) return json({ error: "Please check the order details and try again." }, 400);
 
         const { order, totalAmount } = validated;
+        if (!["hub1", "hub2"].includes(order.selectedHub) ||
+            (order.selectedHub === "hub2" && order.items.some(item => item.productId !== "Bisleri 20L Can"))) {
+          return json({ error: "This delivery hub can fulfil Bisleri 20L cans only. Please update your cart or delivery address." }, 409);
+        }
         const existing = await env.DB.prepare("SELECT telegram_status FROM orders WHERE order_id = ?")
           .bind(order.orderId).first();
         if (existing) {
