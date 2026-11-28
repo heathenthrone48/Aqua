@@ -728,6 +728,19 @@ export default {
         if(!row)return new Response("Not found",{status:404});
         return new Response(Uint8Array.from(atob(row.image_data),c=>c.charCodeAt(0)),{headers:{"Content-Type":row.image_mime,"Cache-Control":"public,max-age=3600","X-Content-Type-Options":"nosniff"}});
       }
+      if (url.pathname === "/api/products" && request.method === "GET") {
+        const { results } = await env.DB.prepare(
+          "SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty,available FROM custom_products ORDER BY sort_order,created_at"
+        ).all();
+        return json({ products: results.map(r => ({
+          id: r.id, name: r.name, brand: r.brand, description: r.description,
+          category: r.category, unitLabel: r.unit_label,
+          price: Number(r.selling_price), mrp: Number(r.mrp),
+          caseQty: r.case_qty == null ? null : Number(r.case_qty),
+          available: r.available === 1, image: "/api/product-image/" + encodeURIComponent(r.id)
+        })) });
+      }
+
       if(url.pathname==="/api/admin/products"&&request.method==="GET"){
         if(!(await hasAdminAccess(request,env)))return json({error:"Please log in again"},401);
         const {results}=await env.DB.prepare("SELECT id,name,brand,description,category,unit_label,selling_price,mrp,case_qty,available FROM custom_products ORDER BY sort_order,created_at").all();
@@ -801,7 +814,7 @@ export default {
 
         for(const r of results)if(PRODUCT_IDS.has(r.product_id))stock[r.product_id]=r.available===1;
         const custom=await env.DB.prepare("SELECT id,available FROM custom_products").all();
-        for(const r of custom.results)stock[r.id]=r.available===1;
+        for(const r of custom.results){stock[r.id]=r.available===1;const product=await env.DB.prepare("SELECT name FROM custom_products WHERE id=?").bind(r.id).first();if(product)stock[product.name]=r.available===1;}
         return json({stock});
       }
 
