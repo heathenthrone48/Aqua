@@ -16,7 +16,9 @@ function getDeliveryCoordinates() {
 async function fetchRoadDistance(force = false) {
   const coordinates = getDeliveryCoordinates();
   if (!coordinates) throw new Error('Please select your delivery location using GPS or the map.');
-  if (!force && cachedRouteKey === coordinates.key && cachedRoadDistanceKm !== null) return cachedRoadDistanceKm;
+  const productNames = Object.values(cart || {}).map(item => item.name).sort();
+  const routeKey = coordinates.key + "|" + productNames.join("|");
+  if (!force && cachedRouteKey === routeKey && cachedRoadDistanceKm !== null) return cachedRoadDistanceKm;
   if (routeRequest) routeRequest.abort();
   const controller = new AbortController();
   routeRequest = controller;
@@ -26,7 +28,7 @@ async function fetchRoadDistance(force = false) {
     body: JSON.stringify({
       latitude: coordinates.latitude,
       longitude: coordinates.longitude,
-      productNames: Object.values(cart || {}).map(item => item.name)
+      productNames
     }),
     signal: controller.signal,
     cache: 'no-store'
@@ -36,7 +38,7 @@ async function fetchRoadDistance(force = false) {
     throw new Error(result.error || 'Road distance could not be calculated.');
   }
   if (routeRequest !== controller) throw new DOMException('Route request superseded', 'AbortError');
-  cachedRouteKey = coordinates.key;
+  cachedRouteKey = routeKey;
   cachedRoadDistanceKm = Number(result.distanceKm);
   cachedRouteResult = result;
   if (checkoutAddressConfirmed && getDeliveryCoordinates()?.key === coordinates.key) {
