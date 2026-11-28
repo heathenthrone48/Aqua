@@ -179,32 +179,56 @@ document.addEventListener('deliverylocationchange', () => {
     }
 
     function showQuantityLimitNotice(anchor) {
-      if (!anchor || !document.body) return;
+      if (!document.body) return;
       document.querySelectorAll('.quantity-limit-notice').forEach(node => node.remove());
+
       const notice = document.createElement('div');
       notice.className = 'quantity-limit-notice';
-      notice.textContent = `You can order up to ${MAX_PRODUCT_QUANTITY} of each product.`;
-      notice.setAttribute('role', 'alert');
+      notice.setAttribute('role', 'dialog');
+      notice.setAttribute('aria-live', 'polite');
       Object.assign(notice.style, {
-        position: 'fixed', zIndex: '10000', maxWidth: '230px',
-        padding: '8px 12px', borderRadius: '8px',
-        background: '#fff1f2', border: '1px solid #fecdd3',
-        color: '#b91c1c', fontSize: '12px', fontWeight: '800',
-        lineHeight: '1.35', textAlign: 'center',
-        boxShadow: '0 4px 14px rgba(0,0,0,.14)',
-        pointerEvents: 'none'
+        position: 'fixed', zIndex: '10000', left: '50%', bottom: '24px',
+        transform: 'translateX(-50%)', width: 'min( calc(100vw - 32px), 360px )',
+        boxSizing: 'border-box', padding: '18px', borderRadius: '14px',
+        background: '#ffffff', border: '1px solid #dbe7e3',
+        color: '#173b32', fontSize: '14px', lineHeight: '1.45',
+        boxShadow: '0 10px 32px rgba(0,0,0,.20)', textAlign: 'left'
       });
+
+      const title = document.createElement('div');
+      title.textContent = 'Need a bulk order?';
+      Object.assign(title.style, { fontSize: '16px', fontWeight: '800', marginBottom: '6px' });
+
+      const message = document.createElement('p');
+      message.textContent = `Online orders are limited to ${MAX_PRODUCT_QUANTITY} units per product. For larger quantities, get in touch with us and we’ll help arrange your order.`;
+      Object.assign(message.style, { margin: '0 0 14px', color: '#52645e' });
+
+      const actions = document.createElement('div');
+      Object.assign(actions.style, { display: 'flex', alignItems: 'center', gap: '10px' });
+
+      const contact = document.createElement('a');
+      contact.href = 'https://wa.me/916364636093?text=' + encodeURIComponent('Hi NEERBEKU, I would like to place a bulk water order. Please confirm availability.');
+      contact.target = '_blank';
+      contact.rel = 'noopener noreferrer';
+      contact.textContent = 'Contact us on WhatsApp';
+      Object.assign(contact.style, {
+        display: 'inline-block', padding: '10px 13px', borderRadius: '8px',
+        background: '#167a52', color: '#ffffff', fontWeight: '800',
+        textDecoration: 'none', fontSize: '13px'
+      });
+
+      const close = document.createElement('button');
+      close.type = 'button';
+      close.textContent = 'Close';
+      Object.assign(close.style, {
+        border: '0', background: 'transparent', color: '#52645e',
+        padding: '8px', fontWeight: '700', cursor: 'pointer'
+      });
+      close.addEventListener('click', () => notice.remove());
+
+      actions.append(contact, close);
+      notice.append(title, message, actions);
       document.body.appendChild(notice);
-      const rect = anchor.getBoundingClientRect();
-      const left = Math.max(8, Math.min(window.innerWidth - notice.offsetWidth - 8,
-        rect.left + rect.width / 2 - notice.offsetWidth / 2));
-      let top = rect.bottom + 7;
-      if (top + notice.offsetHeight > window.innerHeight - 8) {
-        top = Math.max(8, rect.top - notice.offsetHeight - 7);
-      }
-      notice.style.left = left + 'px';
-      notice.style.top = top + 'px';
-      window.setTimeout(() => notice.remove(), 2200);
     }
 
     function setProductQuantity(valueEl, addButton, quantity) {
