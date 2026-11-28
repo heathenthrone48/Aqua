@@ -262,10 +262,14 @@ async function deliveryRoute(data, env) {
   if (results.some(result => result === null)) {
     return json({ error: "Could not calculate road distance from both delivery hubs. Please try again." }, 502);
   }
-  const hub1 = results[0], hub2 = results[1];
-  const selected = hub1.withinServiceArea ? hub1 : hub2.withinServiceArea ? hub2 : null;
+  const productNames = Array.isArray(data.productNames) ? data.productNames.map(name => String(name)) : [];
+  const hub2Eligible = productNames.length > 0 && productNames.every(name => name === "Bisleri 20L Can");
+  const eligible = results.filter(hub => hub.id === "hub1" || hub2Eligible);
+  const selected = eligible.filter(hub => hub.withinServiceArea)
+    .sort((a, b) => a.distanceMeters - b.distanceMeters)[0] || null;
+  const nearest = eligible.slice().sort((a, b) => a.distanceMeters - b.distanceMeters)[0];
   return json({ hubs: results, selectedHub: selected?.id || null,
-    distanceKm: selected?.distanceKm ?? Math.min(hub1.distanceKm, hub2.distanceKm),
+    distanceKm: selected?.distanceKm ?? nearest?.distanceKm ?? null,
     distanceMeters: selected?.distanceMeters ?? null, durationSeconds: selected?.durationSeconds ?? null,
     geometry: selected?.geometry ?? [], withinServiceArea: !!selected });
 }
