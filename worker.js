@@ -290,6 +290,14 @@ async function deliveryRoute(data, env) {
   });
 }
 
+const BULK_DISCOUNT_PRODUCTS = new Set([
+  'Bisleri 20L Can', 'Bisleri 10L Can', 'Bisleri 5L Bottle',
+  'Bisleri 1L Case', 'Bisleri 2L Case', 'Bisleri 500ml Case',
+  'Bailey 10L Can', 'Bailey 5L Can', 'Bailey 1L Case', 'Bailey 2L Case',
+  'Kinley 1L Case', 'Kinley 2L Case'
+]);
+const BULK_DISCOUNT_MIN_QTY = 5;
+const BULK_DISCOUNT_PER_UNIT = 5;
 async function validateOrderPricing(order, totalAmount, env) {
   const { results: overrides } = await env.DB.prepare("SELECT product_id, selling_price FROM product_prices").all();
   const { results: custom } = await env.DB.prepare("SELECT id, name, selling_price, available FROM custom_products").all();
@@ -314,12 +322,15 @@ async function validateOrderPricing(order, totalAmount, env) {
     if (price === undefined || unavailable.has(item.productId)) {
       return json({ error: "An item in your cart is no longer available. Please update your cart." }, 409);
     }
-    const lineCents = cents(price) * item.quantity;
-    if (cents(item.unitPrice) !== cents(price) || cents(item.lineTotal) !== lineCents) {
+    const unitPrice = BULK_DISCOUNT_PRODUCTS.has(item.productId) && item.quantity >= BULK_DISCOUNT_MIN_QTY
+      ? Math.max(0, price - BULK_DISCOUNT_PER_UNIT)
+      : price;
+    const lineCents = cents(unitPrice) * item.quantity;
+    if (cents(item.unitPrice) !== cents(unitPrice) || cents(item.lineTotal) !== lineCents) {
       return json({ error: "A price has changed. Please review your cart and try again." }, 409);
     }
     item.name = customNames.get(item.productId) ?? item.productId;
-    item.unitPrice = price;
+    item.unitPrice = unitPrice;
     item.lineTotal = lineCents / 100;
     productCents += lineCents;
     if (item.productId === "Bisleri 20L Can") bisleriQty += item.quantity;
