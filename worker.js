@@ -773,7 +773,7 @@ export default {
           }
         }
         const custom=await env.DB.prepare("SELECT id,selling_price,mrp FROM custom_products").all();
-        for(const r of custom.results)prices[r.id]={sellingPrice:Number(r.selling_price),mrp:Number(r.mrp)};
+        for(const r of custom.results){const value={sellingPrice:Number(r.selling_price),mrp:Number(r.mrp)};prices[r.id]=value;prices[r.name]=value;}
         return json({ prices });
       }
 
