@@ -149,7 +149,7 @@ document.addEventListener('deliverylocationchange', () => {
       document.getElementById('modalBadge').innerText = badge;
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalSubtitle').innerText = desc;
-      document.getElementById('modalPrice').innerHTML = `₹${price} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ unit</span>`;
+      document.getElementById('modalPrice').innerHTML = `₹${price} <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">/ unit</span><small style="display:block;color:#087eaf;font-weight:700;margin-top:6px;">Buy 5+ of this product and save ₹5 per unit</small>`;
       document.getElementById('modalImg').src = img;
       setProductQuantity(document.getElementById('modalQtyVal'), document.getElementById('modalAddToCartBtn'), Number(card.querySelector('.card-qty-value').textContent));
 
@@ -533,6 +533,29 @@ document.addEventListener('deliverylocationchange', () => {
       }
     }
 
+    const BULK_DISCOUNT_PRODUCTS = new Set([
+      'Bisleri 20L Can', 'Bisleri 10L Can', 'Bisleri 5L Bottle',
+      'Bisleri 1L Case', 'Bisleri 2L Case', 'Bisleri 500ml Case',
+      'Bailey 10L Can', 'Bailey 5L Can', 'Bailey 1L Case', 'Bailey 2L Case',
+      'Kinley 1L Case', 'Kinley 2L Case'
+    ]);
+    const BULK_DISCOUNT_MIN_QTY = 5;
+    const BULK_DISCOUNT_PER_UNIT = 5;
+    function getCartUnitPrice(name, quantity) {
+      const basePrice = Number(catalog[name]?.price || 0);
+      return BULK_DISCOUNT_PRODUCTS.has(name) && quantity >= BULK_DISCOUNT_MIN_QTY ? Math.max(0, basePrice - BULK_DISCOUNT_PER_UNIT) : basePrice;
+    }
+    function updateBulkPriceNotes() {
+      document.querySelectorAll('.water-card').forEach(card => {
+        if (!BULK_DISCOUNT_PRODUCTS.has(card.dataset.name)) return;
+        if (card.querySelector('.bulk-price-note')) return;
+        const note = document.createElement('small');
+        note.className = 'bulk-price-note';
+        note.textContent = 'Buy 5+ of this product and save ₹5 per unit';
+        card.querySelector('.water-price-block')?.appendChild(note);
+      });
+    }
+    updateBulkPriceNotes();
     function normalizeCart(value) {
       const clean = {};
       if (!value || typeof value !== 'object') return clean;
@@ -540,7 +563,8 @@ document.addEventListener('deliverylocationchange', () => {
         if (!Object.hasOwn(catalog, name) || !item) continue;
         const qty = Number(item.qty);
         if (!Number.isInteger(qty) || qty < 1) continue;
-        clean[name] = { ...catalog[name], qty: Math.min(MAX_PRODUCT_QUANTITY, qty) };
+        const safeQty = Math.min(MAX_PRODUCT_QUANTITY, qty);
+        clean[name] = { ...catalog[name], price: getCartUnitPrice(name, safeQty), qty: safeQty };
       }
       return clean;
     }
@@ -633,6 +657,7 @@ document.addEventListener('deliverylocationchange', () => {
         return;
       }
       cart[name].qty = qty;
+      cart[name].price = getCartUnitPrice(name, qty);
       renderCart();
     }
 
@@ -667,10 +692,10 @@ document.addEventListener('deliverylocationchange', () => {
         return;
       }
       if (cart[name]) {
-        cart[name].price = price;
         cart[name].qty = existingQty + qty;
+        cart[name].price = getCartUnitPrice(name, cart[name].qty);
       } else {
-        cart[name] = { ...catalog[name], price, qty };
+        cart[name] = { ...catalog[name], price: getCartUnitPrice(name, qty), qty };
       }
 
       button.classList.add('is-added');
