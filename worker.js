@@ -160,7 +160,7 @@ function normalizeOrder(data) {
     const lineTotal = Number(item?.lineTotal);
     if (!productId || productId.length > 120 || !itemName || itemName.length > 120 ||
         !Number.isFinite(unitPrice) || unitPrice < 0 || unitPrice > 1e6 ||
-        !Number.isInteger(quantity) || quantity < 1 || quantity > 500 ||
+        !Number.isInteger(quantity) || quantity < 1 || quantity > 15 ||
         !Number.isFinite(lineTotal) || lineTotal < 0 || lineTotal > 1e7) return null;
     normalizedItems.push({ productId, name: itemName, unitPrice, quantity, lineTotal });
   }
