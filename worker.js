@@ -813,8 +813,8 @@ export default {
         );
 
         for(const r of results)if(PRODUCT_IDS.has(r.product_id))stock[r.product_id]=r.available===1;
-        const custom=await env.DB.prepare("SELECT id,available FROM custom_products").all();
-        for(const r of custom.results){stock[r.id]=r.available===1;const product=await env.DB.prepare("SELECT name FROM custom_products WHERE id=?").bind(r.id).first();if(product)stock[product.name]=r.available===1;}
+        const custom=await env.DB.prepare("SELECT id,name,available FROM custom_products").all();
+        for(const r of custom.results){stock[r.id]=r.available===1;stock[r.name]=r.available===1;}
         return json({stock});
       }
 
