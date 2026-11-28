@@ -57,7 +57,7 @@ async function refreshDeliveryQuote() {
   try {
     const distanceKm = await fetchRoadDistance();
     if (getDeliveryCoordinates()?.key !== coordinates.key) return;
-    if (distanceKm > MAX_DELIVERY_RADIUS_KM) {
+    if (distanceKm > MAX_DELIVERY_RADIUS_KM || cachedRouteResult?.selectedHub === null) {
       if (feeEl) feeEl.textContent = 'Outside 5.5 km service area';
     } else if (feeEl) {
       feeEl.textContent = formatDeliveryFee(getDeliveryFee(distanceKm, Object.values(cart || {}).reduce((sum, item) => sum + item.price * item.qty, 0)));
@@ -981,7 +981,8 @@ document.addEventListener('deliverylocationchange', () => {
       if (!checkoutAddressConfirmed || !getDeliveryCoordinates()) return 'address';
       if (!document.getElementById('preferred-time')?.value) return 'window';
       if (cachedRoadDistanceKm === null) return 'route';
-      if (cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM) return 'outside';
+      if (cachedRoadDistanceKm > MAX_DELIVERY_RADIUS_KM || cachedRouteResult?.selectedHub === null) return 'outside';
+      if (cachedRouteResult?.selectedHub === 'hub2' && Object.values(cart).some(item => item.name !== BISLERI_20L_NAME)) return 'hub2-products';
       return '';
     }
 
@@ -1015,7 +1016,9 @@ document.addEventListener('deliverylocationchange', () => {
       } else if (blocker === 'empty') {
         feedback.textContent = 'Add at least one item to your cart.';
       } else if (blocker === 'outside') {
-        feedback.textContent = 'This address is outside our delivery area. Choose another address.';
+        feedback.textContent = 'This address is outside the 5.5 km delivery radius of both hubs.';
+      } else if (blocker === 'hub2-products') {
+        feedback.textContent = 'This address is served by the Amrutha hub, which currently delivers Bisleri 20L cans only. Remove other products or choose an address within the main hub area.';
       } else {
         feedback.textContent = 'Delivery distance is unavailable. Please check your address or try again.';
       }
@@ -1168,6 +1171,7 @@ document.addEventListener('deliverylocationchange', () => {
         deliveryFee: orderTotals.deliveryFee,
         handlingFee: orderTotals.handlingFee,
         distanceKm: deliveryDistanceKm,
+        selectedHub: cachedRouteResult?.selectedHub || null,
         deliveryWindow: deliveryWindow,
         time: deliveryWindow,
         latitude: latitude,
